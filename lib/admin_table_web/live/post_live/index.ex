@@ -1,29 +1,30 @@
 defmodule AdminTableWeb.PostLive.Index do
   use AdminTableWeb, :live_view
 
-  alias AdminTable.Timeline
-  alias AdminTable.Timeline.Post
+  use TestWeb.LiveResource,
+    schema: AdminTable.Timeline.Post
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :posts, Timeline.list_posts())}
+    {:ok, assign(socket, fields: fields())}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    params |> dbg()
+
+    socket =
+      socket
+      |> stream(:posts, list_resources(fields()))
+      |> apply_action(socket.assigns.live_action, params)
+
+    {:noreply, socket}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Post")
-    |> assign(:post, Timeline.get_post!(id))
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Post")
-    |> assign(:post, %Post{})
+  @impl true
+  def handle_event("sort", params, socket) do
+    socket = socket |> push_patch(to: ~p"/posts/?#{params}")
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :index, _params) do
@@ -32,16 +33,42 @@ defmodule AdminTableWeb.PostLive.Index do
     |> assign(:post, nil)
   end
 
-  @impl true
-  def handle_info({AdminTableWeb.PostLive.FormComponent, {:saved, post}}, socket) do
-    {:noreply, stream_insert(socket, :posts, post)}
+  def fields do
+    [
+      id: %{
+        label: "ID",
+        sortable: true,
+        searchable: false
+      },
+      body: %{
+        label: "Body",
+        sortable: true,
+        searchable: true
+      },
+      likes_count: %{
+        label: "Likes",
+        sortable: true,
+        searchable: false
+      },
+      repost_count: %{
+        label: "Reposts",
+        sortable: true,
+        searchable: false
+      },
+      photo_locations: %{
+        label: "Photos",
+        sortable: false,
+        searchable: false
+      }
+    ]
   end
 
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    post = Timeline.get_post!(id)
-    {:ok, _} = Timeline.delete_post(post)
-
-    {:noreply, stream_delete(socket, :posts, post)}
+  def sort_link(assigns) do
+    ~H"""
+    <.link phx-click="sort" phx-value-sort_by={@key} phx-value-sort_order={}>{@label}</.link>
+    """
   end
+
+  def next_sort_order("asc"), do: "desc"
+  def next_sort_order("desc"), do: "asc"
 end
