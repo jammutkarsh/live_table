@@ -1,4 +1,5 @@
 defmodule TestWeb.LiveResource do
+  alias AdminTable.Paginate
   alias AdminTable.Sorting
 
   defmacro __using__(opts) do
@@ -7,6 +8,7 @@ defmodule TestWeb.LiveResource do
       alias AdminTable.Repo
       alias AdminTable.Sorting
       import Sorting
+      import Paginate
 
       @resource_opts unquote(opts)
 
@@ -19,6 +21,7 @@ defmodule TestWeb.LiveResource do
         schema
         |> from(as: :resource)
         |> maybe_sort(options["sort"], options["sort"]["sortable?"])
+        |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
         |> Repo.all()
       end
     end

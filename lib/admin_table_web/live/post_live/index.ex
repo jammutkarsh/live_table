@@ -16,8 +16,15 @@ defmodule AdminTableWeb.PostLive.Index do
         "sortable?" => true,
         "sort_by" => params["sort_by"] || "id",
         "sort_order" => params["sort_order"] || "asc"
+      },
+      "pagination" => %{
+        "paginate?" => true,
+        "page" => params["page"] || "1",
+        "per_page" => params["per_page"] || "5"
       }
     }
+
+    options |> dbg()
 
     socket =
       socket
@@ -30,9 +37,22 @@ defmodule AdminTableWeb.PostLive.Index do
 
   @impl true
   def handle_event("sort", params, socket) do
+    options =
+      socket.assigns.options
+      |> Enum.reduce(%{}, fn
+        {_, v}, acc when is_map(v) ->
+          Map.merge(acc, v)
+      end)
+      |> Map.merge(params)
+      |> Map.reject(fn
+        {k, v} ->
+          v == "" || k not in ~w(sort_by sort_order page per_page)
+      end)
+      |> dbg()
+
     socket =
       socket
-      |> push_patch(to: ~p"/posts?#{params}")
+      |> push_patch(to: ~p"/posts?#{options}")
 
     {:noreply, socket}
   end
@@ -73,7 +93,7 @@ defmodule AdminTableWeb.PostLive.Index do
     ]
   end
 
-  def sort_link(assigns) do
+  def sort_link(%{sortable: true} = assigns) do
     ~H"""
     <.link
       phx-click="sort"
@@ -81,7 +101,7 @@ defmodule AdminTableWeb.PostLive.Index do
       phx-value-sort_order={next_sort_order(@sort_order)}
     >
       {@label}
-      <.icon  
+      <.icon
         :if={@sort_by == @key |> to_string()}
         name={
           if @sort_order == "asc",
@@ -91,6 +111,12 @@ defmodule AdminTableWeb.PostLive.Index do
         class="w-4 h-4 text-gray-900"
       />
     </.link>
+    """
+  end
+  
+  def sort_link(assigns) do
+    ~H"""
+    {@label}
     """
   end
 
