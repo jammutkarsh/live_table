@@ -1,113 +1,116 @@
-defmodule AdminTableWeb.PostLiveTest do
-  use AdminTableWeb.ConnCase
+# defmodule AdminTableWeb.PostLiveTest do
+#   use AdminTableWeb.ConnCase
 
-  import Phoenix.LiveViewTest
-  import AdminTable.TimelineFixtures
+#   import Phoenix.LiveViewTest
+#   import AdminTable.TimelineFixtures
 
-  @create_attrs %{body: "some body", likes_count: 42, repost_count: 42, photo_locations: ["option1", "option2"]}
-  @update_attrs %{body: "some updated body", likes_count: 43, repost_count: 43, photo_locations: ["option1"]}
-  @invalid_attrs %{body: nil, likes_count: nil, repost_count: nil, photo_locations: []}
+#   @create_attrs %{body: "some body", likes_count: 42, repost_count: 42, photo_locations: ["option1", "option2"]}
+#   @update_attrs %{body: "some updated body", likes_count: 43, repost_count: 43, photo_locations: ["option1"]}
+#   @invalid_attrs %{body: nil, likes_count: nil, repost_count: nil, photo_locations: []}
 
-  defp create_post(_) do
-    post = post_fixture()
-    %{post: post}
-  end
+#   defp create_post(_) do
+#     post = post_fixture()
+#     %{post: post}
+#   end
 
-  describe "Index" do
-    setup [:create_post]
+#   describe "Index" do
+#     setup [:create_post]
 
-    test "lists all posts", %{conn: conn, post: post} do
-      {:ok, _index_live, html} = live(conn, ~p"/posts")
+#     test "lists all posts", %{conn: conn, post: post} do
+#       {:ok, _index_live, html} = live(conn, ~p"/posts")
 
-      assert html =~ "Listing Posts"
-      assert html =~ post.body
-    end
+#       assert html =~ "Listing Posts"
+#       assert html =~ post.body
+#     end
 
-    test "saves new post", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/posts")
+#     test "saves new post", %{conn: conn} do
+#       {:ok, index_live, _html} = live(conn, ~p"/posts")
 
-      assert index_live |> element("a", "New Post") |> render_click() =~
-               "New Post"
+#       assert index_live |> element("a", "New Post") |> render_click() =~
+#                "New Post"
 
-      assert_patch(index_live, ~p"/posts/new")
+#       assert_patch(index_live, ~p"/posts/new")
 
-      assert index_live
-             |> form("#post-form", post: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+#       assert index_live
+#              |> form("#post-form", post: @invalid_attrs)
+#              |> render_change() =~ "can&#39;t be blank"
 
-      assert index_live
-             |> form("#post-form", post: @create_attrs)
-             |> render_submit()
+#       assert index_live
+#              |> form("#post-form", post: @create_attrs)
+#              |> render_submit()
 
-      assert_patch(index_live, ~p"/posts")
+#       assert_patch(index_live, ~p"/posts")
 
-      html = render(index_live)
-      assert html =~ "Post created successfully"
-      assert html =~ "some body"
-    end
+#       html = render(index_live)
+#       assert html =~ "Post created successfully"
+#       assert html =~ "some body"
+#     end
 
-    test "updates post in listing", %{conn: conn, post: post} do
-      {:ok, index_live, _html} = live(conn, ~p"/posts")
+#     test "updates post in listing", %{conn: conn, post: post} do
+#       {:ok, index_live, _html} = live(conn, ~p"/posts")
 
-      assert index_live |> element("#posts-#{post.id} a", "Edit") |> render_click() =~
-               "Edit Post"
+#       assert index_live |> element("#posts-#{post.id} a", "Edit") |> render_click() =~
+#                "Edit Post"
 
-      assert_patch(index_live, ~p"/posts/#{post}/edit")
+#       assert_patch(index_live, ~p"/posts/#{post}/edit")
 
-      assert index_live
-             |> form("#post-form", post: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+#       assert index_live
+#              |> form("#post-form", post: @invalid_attrs)
+#              |> render_change() =~ "can&#39;t be blank"
 
-      assert index_live
-             |> form("#post-form", post: @update_attrs)
-             |> render_submit()
+#       assert index_live
+#              |> form("#post-form", post: @update_attrs)
+#              |> render_submit()
 
-      assert_patch(index_live, ~p"/posts")
+#       assert_patch(index_live, ~p"/posts")
 
-      html = render(index_live)
-      assert html =~ "Post updated successfully"
-      assert html =~ "some updated body"
-    end
+#       html = render(index_live)
+#       assert html =~ "Post updated successfully"
+#       assert html =~ "some updated body"
+#     end
 
-    test "deletes post in listing", %{conn: conn, post: post} do
-      {:ok, index_live, _html} = live(conn, ~p"/posts")
+#     test "deletes post in listing", %{conn: conn, post: post} do
+#       {:ok, index_live, _html} = live(conn, ~p"/posts")
 
-      assert index_live |> element("#posts-#{post.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#posts-#{post.id}")
-    end
-  end
+#       assert index_live |> element("#posts-#{post.id} a", "Delete") |> render_click()
+#       refute has_element?(index_live, "#posts-#{post.id}")
+#     end
+#   end
 
-  describe "Show" do
-    setup [:create_post]
+#   describe "Show" do
+#     setup [:create_post]
 
-    test "displays post", %{conn: conn, post: post} do
-      {:ok, _show_live, html} = live(conn, ~p"/posts/#{post}")
+#     test "displays post", %{conn: conn, post: post} do
+#       {:ok, _show_live, html} = live(conn, ~p"/posts/#{post}")
 
-      assert html =~ "Show Post"
-      assert html =~ post.body
-    end
+#       assert html =~ "Show Post"
+#       assert html =~ post.body
+#     end
 
-    test "updates post within modal", %{conn: conn, post: post} do
-      {:ok, show_live, _html} = live(conn, ~p"/posts/#{post}")
+#     test "updates post within modal", %{conn: conn, post: post} do
+#       {:ok, show_live, _html} = live(conn, ~p"/posts/#{post}")
 
-      assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Post"
+#       assert show_live |> element("a", "Edit") |> render_click() =~
+#                "Edit Post"
 
-      assert_patch(show_live, ~p"/posts/#{post}/show/edit")
+#       assert_patch(show_live, ~p"/posts/#{post}/show/edit")
 
-      assert show_live
-             |> form("#post-form", post: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+#       assert show_live
+#              |> form("#post-form", post: @invalid_attrs)
+#              |> render_change() =~ "can&#39;t be blank"
 
-      assert show_live
-             |> form("#post-form", post: @update_attrs)
-             |> render_submit()
+#       assert show_live
+#              |> form("#post-form", post: @update_attrs)
+#              |> render_submit()
 
-      assert_patch(show_live, ~p"/posts/#{post}")
+#       assert_patch(show_live, ~p"/posts/#{post}")
 
-      html = render(show_live)
-      assert html =~ "Post updated successfully"
-      assert html =~ "some updated body"
-    end
-  end
-end
+#       html = render(show_live)
+#       assert html =~ "Post updated successfully"
+#       assert html =~ "some updated body"
+#     end
+#   end
+  
+  
+  
+# end

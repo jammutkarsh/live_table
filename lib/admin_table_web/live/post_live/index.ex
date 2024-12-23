@@ -11,11 +11,18 @@ defmodule AdminTableWeb.PostLive.Index do
 
   @impl true
   def handle_params(params, _url, socket) do
-    params |> dbg()
+    options = %{
+      "sort" => %{
+        "sortable?" => true,
+        "sort_by" => params["sort_by"] || "id",
+        "sort_order" => params["sort_order"] || "asc"
+      }
+    }
 
     socket =
       socket
-      |> stream(:posts, list_resources(fields()))
+      |> stream(:posts, list_resources(fields(), options), reset: true)
+      |> assign(:options, options)
       |> apply_action(socket.assigns.live_action, params)
 
     {:noreply, socket}
@@ -23,7 +30,10 @@ defmodule AdminTableWeb.PostLive.Index do
 
   @impl true
   def handle_event("sort", params, socket) do
-    socket = socket |> push_patch(to: ~p"/posts/?#{params}")
+    socket =
+      socket
+      |> push_patch(to: ~p"/posts?#{params}")
+
     {:noreply, socket}
   end
 
@@ -65,10 +75,25 @@ defmodule AdminTableWeb.PostLive.Index do
 
   def sort_link(assigns) do
     ~H"""
-    <.link phx-click="sort" phx-value-sort_by={@key} phx-value-sort_order={}>{@label}</.link>
+    <.link
+      phx-click="sort"
+      phx-value-sort_by={@key}
+      phx-value-sort_order={next_sort_order(@sort_order)}
+    >
+      {@label}
+      <.icon  
+        :if={@sort_by == @key |> to_string()}
+        name={
+          if @sort_order == "asc",
+            do: "hero-arrow-up-solid",
+            else: "hero-arrow-down-solid"
+        }
+        class="w-4 h-4 text-gray-900"
+      />
+    </.link>
     """
   end
 
-  def next_sort_order("asc"), do: "desc"
-  def next_sort_order("desc"), do: "asc"
+  defp next_sort_order("asc"), do: "desc"
+  defp next_sort_order("desc"), do: "asc"
 end

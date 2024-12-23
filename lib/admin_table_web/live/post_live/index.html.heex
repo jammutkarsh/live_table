@@ -30,7 +30,12 @@
                   scope="col"
                   class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ark:text-neutral-500"
                 >
-                  <.sort_link key={key} label={field.label} />
+                  <.sort_link
+                    key={key}
+                    label={field.label}
+                    sort_order={@options["sort"]["sort_order"]}
+                    sort_by={@options["sort"]["sort_by"]}
+                  />
                 </th>
               </tr>
             </thead>
