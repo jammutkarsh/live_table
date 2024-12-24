@@ -14,13 +14,14 @@ defmodule AdminTable.Catalog.Product do
       join_through: "products_suppliers",
       on_replace: :delete
 
+    has_one :image, AdminTable.Catalog.Image
     timestamps(type: :utc_datetime)
   end
 
   @doc false
   def changeset(product, attrs) do
     product
-    |> cast(attrs, [:name, :description, :price, :stock_quantity])
+    |> cast(attrs, [:name, :description, :price, :stock_quantity, :category_id])
     |> validate_required([:name, :description, :price, :stock_quantity])
   end
 end

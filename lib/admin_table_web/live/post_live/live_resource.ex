@@ -1,4 +1,5 @@
-defmodule TestWeb.LiveResource do
+defmodule AdminTableWeb.LiveResource do
+  alias AdminTable.Join
   alias AdminTable.Paginate
   alias AdminTable.Sorting
 
@@ -9,6 +10,7 @@ defmodule TestWeb.LiveResource do
       alias AdminTable.Sorting
       import Sorting
       import Paginate
+      import Join
 
       @resource_opts unquote(opts)
 
@@ -20,8 +22,11 @@ defmodule TestWeb.LiveResource do
 
         schema
         |> from(as: :resource)
+        |> join_associations(fields)
+        |> select_columns(fields)
         |> maybe_sort(options["sort"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
+        |> dbg()
         |> Repo.all()
       end
     end

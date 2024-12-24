@@ -9,7 +9,7 @@ defmodule AdminTable.Sorting do
 
   def sort(query, sort_params) do
     sorts =
-      sort_params
+      sort_params |> dbg()
       |> Enum.map(fn
         %{"sort_by" => sort_by, "sort_order" => "asc"} ->
           sort_by = sort_by |> String.to_existing_atom() 

@@ -1,10 +1,12 @@
 defmodule TestWeb.LiveResourceTest do
   use AdminTable.DataCase
   alias AdminTable.{Timeline.Post, Repo}
+  alias AdminTable.Catalog.{Product, Category, Supplier, Image}
+
   import AdminTable.TimelineFixtures
 
   defmodule TestResource do
-    use TestWeb.LiveResource,
+    use AdminTableWeb.LiveResource,
       schema: AdminTable.Timeline.Post
 
     def fields do
@@ -129,47 +131,68 @@ defmodule TestWeb.LiveResourceTest do
   end
 
   describe "Pagination" do
-      setup do
-        post1 = post_fixture(%{body: "B Post", likes_count: 10, repost_count: 5, photo_locations: ["location1"]})
-        post2 = post_fixture(%{body: "A Post", likes_count: 20, repost_count: 8, photo_locations: ["location2"]})
-        post3 = post_fixture(%{body: "C Post", likes_count: 15, repost_count: 3, photo_locations: ["location3"]})
-        
-        %{posts: [post1, post2, post3]}
-      end
-  
-      test "list_resources returns all resources when no pagination", %{posts: posts} do
-        fields = TestResource.fields()
-        options = %{
-          "sort" => %{"sortable?" => false},
-          "pagination" => %{"paginate?" => false}
-        }
-  
-        results = TestResource.list_resources(fields, options)
-        assert length(results) == 3
-        assert Enum.map(results, & &1.body) == Enum.map(posts, & &1.body)
-      end
-  
-      test "list_resources with pagination returns paginated results" do
-        options = %{
-          "sort" => %{"sortable?" => false},
-          "pagination" => %{
-            "paginate?" => true,
-            "per_page" => "1",
-            "page" => "1"
-          }
-        }
-  
-        results = TestResource.list_resources(TestResource.fields(), options)
-        assert length(results) == 1
-      end
-  
-      test "fields returns defined fields" do
-        assert TestResource.fields() == [
-          {:id, [sortable?: true]}, 
-          {:body, [sortable?: true]}, 
-          {:likes_count, [sortable?: true]}, 
-          {:repost_count, [sortable?: false]}
-        ]
-      end
+    setup do
+      post1 =
+        post_fixture(%{
+          body: "B Post",
+          likes_count: 10,
+          repost_count: 5,
+          photo_locations: ["location1"]
+        })
+
+      post2 =
+        post_fixture(%{
+          body: "A Post",
+          likes_count: 20,
+          repost_count: 8,
+          photo_locations: ["location2"]
+        })
+
+      post3 =
+        post_fixture(%{
+          body: "C Post",
+          likes_count: 15,
+          repost_count: 3,
+          photo_locations: ["location3"]
+        })
+
+      %{posts: [post1, post2, post3]}
     end
+
+    test "list_resources returns all resources when no pagination", %{posts: posts} do
+      fields = TestResource.fields()
+
+      options = %{
+        "sort" => %{"sortable?" => false},
+        "pagination" => %{"paginate?" => false}
+      }
+
+      results = TestResource.list_resources(fields, options)
+      assert length(results) == 3
+      assert Enum.map(results, & &1.body) == Enum.map(posts, & &1.body)
+    end
+
+    test "list_resources with pagination returns paginated results" do
+      options = %{
+        "sort" => %{"sortable?" => false},
+        "pagination" => %{
+          "paginate?" => true,
+          "per_page" => "1",
+          "page" => "1"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      assert length(results) == 1
+    end
+
+    test "fields returns defined fields" do
+      assert TestResource.fields() == [
+               {:id, [sortable?: true]},
+               {:body, [sortable?: true]},
+               {:likes_count, [sortable?: true]},
+               {:repost_count, [sortable?: false]}
+             ]
+    end
+  end
 end

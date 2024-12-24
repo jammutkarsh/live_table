@@ -1,47 +1,147 @@
 defmodule AdminTableWeb.ProductLive.Index do
   use AdminTableWeb, :live_view
 
-  alias AdminTable.Catalog
-  alias AdminTable.Catalog.Product
+  use AdminTableWeb.LiveResource,
+    schema: AdminTable.Catalog.Product
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :products, Catalog.list_products())}
+    {:ok, assign(socket, fields: fields())}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    options = %{
+      "sort" => %{
+        "sortable?" => true,
+        "sort_by" => params["sort_by"] || "id",
+        "sort_order" => params["sort_order"] || "asc"
+        # "sort" => [%{"sort_by" => params["sort_by"], "sort_order" => params["sort_order"]}]
+      },
+      "pagination" => %{
+        "paginate?" => true,
+        "page" => params["page"] || "1",
+        "per_page" => params["per_page"] || "5"
+      }
+    }
+
+    socket =
+      socket
+      |> stream(:resources, list_resources(fields(), options), reset: true)
+      |> assign(:options, options)
+      |> apply_action(socket.assigns.live_action, params)
+
+    {:noreply, socket}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Product")
-    |> assign(:product, Catalog.get_product!(id))
-  end
+  @impl true
+  def handle_event("sort", params, socket) do
+    options =
+      socket.assigns.options
+      |> Enum.reduce(%{}, fn
+        {_, v}, acc when is_map(v) ->
+          Map.merge(acc, v)
+      end)
+      |> Map.merge(params)
+      |> Map.reject(fn
+        {k, v} ->
+          v == "" || k not in ~w(sort_by sort_order page per_page)
+      end)
 
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Product")
-    |> assign(:product, %Product{})
+    socket =
+      socket
+      |> push_patch(to: ~p"/products?#{options}")
+
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Products")
-    |> assign(:product, nil)
   end
 
-  @impl true
-  def handle_info({AdminTableWeb.ProductLive.FormComponent, {:saved, product}}, socket) do
-    {:noreply, stream_insert(socket, :products, product)}
+  def fields do
+    [
+      id: %{
+        label: "ID",
+        sortable: true,
+        searchable: false
+      },
+      name: %{
+        label: "Product Name",
+        sortable: true,
+        searchable: true
+      },
+      description: %{
+        label: "Description",
+        sortable: true,
+        searchable: true
+      },
+      price: %{
+        label: "Price",
+        sortable: true,
+        searchable: false
+      },
+      supplier_name: %{
+        label: "Supplier Name",
+        assoc: {:suppliers, :name},
+        searchable: true,
+        sortable: false
+      },
+      supplier_description: %{
+        label: "Supplier Email",
+        assoc: {:suppliers, :contact_info},
+        searchable: true,
+        sortable: true
+      },
+      category_name: %{
+        label: "Category Name",
+        assoc: {:category, :name},
+        searchable: false,
+        sortable: false
+      },
+      category_description: %{
+        label: "Category Description",
+        assoc: {:category, :description},
+        searchable: true,
+        sortable: true
+      },
+      image: %{
+        label: "Image",
+        sortable: false,
+        searchable: false,
+        assoc: {:image, :url}
+      }
+    ]
   end
 
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    product = Catalog.get_product!(id)
-    {:ok, _} = Catalog.delete_product(product)
-
-    {:noreply, stream_delete(socket, :products, product)}
+  def sort_link(%{sortable: true} = assigns) do
+    ~H"""
+    <.link
+      phx-click="sort"
+      phx-value-sort_by={@key}
+      phx-value-sort_order={next_sort_order(@sort_order)}
+    >
+      {@label}
+      <.icon
+        :if={@sort_by == @key |> to_string()}
+        name={
+          if @sort_order == "asc",
+            do: "hero-arrow-up-solid",
+            else: "hero-arrow-down-solid"
+        }
+        class="w-4 h-4 text-gray-900"
+      />
+    </.link>
+    """
   end
+
+  def sort_link(assigns) do
+    ~H"""
+    {@label}
+    """
+  end
+
+  defp next_sort_order("asc"), do: "desc"
+  defp next_sort_order("desc"), do: "asc"
 end

@@ -1,7 +1,7 @@
 defmodule AdminTableWeb.PostLive.Index do
   use AdminTableWeb, :live_view
 
-  use TestWeb.LiveResource,
+  use AdminTableWeb.LiveResource,
     schema: AdminTable.Timeline.Post
 
   @impl true

@@ -94,10 +94,8 @@ end)
 # Print out inserted post count
 IO.puts("Inserted #{Repo.aggregate(Post, :count, :id)} posts")
 
-
-
 alias AdminTable.Repo
-alias AdminTable.Catalog.{Product, Supplier, Category}
+alias AdminTable.Catalog.{Product, Supplier, Category, Image}
 
 # Create Categories
 categories = [
@@ -180,6 +178,40 @@ inserted_suppliers =
     changeset = Supplier.changeset(%Supplier{}, supplier_attrs)
     Repo.insert!(changeset)
   end)
+
+image_url_generator = fn category_name ->
+  case category_name do
+    "Electronics" ->
+      "https://picsum.photos/seed/electronics#{:rand.uniform(1000)}/400/300"
+
+    "Clothing" ->
+      "https://picsum.photos/seed/clothing#{:rand.uniform(1000)}/400/300"
+
+    "Home & Kitchen" ->
+      "https://picsum.photos/seed/kitchen#{:rand.uniform(1000)}/400/300"
+
+    "Books" ->
+      "https://picsum.photos/seed/books#{:rand.uniform(1000)}/400/300"
+
+    "Sporting Goods" ->
+      "https://picsum.photos/seed/sports#{:rand.uniform(1000)}/400/300"
+
+    "Beauty & Personal Care" ->
+      "https://picsum.photos/seed/beauty#{:rand.uniform(1000)}/400/300"
+
+    "Toys & Games" ->
+      "https://picsum.photos/seed/toys#{:rand.uniform(1000)}/400/300"
+
+    "Furniture" ->
+      "https://picsum.photos/seed/furniture#{:rand.uniform(1000)}/400/300"
+
+    "Garden & Outdoor" ->
+      "https://picsum.photos/seed/garden#{:rand.uniform(1000)}/400/300"
+
+    "Automotive" ->
+      "https://picsum.photos/seed/auto#{:rand.uniform(1000)}/400/300"
+  end
+end
 
 # Function to generate random price
 price_generator = fn ->
@@ -287,6 +319,13 @@ products =
       # Insert product
       changeset = Product.changeset(%Product{}, product_attrs)
       product = Repo.insert!(changeset)
+
+      image_attrs = %{
+        url: image_url_generator.(category.name),
+        product_id: product.id
+      }
+
+      Image.changeset(%Image{}, image_attrs) |> Repo.insert!()
 
       # Associate with 1-3 random suppliers
       Enum.each(Enum.take_random(inserted_suppliers, :rand.uniform(3)), fn supplier ->
