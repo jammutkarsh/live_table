@@ -196,6 +196,7 @@ defmodule AdminTableWeb.LiveResourceTest do
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
+
       sorted_results =
         Enum.sort_by(
           results,
@@ -205,6 +206,41 @@ defmodule AdminTableWeb.LiveResourceTest do
 
       assert results == sorted_results
       assert Enum.any?(results, &(&1.id == product.id))
+    end
+
+    test "handles text search for searchable columns", %{product: product} do
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "search" => "Test"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      assert length(results) > 0
+      assert Enum.find(results, &(&1.id == product.id))
+    end
+
+    test "avoids text search for non-searchable columns", %{product: product} do
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "search" => "some category"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      assert length(results) == 0
     end
   end
 end

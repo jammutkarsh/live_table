@@ -11,43 +11,43 @@ defmodule TestWeb.LiveResourceTest do
 
     def fields do
       [
-        id: %{sortable: true},
-        body: %{sortable: true},
-        likes_count: %{sortable: true},
-        repost_count: %{sortable: false}
+        id: %{sortable: true, searchable: false},
+        body: %{sortable: true, searchable: true},
+        likes_count: %{sortable: true, searchable: false},
+        repost_count: %{sortable: false, searchable: false}
       ]
     end
   end
 
+  setup do
+    post1 =
+      post_fixture(%{
+        body: "B Post",
+        likes_count: 10,
+        repost_count: 5,
+        photo_locations: ["location1"]
+      })
+
+    post2 =
+      post_fixture(%{
+        body: "A Post",
+        likes_count: 20,
+        repost_count: 8,
+        photo_locations: ["location2"]
+      })
+
+    post3 =
+      post_fixture(%{
+        body: "C Post",
+        likes_count: 15,
+        repost_count: 3,
+        photo_locations: ["location3"]
+      })
+
+    %{posts: [post1, post2, post3]}
+  end
+
   describe "Sorting" do
-    setup do
-      post1 =
-        post_fixture(%{
-          body: "B Post",
-          likes_count: 10,
-          repost_count: 5,
-          photo_locations: ["location1"]
-        })
-
-      post2 =
-        post_fixture(%{
-          body: "A Post",
-          likes_count: 20,
-          repost_count: 8,
-          photo_locations: ["location2"]
-        })
-
-      post3 =
-        post_fixture(%{
-          body: "C Post",
-          likes_count: 15,
-          repost_count: 3,
-          photo_locations: ["location3"]
-        })
-
-      %{posts: [post1, post2, post3]}
-    end
-
     test "list_resources returns all resources without sorting", %{posts: posts} do
       fields = TestResource.fields()
       options = %{"sort" => %{"sortable?" => false}, "pagination" => %{"paginate?" => false}}
@@ -189,6 +189,44 @@ defmodule TestWeb.LiveResourceTest do
                {:likes_count, %{sortable: true}},
                {:repost_count, %{sortable: false}}
              ]
+    end
+  end
+
+  describe "Filters" do
+    test "handles text search for searchable columns", %{posts: _posts} do
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "search" => "A Post"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      
+      assert length(results) == 1
+      assert Enum.find(results, &(&1.body == "A Post"))
+    end
+
+    test "avoids text search for non-searchable columns", %{posts: _posts} do
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "search" => "some body"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      assert length(results) == 0
     end
   end
 end

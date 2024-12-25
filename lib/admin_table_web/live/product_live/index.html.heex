@@ -2,30 +2,32 @@
   <div class="-m-1.5 overflow-x-auto">
     <div class="p-1.5 min-w-full inline-block align-middle">
       <div class="border rounded-lg divide-y divide-gray-200 ark:border-neutral-700 ark:divide-neutral-700">
-        <div class="py-3 px-4">
-          <%!-- <div class="relative max-w-xs">
+          <.form phx-change="sort">
+        <div class="py-3 px-4 flex">
+          <div class="relative max-w-md flex">
             <label class="sr-only">Search</label>
-            <input type="text" name="hs-table-with-pagination-search" id="hs-table-with-pagination-search" class="py-2 px-3 ps-9 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600" placeholder="Search for items">
+            <input type="text" name="search" id="table-with-pagination-search" class="py-2 px-3 ps-9 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600" placeholder="Search for items"
+            value={@options["filters"]["search"]}>
             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-3">
               <svg class="size-4 text-gray-400 ark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="m21 21-4.3-4.3"></path>
               </svg>
             </div>
-          </div> --%>
-          <.form phx-change="sort">
+          </div>
             <select
               name="per_page"
               value={@options["pagination"]["per_page"]}
-              class="py-2 px-3 pe-9 block w-1/8 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
+              class="py-2 px-3 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
             >
               {Phoenix.HTML.Form.options_for_select(
                 ["5", "10", "20", "50", "100"],
                 @options["pagination"]["per_page"]
               )}
             </select>
-          </.form>
         </div>
+
+        </.form>
         <div class="overflow-hidden">
         <%!-- {@streams.resources |> inspect()} --%>
           <table class="min-w-full divide-y divide-gray-200 ark:divide-neutral-700">

@@ -1,4 +1,5 @@
 defmodule AdminTableWeb.LiveResource do
+  alias AdminTable.Filter
   alias AdminTable.Join
   alias AdminTable.Paginate
   alias AdminTable.Sorting
@@ -11,6 +12,7 @@ defmodule AdminTableWeb.LiveResource do
       import Sorting
       import Paginate
       import Join
+      import Filter
 
       @resource_opts unquote(opts)
 
@@ -24,6 +26,8 @@ defmodule AdminTableWeb.LiveResource do
         |> from(as: :resource)
         |> join_associations(fields)
         |> select_columns(fields)
+        |> apply_text_search(options["filters"]["search"], fields)
+        |> dbg()
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
         |> Repo.all()

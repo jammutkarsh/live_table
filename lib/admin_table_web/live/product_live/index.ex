@@ -26,6 +26,9 @@ defmodule AdminTableWeb.ProductLive.Index do
         "paginate?" => true,
         "page" => params["page"] || "1",
         "per_page" => params["per_page"] || "5"
+      },
+      "filters" => %{
+        "search" => params["search"] || ""
       }
     }
 
@@ -51,7 +54,7 @@ defmodule AdminTableWeb.ProductLive.Index do
       |> Map.merge(params)
       |> Map.reject(fn
         {k, v} ->
-          v == "" || k not in ~w(sort_by sort_order page per_page)
+          v == "" || k not in ~w(sort_by sort_order page per_page search)
       end)
       |> dbg()
 

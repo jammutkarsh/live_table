@@ -28,8 +28,8 @@ defmodule AdminTable.CatalogFixtures do
     attrs =
       attrs
       |> Enum.into(%{
-        description: "some description",
-        name: "some name"
+        description: "some category description",
+        name: "some category name"
       })
 
     changeset = Category.changeset(%Category{}, attrs)
@@ -44,8 +44,8 @@ defmodule AdminTable.CatalogFixtures do
     attrs =
       attrs
       |> Enum.into(%{
-        name: "some name",
-        contact_info: "some contact info"
+        name: "supplier name",
+        contact_info: "supplier contact info"
       })
 
     changeset = Supplier.changeset(%Supplier{}, attrs)
