@@ -45,8 +45,8 @@
                   <.sort_link
                     key={key}
                     label={field.label}
-                    sort_order={@options["sort"]["sort_order"]}
-                    sort_by={@options["sort"]["sort_by"]}
+                    sort_order={hd(@options["sort"]["sort_params"])["sort_order"]}
+                    sort_by={hd(@options["sort"]["sort_params"])["sort_by"]}
                     sortable={field.sortable}
                   />
                 </th>

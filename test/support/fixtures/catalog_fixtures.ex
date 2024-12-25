@@ -3,7 +3,7 @@ defmodule AdminTable.CatalogFixtures do
   This module defines test helpers for creating
   entities via the `AdminTable.Catalog` context.
   """
-  alias AdminTable.Catalog.{Category, Product, Supplier, Image}
+  alias AdminTable.Catalog.{Category, Supplier}
   alias AdminTable.Repo
 
   @doc """

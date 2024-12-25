@@ -14,9 +14,13 @@ defmodule AdminTableWeb.ProductLive.Index do
     options = %{
       "sort" => %{
         "sortable?" => true,
-        "sort_by" => params["sort_by"] || "id",
-        "sort_order" => params["sort_order"] || "asc"
-        # "sort" => [%{"sort_by" => params["sort_by"], "sort_order" => params["sort_order"]}]
+        "sort_params" => [
+          %{
+            "sort_by" => params["sort_by"] || "id",
+            "sort_order" => params["sort_order"] || "asc"
+          },
+          %{"sort_by" => "category_description", "sort_order" => "desc"}
+        ]
       },
       "pagination" => %{
         "paginate?" => true,
@@ -24,6 +28,8 @@ defmodule AdminTableWeb.ProductLive.Index do
         "per_page" => params["per_page"] || "5"
       }
     }
+
+    options |> dbg
 
     socket =
       socket
@@ -47,6 +53,7 @@ defmodule AdminTableWeb.ProductLive.Index do
         {k, v} ->
           v == "" || k not in ~w(sort_by sort_order page per_page)
       end)
+      |> dbg()
 
     socket =
       socket

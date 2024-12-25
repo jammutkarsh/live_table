@@ -11,10 +11,10 @@ defmodule TestWeb.LiveResourceTest do
 
     def fields do
       [
-        id: [sortable?: true],
-        body: [sortable?: true],
-        likes_count: [sortable?: true],
-        repost_count: [sortable?: false]
+        id: %{sortable: true},
+        body: %{sortable: true},
+        likes_count: %{sortable: true},
+        repost_count: %{sortable: false}
       ]
     end
   end
@@ -64,8 +64,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_by" => "body",
-          "sort_order" => "asc",
+          "sort_params" => [%{"sort_by" => "body", "sort_order" => "asc"}],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -81,8 +80,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_by" => "body",
-          "sort_order" => "desc",
+          "sort_params" => [%{"sort_by" => "body", "sort_order" => "desc"}],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -98,8 +96,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_by" => "likes_count",
-          "sort_order" => "asc",
+          "sort_params" => [%{"sort_by" => "likes_count", "sort_order" => "asc"}],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -115,8 +112,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "field" => "repost_count",
-          "sort_order" => "asc",
+          "sort_params" => [%{"sort_by" => "repost_count", "sort_order" => "asc"}],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -188,10 +184,10 @@ defmodule TestWeb.LiveResourceTest do
 
     test "fields returns defined fields" do
       assert TestResource.fields() == [
-               {:id, [sortable?: true]},
-               {:body, [sortable?: true]},
-               {:likes_count, [sortable?: true]},
-               {:repost_count, [sortable?: false]}
+               {:id, %{sortable: true}},
+               {:body, %{sortable: true}},
+               {:likes_count, %{sortable: true}},
+               {:repost_count, %{sortable: false}}
              ]
     end
   end

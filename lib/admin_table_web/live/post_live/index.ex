@@ -14,8 +14,9 @@ defmodule AdminTableWeb.PostLive.Index do
     options = %{
       "sort" => %{
         "sortable?" => true,
-        "sort_by" => params["sort_by"] || "id",
-        "sort_order" => params["sort_order"] || "asc"
+        "sort_params" => [
+          %{"sort_by" => params["sort_by"] || "id", "sort_order" => params["sort_order"] || "asc"}
+        ]
       },
       "pagination" => %{
         "paginate?" => true,
@@ -113,7 +114,7 @@ defmodule AdminTableWeb.PostLive.Index do
     </.link>
     """
   end
-  
+
   def sort_link(assigns) do
     ~H"""
     {@label}

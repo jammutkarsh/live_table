@@ -24,13 +24,13 @@ defmodule AdminTableWeb.LiveResourceTest do
           label: "Category Name",
           assoc: {:category, :name},
           searchable: false,
-          sortable: false
+          sortable: true
         },
         supplier_name: %{
           label: "Supplier Name",
           assoc: {:suppliers, :name},
           searchable: true,
-          sortable: false
+          sortable: true
         }
       ]
     end
@@ -70,8 +70,7 @@ defmodule AdminTableWeb.LiveResourceTest do
       options = %{
         "sort" => %{
           "sortable?" => true,
-          "sort_by" => "name",
-          "sort_order" => "asc"
+          "sort_params" => [%{"sort_by" => "name", "sort_order" => "asc"}]
         },
         "pagination" => %{
           "paginate?" => false
@@ -128,8 +127,7 @@ defmodule AdminTableWeb.LiveResourceTest do
       options = %{
         "sort" => %{
           "sortable?" => true,
-          "sort_by" => "name",
-          "sort_order" => "desc"
+          "sort_params" => [%{"sort_by" => "name", "sort_order" => "desc"}]
         },
         "pagination" => %{
           "paginate?" => false
@@ -147,8 +145,7 @@ defmodule AdminTableWeb.LiveResourceTest do
       options = %{
         "sort" => %{
           "sortable?" => true,
-          "sort_by" => "name",
-          "sort_order" => "asc"
+          "sort_params" => [%{"sort_by" => "name", "sort_order" => "asc"}]
         },
         "pagination" => %{
           "paginate?" => true,
@@ -160,6 +157,54 @@ defmodule AdminTableWeb.LiveResourceTest do
       results = TestResource.list_resources(TestResource.fields(), options)
       assert length(results) <= 2
       assert Enum.find(results, &(&1.id == product.id))
+    end
+
+    test "handles sorting and pagination for joined tables", %{product: product} do
+      options = %{
+        "sort" => %{
+          "sortable?" => true,
+          "sort_params" => [%{"sort_by" => "category_name", "sort_order" => "asc"}]
+        },
+        "pagination" => %{
+          "paginate?" => true,
+          "page" => "1",
+          "per_page" => "2"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+
+      assert length(results) <= 2
+
+      sorted_results = Enum.sort_by(results, & &1.category_name, &<=/2)
+      assert results == sorted_results
+      assert Enum.any?(results, &(&1.id == product.id))
+    end
+
+    test "handles sorting by more than 1 field", %{product: product} do
+      options = %{
+        "sort" => %{
+          "sortable?" => true,
+          "sort_params" => [
+            %{"sort_by" => "category_name", "sort_order" => "asc"},
+            %{"sort_by" => "supplier_name", "sort_order" => "asc"}
+          ]
+        },
+        "pagination" => %{
+          "paginate?" => false
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+      sorted_results =
+        Enum.sort_by(
+          results,
+          fn result -> {result.category_name, result.supplier_name} end,
+          &<=/2
+        )
+
+      assert results == sorted_results
+      assert Enum.any?(results, &(&1.id == product.id))
     end
   end
 end

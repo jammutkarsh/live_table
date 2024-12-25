@@ -24,9 +24,8 @@ defmodule AdminTableWeb.LiveResource do
         |> from(as: :resource)
         |> join_associations(fields)
         |> select_columns(fields)
-        |> maybe_sort(options["sort"], options["sort"]["sortable?"])
+        |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
-        |> dbg()
         |> Repo.all()
       end
     end
