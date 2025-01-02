@@ -7,10 +7,7 @@ defmodule AdminTable.SortingTest do
     test "returns original query when sorting is disabled" do
       query = from(p in "posts")
 
-      sort_params = [
-        %{"sort_by" => "id", "sort_order" => "asc"}
-      ]
-
+      sort_params = [id: :asc]
       fields = %{id: %{sortable: true}}
 
       result = Sorting.maybe_sort(query, fields, sort_params, false)
@@ -41,7 +38,7 @@ defmodule AdminTable.SortingTest do
   describe "sort/4 (Single Table)" do
     test "handles ascending sort" do
       query = from(p in "posts")
-      sort_params = [%{"sort_by" => "body", "sort_order" => "asc"}]
+      sort_params = [body: :asc]
       fields = %{body: %{sortable: true}}
       result = Sorting.sort(query, fields, sort_params)
 
@@ -51,7 +48,7 @@ defmodule AdminTable.SortingTest do
 
     test "handles descending sort" do
       query = from(p in "posts")
-      sort_params = [%{"sort_by" => "likes_count", "sort_order" => "desc"}]
+      sort_params = [likes_count: :desc]
       fields = %{likes_count: %{sortable: true}}
       result = Sorting.sort(query, fields, sort_params)
 
@@ -61,7 +58,7 @@ defmodule AdminTable.SortingTest do
 
     test "returns unsorted query for invalid params" do
       query = from(p in "posts")
-      sort_params = [%{"invalid" => "params"}]
+      sort_params = [invalid: :params]
       fields = %{body: %{sortable: true}}
 
       result = Sorting.sort(query, fields, sort_params)
@@ -73,10 +70,7 @@ defmodule AdminTable.SortingTest do
     test "handles multiple sort parameters" do
       query = from(p in "posts")
 
-      sort_params = [
-        %{"sort_by" => "likes_count", "sort_order" => "desc"},
-        %{"sort_by" => "repost_count", "sort_order" => "asc"}
-      ]
+      sort_params = [likes_count: :desc, repost_count: :asc]
 
       fields = %{likes_count: %{sortable: true}, repost_count: %{sortable: true}}
 
@@ -85,12 +79,48 @@ defmodule AdminTable.SortingTest do
       assert %Ecto.Query{} = result
       assert inspect(result) =~ "order_by: [desc: p0.likes_count, asc: p0.repost_count]"
     end
+
+    test "Ignores sort for sortable: false columns" do
+      query =
+        from p0 in AdminTable.Catalog.Product,
+          as: :resource,
+          left_join: s1 in assoc(p0, :suppliers),
+          as: :suppliers,
+          left_join: c2 in assoc(p0, :category),
+          as: :category,
+          left_join: i3 in assoc(p0, :image),
+          as: :image,
+          select: %{
+            supplier_name: s1.name,
+            price: p0.price
+          }
+
+      sort_params =
+        [supplier_name: :asc, price: :desc]
+
+      fields = [
+        price: %{
+          label: "Price",
+          sortable: true
+        },
+        supplier_name: %{
+          label: "Supplier Name",
+          assoc: {:suppliers, :name},
+          sortable: false
+        }
+      ]
+
+      result = Sorting.sort(query, fields, sort_params)
+
+      assert %Ecto.Query{} = result
+      assert inspect(result) =~ "order_by: [desc: p0.price]"
+    end
   end
 
   describe "sort/4 (Joined Table)" do
     test "sorts by column in base schema" do
       query = from(p in "products")
-      sort_params = [%{"sort_by" => "price", "sort_order" => "asc"}]
+      sort_params = [price: :asc]
       fields = %{price: %{sortable: true}}
       result = Sorting.sort(query, fields, sort_params)
 
@@ -108,7 +138,7 @@ defmodule AdminTable.SortingTest do
           order_by: [asc: s.name],
           select: %{supplier_name: s.name}
 
-      sort_params = [%{"sort_by" => "supplier_name", "sort_order" => "asc"}]
+      sort_params = [supplier_name: :asc]
       fields = %{supplier_name: %{sortable: true}}
 
       result = Sorting.sort(query, fields, sort_params)
@@ -128,19 +158,17 @@ defmodule AdminTable.SortingTest do
           left_join: i3 in assoc(p0, :image),
           as: :image,
           select: %{
-            price: p0.price,
-            supplier_name: s1.name
+            supplier_name: s1.name,
+            price: p0.price
           }
 
-      sort_params = [
-        %{"sort_by" => "supplier_name", "sort_order" => "asc"},
-        %{"sort_by" => "price", "sort_order" => "desc"}
-      ]
+      sort_params =
+        [supplier_name: :asc, price: :desc]
 
       fields = [
         price: %{
           label: "Price",
-          sortable: true,
+          sortable: true
         },
         supplier_name: %{
           label: "Supplier Name",
@@ -153,6 +181,49 @@ defmodule AdminTable.SortingTest do
 
       assert %Ecto.Query{} = result
       assert inspect(result) =~ "order_by: [asc: s1.name, desc: p0.price]"
+    end
+
+    test "sort order preserved in sort by multiple columns" do
+      query =
+        from p0 in AdminTable.Catalog.Product,
+          as: :resource,
+          left_join: s1 in assoc(p0, :suppliers),
+          as: :suppliers,
+          left_join: c2 in assoc(p0, :category),
+          as: :category,
+          left_join: i3 in assoc(p0, :image),
+          as: :image
+
+      sort_params =
+        [supplier_name: :asc, category_name: :asc, price: :desc, name: :asc]
+
+      fields = [
+        price: %{
+          label: "Price",
+          sortable: true
+        },
+        name: %{
+          label: "Name",
+          sortable: true
+        },
+        supplier_name: %{
+          label: "Supplier Name",
+          assoc: {:suppliers, :name},
+          sortable: true
+        },
+        category_name: %{
+          label: "Category Name",
+          assoc: {:category, :name},
+          sortable: true
+        }
+      ]
+
+      result = Sorting.sort(query, fields, sort_params)
+
+      assert %Ecto.Query{} = result
+
+      assert inspect(result) =~
+               "order_by: [asc: s1.name, asc: c2.name, desc: p0.price, asc: p0.name]"
     end
   end
 end

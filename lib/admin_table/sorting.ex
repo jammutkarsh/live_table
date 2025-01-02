@@ -1,17 +1,17 @@
 defmodule AdminTable.Sorting do
   import Ecto.Query
 
-  def default_params(query) do
-    [
-      %{"sort_by" => get_primary_key(query), "sort_order" => "asc"}
-    ]
-  end
+  # def default_params(query) do
+  #   [
+  #     %{"sort_by" => get_primary_key(query), "sort_order" => "asc"}
+  #   ]
+  # end
 
-  def get_primary_key(%Ecto.Query{from: %{source: {_table_name, schema_module}}})
-      when is_atom(schema_module) do
-    primary_key = schema_module.__schema__(:primary_key)
-    primary_key |> to_string()
-  end
+  # def get_primary_key(%Ecto.Query{from: %{source: {_table_name, schema_module}}})
+  #     when is_atom(schema_module) do
+  #   primary_key = schema_module.__schema__(:primary_key)
+  #   primary_key |> to_string()
+  # end
 
   def maybe_sort(query, _, _, false), do: query
 
@@ -22,8 +22,7 @@ defmodule AdminTable.Sorting do
   def sort(query, fields, sort_params) do
     sorts =
       Enum.reduce(sort_params, [], fn
-        %{"sort_by" => sort_by, "sort_order" => sort_order}, acc ->
-          sort_by = String.to_existing_atom(sort_by)
+        {sort_by, sort_order}, acc ->
 
           sort_expr =
             Enum.find_value(fields, fn
@@ -39,7 +38,7 @@ defmodule AdminTable.Sorting do
 
           case sort_expr do
             nil -> acc
-            expr -> acc ++ [{String.to_existing_atom(sort_order), expr}]
+            expr -> acc ++ [{sort_order, expr}]
           end
 
         _, acc ->

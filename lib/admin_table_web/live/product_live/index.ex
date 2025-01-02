@@ -6,21 +6,17 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, fields: fields())}
+    {:ok, assign(socket, fields: fields(), options: %{})}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
+    sort_params = Map.get(params, "sort_params", %{"id" => "asc"}) |> Enum.map(fn {k, v} -> {String.to_atom(k), String.to_atom(v)} end)
+
     options = %{
       "sort" => %{
         "sortable?" => true,
-        "sort_params" => [
-          %{
-            "sort_by" => params["sort_by"] || "id",
-            "sort_order" => params["sort_order"] || "asc"
-          },
-          %{"sort_by" => "category_description", "sort_order" => "desc"}
-        ]
+        "sort_params" => sort_params
       },
       "pagination" => %{
         "paginate?" => true,
@@ -31,8 +27,6 @@ defmodule AdminTableWeb.ProductLive.Index do
         "search" => params["search"] || ""
       }
     }
-
-    options |> dbg
 
     socket =
       socket
@@ -45,6 +39,8 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   @impl true
   def handle_event("sort", params, socket) do
+    shift_key = Map.get(params, "shift_key", false)
+
     options =
       socket.assigns.options
       |> Enum.reduce(%{}, fn
@@ -52,11 +48,9 @@ defmodule AdminTableWeb.ProductLive.Index do
           Map.merge(acc, v)
       end)
       |> Map.merge(params)
-      |> Map.reject(fn
-        {k, v} ->
-          v == "" || k not in ~w(sort_by sort_order page per_page search)
-      end)
-      |> dbg()
+      |> update_sort_params(params["sort"], shift_key)
+      |> Map.take(~w(page per_page search sort_params))
+      |> Map.reject(fn {_, v} -> v == "" end)
 
     socket =
       socket
@@ -65,10 +59,45 @@ defmodule AdminTableWeb.ProductLive.Index do
     {:noreply, socket}
   end
 
+  defp update_sort_params(map, nil, _), do: map
+
+  defp update_sort_params(map, params, true) do
+    p =
+      params
+      |> Jason.decode!()
+      |> Keyword.new(fn {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} end)
+
+    map
+    |> Map.update("sort_params", nil, fn x ->
+      merge_lists(x, p)
+    end)
+  end
+
+  defp update_sort_params(map, params, false) do
+    p =
+      params
+      |> Jason.decode!()
+      |> Keyword.new(fn {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} end)
+
+    map
+    |> Map.put("sort_params", p)
+  end
+
+
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Products")
   end
+
+  defp merge_lists(list1, list2) do
+      list2_map = Enum.into(list2, %{})
+
+      list1
+      |> Enum.map(fn {key, value} ->
+        {key, Map.get(list2_map, key, value)}
+      end)
+      |> Kernel.++(Enum.reject(list2, fn {key, _} -> key in Keyword.keys(list1) end))
+    end
 
   def fields do
     [
@@ -128,19 +157,20 @@ defmodule AdminTableWeb.ProductLive.Index do
   def sort_link(%{sortable: true} = assigns) do
     ~H"""
     <.link
+      id={@key}
       phx-click="sort"
-      phx-value-sort_by={@key}
-      phx-value-sort_order={next_sort_order(@sort_order)}
+      phx-value-sort={
+        Jason.encode!(%{
+          @key => (@sort_params[@key] || :asc) |> to_string() |> next_sort_order()
+        })
+      }
+      phx-hook="SortableColumn"
+
     >
       {@label}
       <.icon
-        :if={@sort_by == @key |> to_string()}
-        name={
-          if @sort_order == "asc",
-            do: "hero-arrow-up-solid",
-            else: "hero-arrow-down-solid"
-        }
-        class="w-4 h-4 text-gray-900"
+        :if={Keyword.has_key?(@sort_params, @key)}
+        name={if Keyword.get(@sort_params, @key) == :asc do "hero-arrow-up-solid" else "hero-arrow-down-solid" end} class="w-4 h-4 text-gray-900"
       />
     </.link>
     """
@@ -154,4 +184,5 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   defp next_sort_order("asc"), do: "desc"
   defp next_sort_order("desc"), do: "asc"
+  defp next_sort_order(_), do: raise ArgumentError
 end

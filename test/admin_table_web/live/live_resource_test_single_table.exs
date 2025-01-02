@@ -64,7 +64,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_params" => [%{"sort_by" => "body", "sort_order" => "asc"}],
+          "sort_params" => [body: :asc],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -80,7 +80,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_params" => [%{"sort_by" => "body", "sort_order" => "desc"}],
+          "sort_params" => [body: :desc],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -96,7 +96,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_params" => [%{"sort_by" => "likes_count", "sort_order" => "asc"}],
+          "sort_params" => [likes_count: :asc],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -112,7 +112,7 @@ defmodule TestWeb.LiveResourceTest do
 
       options = %{
         "sort" => %{
-          "sort_params" => [%{"sort_by" => "repost_count", "sort_order" => "asc"}],
+          "sort_params" => [repost_count: :asc],
           "sortable?" => true
         },
         "pagination" => %{"paginate?" => false}
@@ -127,35 +127,7 @@ defmodule TestWeb.LiveResourceTest do
   end
 
   describe "Pagination" do
-    setup do
-      post1 =
-        post_fixture(%{
-          body: "B Post",
-          likes_count: 10,
-          repost_count: 5,
-          photo_locations: ["location1"]
-        })
-
-      post2 =
-        post_fixture(%{
-          body: "A Post",
-          likes_count: 20,
-          repost_count: 8,
-          photo_locations: ["location2"]
-        })
-
-      post3 =
-        post_fixture(%{
-          body: "C Post",
-          likes_count: 15,
-          repost_count: 3,
-          photo_locations: ["location3"]
-        })
-
-      %{posts: [post1, post2, post3]}
-    end
-
-    test "list_resources returns all resources when no pagination", %{posts: posts} do
+  test "list_resources returns all resources when no pagination", %{posts: posts} do
       fields = TestResource.fields()
 
       options = %{
@@ -184,10 +156,10 @@ defmodule TestWeb.LiveResourceTest do
 
     test "fields returns defined fields" do
       assert TestResource.fields() == [
-               {:id, %{sortable: true}},
-               {:body, %{sortable: true}},
-               {:likes_count, %{sortable: true}},
-               {:repost_count, %{sortable: false}}
+               {:id, %{sortable: true, searchable: false}},
+               {:body, %{sortable: true, searchable: true}},
+               {:likes_count, %{sortable: true, searchable: false}},
+               {:repost_count, %{sortable: false, searchable: false}}
              ]
     end
   end

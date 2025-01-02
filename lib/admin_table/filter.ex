@@ -24,10 +24,9 @@ defmodule AdminTable.Filter do
           # {s, _} = get_table_name(table_name)
           dynamic([{^table_name, s}], ^acc or ilike(field(s, ^field), ^"%#{search_term}%"))
       end)
-    
-      where(query, ^conditions)
-  end
 
+    where(query, ^conditions)
+  end
 
   defp get_searchable_fields(fields) do
     fields
@@ -40,6 +39,24 @@ defmodule AdminTable.Filter do
 
       _ ->
         []
+    end)
+  end
+
+  defp apply_custom_filters(query, nil, _filters), do: query
+
+  defp apply_custom_filters(query, filter_values, filters) do
+    filter_values |> dbg()
+    filters |> dbg()
+
+    Enum.reduce(filters, query, fn {filter_key, filter}, acc ->
+      value =
+        get_in(filter_values, [to_string(filter_key)])
+
+      filter.__struct__.apply(acc, %{
+        field: filter.field,
+        options: Map.get(filter, :options),
+        value: value
+      })
     end)
   end
 end
