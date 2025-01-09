@@ -22,11 +22,14 @@ defmodule AdminTableWeb.LiveResource do
       def list_resources(fields, options) do
         schema = @resource_opts[:schema]
 
+        filters = Map.get(options, "filters", nil)
+
         schema
         |> from(as: :resource)
         |> join_associations(fields)
         |> select_columns(fields)
-        |> apply_text_search(options["filters"]["search"], fields)
+        |> apply_filters(filters, fields)
+        # |> apply_text_search(options["filters"]["search"], fields)
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
         |> Repo.all()

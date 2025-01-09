@@ -1,31 +1,26 @@
 defmodule AdminTable.Filter do
   import Ecto.Query
 
-  def apply_text_search(query, "", _) do
-    query
+  def apply_text_search("", _) do
+    true
   end
 
-  def apply_text_search(query, search_term, fields) do
+  def apply_text_search(search_term, fields) do
     searchable_fields = get_searchable_fields(fields)
 
-    conditions =
-      Enum.reduce(searchable_fields, nil, fn
-        field, nil when is_atom(field) ->
-          dynamic([q], ilike(field(q, ^field), ^"%#{search_term}%"))
+    Enum.reduce(searchable_fields, nil, fn
+      field, nil when is_atom(field) ->
+        dynamic([q], ilike(field(q, ^field), ^"%#{search_term}%"))
 
-        field, acc when is_atom(field) ->
-          dynamic([q], ^acc or ilike(field(q, ^field), ^"%#{search_term}%"))
+      field, acc when is_atom(field) ->
+        dynamic([q], ^acc or ilike(field(q, ^field), ^"%#{search_term}%"))
 
-        {table_name, field}, nil ->
-          # {s, _} = get_table_name(table_name)
-          dynamic([{^table_name, s}], ilike(field(s, ^field), ^"%#{search_term}%"))
+      {table_name, field}, nil ->
+        dynamic([{^table_name, s}], ilike(field(s, ^field), ^"%#{search_term}%"))
 
-        {table_name, field}, acc ->
-          # {s, _} = get_table_name(table_name)
-          dynamic([{^table_name, s}], ^acc or ilike(field(s, ^field), ^"%#{search_term}%"))
-      end)
-
-    where(query, ^conditions)
+      {table_name, field}, acc ->
+        dynamic([{^table_name, s}], ^acc or ilike(field(s, ^field), ^"%#{search_term}%"))
+    end)
   end
 
   defp get_searchable_fields(fields) do
@@ -42,21 +37,36 @@ defmodule AdminTable.Filter do
     end)
   end
 
-  defp apply_custom_filters(query, nil, _filters), do: query
+  def apply_filters(query, %{"search" => ""} = filters, _) when map_size(filters) == 1, do: query
 
-  defp apply_custom_filters(query, filter_values, filters) do
-    filter_values |> dbg()
-    filters |> dbg()
+  def apply_filters(query, filters, fields) do
+        f =
+      filters
+      |> Enum.reduce(true, fn
+        {"search", search_term}, acc ->
+          text_search_condition = apply_text_search(search_term, fields)
+          dynamic(^acc and ^text_search_condition)
 
-    Enum.reduce(filters, query, fn {filter_key, filter}, acc ->
-      value =
-        get_in(filter_values, [to_string(filter_key)])
+        {filter_key, filter}, acc ->
+          filter.__struct__.apply(acc, %{filter_key: filter})
+      end)
 
-      filter.__struct__.apply(acc, %{
-        field: filter.field,
-        options: Map.get(filter, :options),
-        value: value
-      })
-    end)
+    where(query, ^f) |> dbg()
   end
+
+  # defp apply_custom_filters(query, nil, _filters), do: query
+
+  # defp apply_custom_filters(query, filter_values, filters) do
+
+  #   Enum.reduce(filters, query, fn {filter_key, filter}, acc ->
+  #     value =
+  #       get_in(filter_values, [to_string(filter_key)])
+
+  #     filter.__struct__.apply(acc, %{
+  #       field: filter.field,
+  #       options: Map.get(filter, :options),
+  #       value: value
+  #     })
+  #   end)
+  # end
 end

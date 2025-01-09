@@ -42,8 +42,16 @@
                 @options["pagination"]["per_page"]
               )}
             </select>
-        </div>
 
+            <.input
+              :for={{key, filter} <- filters()}
+              name={"filters[#{key}]"}
+              type="checkbox"
+              value={Map.has_key?(@options["filters"], key |> to_string())}
+              label={filter.options.label}
+            />
+            {@options["filters"]["search"] |> inspect()}
+          </div>
         </.form>
         <div class="overflow-hidden">
           <table class="min-w-full divide-y divide-gray-200 ark:divide-neutral-700">
