@@ -10,11 +10,10 @@ defmodule AdminTable.Boolean do
 
   def apply(acc, filter) do
     Enum.reduce(filter, acc, fn
-      {_, v}, nil ->
-        Map.get(v, :options) |> Map.get(:condition)
+      {_, %__MODULE__{options: %{condition: condition}}}, nil ->
+        condition
 
-      {_, v}, acc ->
-        condition = Map.get(v, :options) |> Map.get(:condition)
+      {_, %__MODULE__{options: %{condition: condition}}}, acc ->
         dynamic(^acc and ^condition)
     end)
   end

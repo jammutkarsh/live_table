@@ -16,12 +16,9 @@ defmodule AdminTableWeb.ProductLive.Index do
       Map.get(params, "sort_params", %{"id" => "asc"})
       |> Enum.map(fn {k, v} -> {String.to_atom(k), String.to_atom(v)} end)
 
-    params |> dbg()
-
     filters =
       Map.get(params, "filters", %{})
       |> Map.merge(%{"search" => params["search"] || ""})
-      |> dbg()
       |> Enum.reduce(%{}, fn
         {"search", search_term}, acc -> Map.put(acc, "search", search_term)
         {k, v}, acc -> Map.put(acc, k, filters()[k |> String.to_atom()])
@@ -54,7 +51,10 @@ defmodule AdminTableWeb.ProductLive.Index do
   @impl true
   def handle_event("sort", params, socket) do
     # params |> dbg()
+
     shift_key = Map.get(params, "shift_key", false)
+    sort_params = Map.get(params, "sort", nil)
+    filter_params = Map.get(params, "filters", nil)
 
     options =
       socket.assigns.options
@@ -63,16 +63,11 @@ defmodule AdminTableWeb.ProductLive.Index do
           Map.merge(acc, v)
       end)
       |> Map.merge(params)
-      |> update_sort_params(params["sort"], shift_key)
+      |> update_sort_params(sort_params, shift_key)
+      |> update_filter_params(filter_params)
       |> Map.take(~w(page per_page search sort_params filters))
-      |> Map.update("filters", nil, fn filters ->
-        filters
-        |> Map.reject(fn {_key, value} ->
-          value == "" or value == "false"
-        end)
-      end)
       |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-      |> dbg()
+      # |> dbg()
 
     # Update Workflow
 
@@ -81,6 +76,18 @@ defmodule AdminTableWeb.ProductLive.Index do
       |> push_patch(to: ~p"/products?#{options}")
 
     {:noreply, socket}
+  end
+
+  defp update_filter_params(map, nil), do: map
+
+  defp update_filter_params(map, params) do
+    cond = params |> Enum.reduce(%{}, fn
+      {k, "true"}, acc ->
+    %{field: field, key: key} = get_filter(k)
+    Map.put(acc, k, key)
+    _, acc -> acc
+      end)
+    Map.replace(map, "filters", cond)
   end
 
   defp update_sort_params(map, nil, _), do: map
@@ -179,17 +186,17 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   def filters() do
     [
-      price_filter:
+      price:
         Boolean.new(
           :price,
-          "price",
+          "under-100",
           %{label: "Less than 100", condition: dynamic([p], p.price < 100)}
         ),
       cost_filter:
         Boolean.new(
-          :price,
+          :supplier_email,
           "supplier",
-          %{label: "Less than 50", condition: dynamic([p], p.price < 50)}
+          %{label: "Email", condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")}
         )
     ]
   end
@@ -226,6 +233,11 @@ defmodule AdminTableWeb.ProductLive.Index do
     ~H"""
     {@label}
     """
+  end
+
+  defp get_filter(key) do
+    key = key |> String.to_existing_atom()
+    filters() |> Keyword.get(key)
   end
 
   defp next_sort_order("asc"), do: "desc"

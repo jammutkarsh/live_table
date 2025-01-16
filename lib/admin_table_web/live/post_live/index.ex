@@ -25,8 +25,6 @@ defmodule AdminTableWeb.PostLive.Index do
       }
     }
 
-    options |> dbg()
-
     socket =
       socket
       |> stream(:posts, list_resources(fields(), options), reset: true)

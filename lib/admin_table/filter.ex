@@ -40,7 +40,7 @@ defmodule AdminTable.Filter do
   def apply_filters(query, %{"search" => ""} = filters, _) when map_size(filters) == 1, do: query
 
   def apply_filters(query, filters, fields) do
-        f =
+        conditions =
       filters
       |> Enum.reduce(true, fn
         {"search", search_term}, acc ->
@@ -51,22 +51,6 @@ defmodule AdminTable.Filter do
           filter.__struct__.apply(acc, %{filter_key: filter})
       end)
 
-    where(query, ^f) |> dbg()
+    where(query, ^conditions)
   end
-
-  # defp apply_custom_filters(query, nil, _filters), do: query
-
-  # defp apply_custom_filters(query, filter_values, filters) do
-
-  #   Enum.reduce(filters, query, fn {filter_key, filter}, acc ->
-  #     value =
-  #       get_in(filter_values, [to_string(filter_key)])
-
-  #     filter.__struct__.apply(acc, %{
-  #       field: filter.field,
-  #       options: Map.get(filter, :options),
-  #       value: value
-  #     })
-  #   end)
-  # end
 end

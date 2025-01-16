@@ -43,14 +43,15 @@
               )}
             </select>
 
+            <%!-- <.input type="range" name="hello" id="1" value="50"/> --%>
+
             <.input
               :for={{key, filter} <- filters()}
-              name={"filters[#{key}]"}
               type="checkbox"
+              name={"filters[#{key}]"}
               value={Map.has_key?(@options["filters"], key |> to_string())}
               label={filter.options.label}
             />
-            {@options["filters"]["search"] |> inspect()}
           </div>
         </.form>
         <div class="overflow-hidden">
