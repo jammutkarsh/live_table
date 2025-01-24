@@ -48,7 +48,7 @@ defmodule AdminTable.Filter do
           dynamic(^acc and ^text_search_condition)
 
         {filter_key, filter}, acc ->
-          filter.__struct__.apply(acc, %{filter_key: filter})
+          filter.__struct__.apply(acc, filter)
       end)
 
     where(query, ^conditions)

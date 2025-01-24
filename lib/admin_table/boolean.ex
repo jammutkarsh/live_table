@@ -8,13 +8,18 @@ defmodule AdminTable.Boolean do
     %__MODULE__{field: field, key: key, options: options}
   end
 
-  def apply(acc, filter) do
-    Enum.reduce(filter, acc, fn
-      {_, %__MODULE__{options: %{condition: condition}}}, nil ->
-        condition
+  def apply(acc, %__MODULE__{options: %{condition: condition}}) do
+  dynamic(^acc and ^condition)
+  end
 
-      {_, %__MODULE__{options: %{condition: condition}}}, acc ->
-        dynamic(^acc and ^condition)
-    end)
+  def render(assigns) do
+  ~H"""
+  <AdminTableWeb.CoreComponents.input
+    type="checkbox"
+    name={"filters[#{@key}]"}
+    label={@filter.options.label}
+    checked={Map.has_key?(@filters, @key)}
+  />
+  """
   end
 end

@@ -1,6 +1,6 @@
 defmodule AdminTableWeb.ProductLive.Index do
   use AdminTableWeb, :live_view
-  alias AdminTable.Boolean
+  alias AdminTable.{Boolean, Range}
 
   use AdminTableWeb.LiveResource,
     schema: AdminTable.Catalog.Product
@@ -18,12 +18,26 @@ defmodule AdminTableWeb.ProductLive.Index do
 
     filters =
       Map.get(params, "filters", %{})
-      |> Map.merge(%{"search" => params["search"] || ""})
+      |> Map.put("search", params["search"] || "" )
       |> Enum.reduce(%{}, fn
-        {"search", search_term}, acc -> Map.put(acc, "search", search_term)
-        {k, v}, acc -> Map.put(acc, k, filters()[k |> String.to_atom()])
+        {"search", search_term}, acc ->
+          Map.put(acc, "search", search_term)
+
+        # {key, %{"max" => max, "min" => min}}, acc ->
+        #   {min, _} = min |> Float.parse()
+        #   {max, _} = max |> Float.parse()
+        #   filter = get_filter(key)
+        #   filter = %{filter | options: Map.merge(filter.options, %{min: min, max: max})}
+        #   key = key |> String.to_atom()
+        #   Map.put(acc, key, filter)
+
+        {k, _}, acc ->
+        key = k |> String.to_existing_atom()
+          Map.put(acc, key, get_filter(k))
       end)
 
+
+    # params |> dbg()
     # Update Workflow
 
     options = %{
@@ -50,7 +64,7 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   @impl true
   def handle_event("sort", params, socket) do
-    # params |> dbg()
+    params |> dbg()
 
     shift_key = Map.get(params, "shift_key", false)
     sort_params = Map.get(params, "sort", nil)
@@ -59,6 +73,7 @@ defmodule AdminTableWeb.ProductLive.Index do
     options =
       socket.assigns.options
       |> Enum.reduce(%{}, fn
+        {"filters", v}, acc -> encode_filters(acc, v)
         {_, v}, acc when is_map(v) ->
           Map.merge(acc, v)
       end)
@@ -67,7 +82,6 @@ defmodule AdminTableWeb.ProductLive.Index do
       |> update_filter_params(filter_params)
       |> Map.take(~w(page per_page search sort_params filters))
       |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-      # |> dbg()
 
     # Update Workflow
 
@@ -78,16 +92,35 @@ defmodule AdminTableWeb.ProductLive.Index do
     {:noreply, socket}
   end
 
+  defp encode_filters(acc, filters) do
+      Enum.reduce(filters, acc, fn
+        {"search", search_term}, acc -> Map.put(acc, "search", search_term)
+        {k, %{field: field, key: key}}, acc -> Map.put(acc, "filters", %{k => key})
+        end)
+  end
+
   defp update_filter_params(map, nil), do: map
 
   defp update_filter_params(map, params) do
-    cond = params |> Enum.reduce(%{}, fn
-      {k, "true"}, acc ->
-    %{field: field, key: key} = get_filter(k)
-    Map.put(acc, k, key)
-    _, acc -> acc
+    params |> dbg
+    updated_params =
+      params
+      |> Enum.reduce(%{}, fn
+        {key, %{key: filter_key}}, acc ->
+          Map.replace!(acc, :price, filter_key)
+
+        {k, "true"}, acc ->
+          %{field: field, key: key} = get_filter(k)
+          Map.put(acc, k, key)
+
+        {key, %{"max" => max, "min" => min}}, acc ->
+          %{key => [min: min, max: max]}
+          |> Map.merge(acc)
+        _, acc ->
+          acc
       end)
-    Map.replace(map, "filters", cond)
+
+    Map.replace(map, "filters", updated_params)
   end
 
   defp update_sort_params(map, nil, _), do: map
@@ -196,8 +229,12 @@ defmodule AdminTableWeb.ProductLive.Index do
         Boolean.new(
           :supplier_email,
           "supplier",
-          %{label: "Email", condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")}
-        )
+          %{
+            label: "Email",
+            condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")
+          }
+        ),
+      prices: Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 10})
     ]
   end
 
@@ -235,8 +272,13 @@ defmodule AdminTableWeb.ProductLive.Index do
     """
   end
 
-  defp get_filter(key) do
-    key = key |> String.to_existing_atom()
+  defp get_filter(key) when is_binary(key) do
+    key
+    |> String.to_existing_atom()
+    |> get_filter()
+  end
+
+  defp get_filter(key) when is_atom(key) do
     filters() |> Keyword.get(key)
   end
 
