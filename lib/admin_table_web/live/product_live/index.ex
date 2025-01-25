@@ -18,7 +18,7 @@ defmodule AdminTableWeb.ProductLive.Index do
 
     filters =
       Map.get(params, "filters", %{})
-      |> Map.put("search", params["search"] || "" )
+      |> Map.put("search", params["search"] || "")
       |> Enum.reduce(%{}, fn
         {"search", search_term}, acc ->
           Map.put(acc, "search", search_term)
@@ -32,10 +32,11 @@ defmodule AdminTableWeb.ProductLive.Index do
         #   Map.put(acc, key, filter)
 
         {k, _}, acc ->
-        key = k |> String.to_existing_atom()
+          key = k |> String.to_existing_atom()
           Map.put(acc, key, get_filter(k))
       end)
 
+    # |> dbg
 
     # params |> dbg()
     # Update Workflow
@@ -64,7 +65,7 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   @impl true
   def handle_event("sort", params, socket) do
-    params |> dbg()
+    # params |> dbg()
 
     shift_key = Map.get(params, "shift_key", false)
     sort_params = Map.get(params, "sort", nil)
@@ -73,15 +74,24 @@ defmodule AdminTableWeb.ProductLive.Index do
     options =
       socket.assigns.options
       |> Enum.reduce(%{}, fn
-        {"filters", v}, acc -> encode_filters(acc, v)
+        {"filters", %{"search" => search_term} = v}, acc ->
+         filters = encode_filters(v)
+         Map.put(acc, "filters", filters) |> Map.put("search", search_term)
+        # This encodes filters already in socket.
+
         {_, v}, acc when is_map(v) ->
           Map.merge(acc, v)
       end)
-      |> Map.merge(params)
+      |> Map.merge(params, fn
+        "filters", v1, v2 when is_map(v1) and is_map(v2) -> Map.merge(v1, v2)
+        _, _, v -> v
+      end)
       |> update_sort_params(sort_params, shift_key)
+      # this updates/merges incoming filter params with current filters.
       |> update_filter_params(filter_params)
       |> Map.take(~w(page per_page search sort_params filters))
       |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
+      # |> dbg
 
     # Update Workflow
 
@@ -92,35 +102,43 @@ defmodule AdminTableWeb.ProductLive.Index do
     {:noreply, socket}
   end
 
-  defp encode_filters(acc, filters) do
-      Enum.reduce(filters, acc, fn
-        {"search", search_term}, acc -> Map.put(acc, "search", search_term)
-        {k, %{field: field, key: key}}, acc -> Map.put(acc, "filters", %{k => key})
-        end)
-  end
+  def encode_filters(filters) do
 
+    Enum.reduce(filters, %{}, fn
+        {k, %AdminTable.Range{options: %{min: min, max: max}}}, acc ->
+          acc |> Map.merge(%{k => [min: min, max: max]})
+
+        {k, %AdminTable.Boolean{field: _, key: key}}, acc ->
+          acc |> Map.merge(%{k => key})
+          _, acc -> acc
+    end)
+  end
+  # Filter after sort losing state :(
   defp update_filter_params(map, nil), do: map
 
   defp update_filter_params(map, params) do
-    params |> dbg
+    # params |> dbg
+
     updated_params =
       params
       |> Enum.reduce(%{}, fn
-        {key, %{key: filter_key}}, acc ->
-          Map.replace!(acc, :price, filter_key)
+        # {key, %{key: filter_key}}, acc ->
+        #   Map.replace!(acc, :price, filter_key)
 
         {k, "true"}, acc ->
-          %{field: field, key: key} = get_filter(k)
+          %{field: _, key: key} = get_filter(k)
           Map.put(acc, k, key)
 
         {key, %{"max" => max, "min" => min}}, acc ->
-          %{key => [min: min, max: max]}
-          |> Map.merge(acc)
+          Map.put(acc, "filters", %{key => [min: min, max: max]})
+
         _, acc ->
           acc
       end)
 
-    Map.replace(map, "filters", updated_params)
+    # |> dbg
+
+    Map.put(map, "filters", updated_params)
   end
 
   defp update_sort_params(map, nil, _), do: map

@@ -9,24 +9,30 @@ defmodule AdminTable.Range do
   end
 
   def apply(acc, %__MODULE__{field: field, options: options}) do
-    dynamic([p], ^acc and fragment("? BETWEEN ? AND ?", field(p, ^field), ^options.min, ^options.max))
+    dynamic(
+      [p],
+      ^acc and fragment("? BETWEEN ? AND ?", field(p, ^field), ^options.min, ^options.max)
+    )
   end
 
   def render(assigns) do
-  ~H"""
-  <div class="w-64 mx-4">
-    <label class="block mb-2 text-sm font-medium text-gray-700">Price Range</label>
-    <div
-      id="price-range"
-      phx-hook="RangeSlider"
-      data-key={@key}
-      data-min="0"
-      data-max="100"
-      data-start="[0, 100]"
-      class="h-2 mt-4"
-    ></div>
-  </div>
-  """
+    ~H"""
+    <div class="w-64 mx-4">
+      <label class="block mb-2 text-sm font-medium text-gray-700">Price Range</label>
+      <div
+        id="price-range"
+        phx-hook="RangeSlider"
+        phx-update="ignore"
+        data-key={@key}
+        data-data=""
+        data-min="0"
+        data-max="500"
+        data-start="[0, 500]"
+        class="h-2 mt-4 w-64"
+      >
+        <div class="slider-target"></div>
+      </div>
+    </div>
+    """
   end
-
 end

@@ -25,71 +25,134 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 
 let Hooks = {
+  // RangeSlider: {
+  //   mounted() {
+  //     const container = this.el;
+  //     const sliderTarget = container.querySelector('.slider-target');
+  //     if (!sliderTarget) return;
+
+  //     const min = parseFloat(container.dataset.min || "0");
+  //     const max = parseFloat(container.dataset.max || "100");
+  //     const start = container.dataset.start ? JSON.parse(container.dataset.start) : [min, max];
+  //     const key = container.dataset.key !== undefined ? container.dataset.key : null;
+
+  //     if (!this.slider) {
+  //       this.slider = noUiSlider.create(sliderTarget,
+  //         {
+  //           "start": [0, 100],
+  //           "range": {
+  //             "min": 0,
+  //             "max": 100
+  //           },
+  //           "connect": true,
+  //           "tooltips": true,
+  //           "formatter": "integer",
+  //           //   "pips": "relative w-full h-10 mt-1",
+  //           //   "value": "absolute top-4 -translate-x-2/4 text-sm text-gray-400",
+  //           //   "marker": "absolute h-4 border-s border-gray-400"
+  //           "cssClasses": {
+  //             "target": "relative h-2 rounded-full bg-gray-100 ark:bg-neutral-700",
+  //             "base": "w-full h-full relative z-1",
+  //             "origin": "absolute top-0 end-0 w-full h-full origin-[0_0] rounded-full",
+  //             "handle": "absolute top-1/2 end-0 w-[1.125rem] h-[1.125rem] bg-white border-4 border-blue-600 rounded-full cursor-pointer translate-x-2/4 -translate-y-2/4 ark:border-blue-500",
+  //             "connects": "relative z-0 w-full h-full rounded-full overflow-hidden",
+  //             "connect": "absolute top-0 end-0 z-1 w-full h-full bg-blue-600 origin-[0_0] ark:bg-blue-500",
+  //             "touchArea": "absolute -top-1 -bottom-1 -start-1 -end-1",
+  //             "tooltip": "bg-white border border-gray-200 text-sm text-gray-800 py-1 px-2 rounded-lg mb-3 absolute bottom-full start-2/4 -translate-x-2/4 ark:bg-neutral-800 ark:border-neutral-700 ark:text-white"
+  //           }
+  //           // }
+  //           // {
+  //           //   start: start,
+  //           //   connect: true,
+  //           //   range: {
+  //           //     'min': min,
+  //           //     'max': max
+  //           //   }
+  //         }
+  //       );
+
+  //       this.slider.on('update', (values) => {
+  //         const [min, max] = values.map(v => parseFloat(v));
+  //         this.pushEvent("sort", {
+  //           filters: {
+  //             [key]: {  // Using computed property name
+  //               min: min,
+  //               max: max
+  //             }
+  //           }
+  //         });
+  //       });
+  //     },
+
+  //     destroyed() {
+  //       if (this.slider) {
+  //         this.slider.destroy();
+  //       }
+  //     }
+  //   }
+  // };
+
   RangeSlider: {
     mounted() {
-      const slider = this.el;
-      const min = parseFloat(slider.dataset.min || "0");
-      const max = parseFloat(slider.dataset.max || "100");
-      const start = slider.dataset.start ? JSON.parse(slider.dataset.start) : [min, max];
-      const key = slider.dataset.key !== undefined ? slider.dataset.key : null;
+      const container = this.el;
+      const sliderTarget = container.querySelector('.slider-target');
+      if (!sliderTarget) return;
 
-      data = parseFloat(slider.dataset.slider)
+      const min = parseFloat(container.dataset.min || "0");
+      const max = parseFloat(container.dataset.max || "100");
+      const start = container.dataset.start ? JSON.parse(container.dataset.start) : [min, max];
+      const key = container.dataset.key !== undefined ? container.dataset.key : null;
 
-      this.slider = noUiSlider.create(slider,
-        // {
-        //   "start": [0, 100],
-        //   "range": {
-        //     "min": 0,
-        //     "max": 100
-        //   },
-        //   "connect": true,
-        //   "tooltips": true,
-        //   "formatter": "integer",
-        //   "pips": "relative w-full h-10 mt-1",
-        //   "value": "absolute top-4 -translate-x-2/4 text-sm text-gray-400",
-        //   "marker": "absolute h-4 border-s border-gray-400"
-        // "cssClasses": {
-        //   "target": "relative h-2 rounded-full bg-gray-100 ark:bg-neutral-700",
-        //   "base": "w-full h-full relative z-1",
-        //   "origin": "absolute top-0 end-0 w-full h-full origin-[0_0] rounded-full",
-        //   "handle": "absolute top-1/2 end-0 w-[1.125rem] h-[1.125rem] bg-white border-4 border-blue-600 rounded-full cursor-pointer translate-x-2/4 -translate-y-2/4 ark:border-blue-500",
-        //   "connects": "relative z-0 w-full h-full rounded-full overflow-hidden",
-        //   "connect": "absolute top-0 end-0 z-1 w-full h-full bg-blue-600 origin-[0_0] ark:bg-blue-500",
-        //   "touchArea": "absolute -top-1 -bottom-1 -start-1 -end-1",
-        //   "tooltip": "bg-white border border-gray-200 text-sm text-gray-800 py-1 px-2 rounded-lg mb-3 absolute bottom-full start-2/4 -translate-x-2/4 ark:bg-neutral-800 ark:border-neutral-700 ark:text-white"
-        // }
-        // }
-        {
-          start: start,
-          connect: true,
-          range: {
-            'min': min,
-            'max': max
-          }
-        }
-      );
-
-      this.slider.on('update', (values) => {
-        const [min, max] = values.map(v => parseFloat(v));
-        this.pushEvent("sort", {
-          filters: {
-            [key]: {  // Using computed property name
-              min: min,
-              max: max
-            }
-          }
+      if (!this.slider) {
+        this.slider = noUiSlider.create(sliderTarget, {
+          "start": start, // Use the start value from dataset or default
+          "range": {
+            "min": min,
+            "max": max
+          },
+          "step": 1,
+          "connect": true,
+          "pips": {
+            "mode": "values",
+            "values": [0, 125, 250, 375, 500],
+            "density": 20
+          },
+          "tooltips": true,
+          "formatter": { type: "integer" }
+          // "cssClasses": {
+          //   "target": "relative h-2 rounded-full bg-gray-100 ark:bg-neutral-700",
+          //   "base": "w-full h-full relative z-1",
+          //   "origin": "absolute top-0 end-0 w-full h-full origin-[0_0] rounded-full",
+          //   "handle": "absolute top-1/2 end-0 w-[1.125rem] h-[1.125rem] bg-white border-4 border-blue-600 rounded-full cursor-pointer translate-x-2/4 -translate-y-2/4 ark:border-blue-500",
+          //   "connects": "relative z-0 w-full h-full rounded-full overflow-hidden",
+          //   "connect": "absolute top-0 end-0 z-1 w-full h-full bg-blue-600 origin-[0_0] ark:bg-blue-500",
+          //   "touchArea": "absolute -top-1 -bottom-1 -start-1 -end-1",
+          //   "tooltip": "bg-white border border-gray-200 text-sm text-gray-800 py-1 px-2 rounded-lg mb-3 absolute bottom-full start-2/4 -translate-x-2/4 ark:bg-neutral-800 ark:border-neutral-700 ark:text-white"
+          // }
         });
-      });
-    },
 
+        this.slider.on('change', (values) => {
+          console.log("Slider update", values);
+          const [min, max] = values.map(v => parseFloat(v));
+          this.pushEvent("sort", {
+            filters: {
+              [key]: {  // Using computed property name
+                min: min,
+                max: max
+              }
+            }
+          });
+        });
+      }
+    },
     destroyed() {
+      console.log("RangeSlider destroyed");
       if (this.slider) {
         this.slider.destroy();
       }
     }
-  }
-};
-
+  },
+}
 Hooks.SortableColumn = {
   mounted() {
     this.handleClick = (event) => {
