@@ -27,7 +27,7 @@ defmodule AdminTable.Range do
         data-data=""
         data-min="0"
         data-max="500"
-        data-start="[0, 500]"
+        data-start={"[#{Map.get(@filters, @key).options.min || 0}, #{Map.get(@filters, @key).options.max || 500}]"}
         class="h-2 mt-4 w-64"
       >
         <div class="slider-target"></div>
