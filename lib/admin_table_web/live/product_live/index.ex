@@ -24,10 +24,9 @@ defmodule AdminTableWeb.ProductLive.Index do
           Map.put(acc, "search", search_term)
 
         {key, %{"min" => min, "max" => max}}, acc ->
-          {min, _} = min |> Float.parse()
-          {max, _} = max |> Float.parse()
           filter = get_filter(key)
-          filter = %{filter | options: Map.merge(filter.options, %{min: min, max: max})}
+          {min_val, max_val} = parse_range_values(filter.options.type, min, max)
+          filter = %{filter | options: %{filter.options | min: min_val, max: max_val}}
           key = key |> String.to_atom()
           Map.put(acc, key, filter)
 
@@ -75,10 +74,10 @@ defmodule AdminTableWeb.ProductLive.Index do
       socket.assigns.options
       |> Enum.reduce(%{}, fn
         {"filters", %{"search" => search_term} = v}, acc ->
+        # This encodes filters already in socket.
           filters = encode_filters(v)
           Map.put(acc, "filters", filters) |> Map.put("search", search_term)
 
-        # This encodes filters already in socket.
 
         {_, v}, acc when is_map(v) ->
           Map.merge(acc, v)
@@ -90,11 +89,9 @@ defmodule AdminTableWeb.ProductLive.Index do
       |> update_sort_params(sort_params, shift_key)
       # this updates/merges incoming filter params with current filters.
       |> update_filter_params(filter_params)
-      # |> dbg
       |> Map.take(~w(page per_page search sort_params filters))
       |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-
-    # |> dbg
+      # |> dbg
 
     # Update Workflow
 
@@ -107,8 +104,21 @@ defmodule AdminTableWeb.ProductLive.Index do
 
   def encode_filters(filters) do
     Enum.reduce(filters, %{}, fn
-      {k, %AdminTable.Range{options: %{min: min, max: max}}}, acc ->
+      {k, %AdminTable.Range{options: %{min: min, max: max, type: :number}}}, acc ->
         k = k |> to_string
+        acc |> Map.merge(%{k => [min: min, max: max]})
+
+      {k, %AdminTable.Range{options: %{min: min, max: max, type: :date}}}, acc ->
+        k = k |> to_string
+        min = min |> Date.to_iso8601()
+        max = max |> Date.to_iso8601()
+        acc |> Map.merge(%{k => [min: min, max: max]})
+
+      {k, %AdminTable.Range{options: %{min: min, max: max, type: :datetime}}}, acc ->
+        k = k |> to_string
+        min = min |> NaiveDateTime.to_iso8601()
+        max = max |> NaiveDateTime.to_iso8601()
+
         acc |> Map.merge(%{k => [min: min, max: max]})
 
       {k, %AdminTable.Boolean{field: _, key: key}}, acc ->
@@ -256,7 +266,8 @@ defmodule AdminTableWeb.ProductLive.Index do
             condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")
           }
         ),
-      prices: Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 10})
+      prices:
+        Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 500, unit: "$"}),
     ]
   end
 
@@ -307,4 +318,18 @@ defmodule AdminTableWeb.ProductLive.Index do
   defp next_sort_order("asc"), do: "desc"
   defp next_sort_order("desc"), do: "asc"
   defp next_sort_order(_), do: raise(ArgumentError)
+
+  defp parse_range_values(:number, min, max) do
+    {min_float, _} = Float.parse(min)
+    {max_float, _} = Float.parse(max)
+    {min_float, max_float}
+  end
+
+  defp parse_range_values(:date, min, max) do
+    {Date.from_iso8601!(min), Date.from_iso8601!(max)}
+  end
+
+  defp parse_range_values(:datetime, min, max) do
+    {NaiveDateTime.from_iso8601!(min), NaiveDateTime.from_iso8601!(max)}
+  end
 end

@@ -34,6 +34,19 @@ defmodule AdminTableWeb.LiveResourceTest do
         }
       ]
     end
+
+    def filters do
+      import AdminTable.Boolean
+      import Ecto.Query
+
+      [
+        price:
+          new(:price, "under-100", %{
+            label: "Under 100",
+            condition: dynamic([p], p.price < 100)
+          })
+      ]
+    end
   end
 
   setup do
@@ -74,7 +87,8 @@ defmodule AdminTableWeb.LiveResourceTest do
         },
         "pagination" => %{
           "paginate?" => false
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -91,7 +105,8 @@ defmodule AdminTableWeb.LiveResourceTest do
           "paginate?" => true,
           "page" => "1",
           "per_page" => "5"
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -110,7 +125,8 @@ defmodule AdminTableWeb.LiveResourceTest do
         },
         "pagination" => %{
           "paginate?" => false
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -122,7 +138,7 @@ defmodule AdminTableWeb.LiveResourceTest do
 
     test "handles descending sort order", %{product: product} do
       # Create another product to test sorting
-      product2 = product_fixture(%{name: "AAA Test Product"})
+      _product2 = product_fixture(%{name: "AAA Test Product"})
 
       options = %{
         "sort" => %{
@@ -131,7 +147,8 @@ defmodule AdminTableWeb.LiveResourceTest do
         },
         "pagination" => %{
           "paginate?" => false
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -151,7 +168,8 @@ defmodule AdminTableWeb.LiveResourceTest do
           "paginate?" => true,
           "page" => "1",
           "per_page" => "2"
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -169,7 +187,8 @@ defmodule AdminTableWeb.LiveResourceTest do
           "paginate?" => true,
           "page" => "1",
           "per_page" => "2"
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -192,7 +211,8 @@ defmodule AdminTableWeb.LiveResourceTest do
         },
         "pagination" => %{
           "paginate?" => false
-        }
+        },
+        "filters" => %{}
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
@@ -226,7 +246,7 @@ defmodule AdminTableWeb.LiveResourceTest do
       assert Enum.find(results, &(&1.id == product.id))
     end
 
-    test "avoids text search for non-searchable columns", %{product: product} do
+    test "avoids text search for non-searchable columns", %{product: _product} do
       options = %{
         "sort" => %{
           "sortable?" => false
@@ -241,6 +261,102 @@ defmodule AdminTableWeb.LiveResourceTest do
 
       results = TestResource.list_resources(TestResource.fields(), options)
       assert length(results) == 0
+    end
+
+    test "applies boolean filters to query", %{product: _product} do
+      expensive_product = product_fixture(%{name: "Expensive", price: "150.00"})
+      cheap_product = product_fixture(%{name: "Cheap", price: "50.00"})
+
+      price_filter = TestResource.filters()[:price]
+
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "under-100" => price_filter,
+          "search" => ""
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+
+      # Should not include expensive product since we filtered for under 100
+      assert length(results) == 1
+      assert hd(results).id == cheap_product.id
+      refute Enum.find(results, &(&1.id == expensive_product.id))
+    end
+
+    test "combines boolean and text search filters", %{product: _product} do
+      # Create products with different prices
+      _expensive_product = product_fixture(%{name: "Bargain Item", price: "150.00"})
+      cheap_product = product_fixture(%{name: "Bargain Item", price: "50.00"})
+
+      price_filter = TestResource.filters()[:price]
+
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "under-100" => price_filter,
+          "search" => "Bargain"
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+
+      # Should only find cheap bargain item
+      assert length(results) == 1
+      assert hd(results).id == cheap_product.id
+    end
+
+    test "applies multiple boolean filters", %{product: _product, supplier: supplier} do
+      # Create products with different prices but same supplier
+      cheap_product = product_fixture(%{name: "Cheap", price: "50.00"})
+      expensive_product = product_fixture(%{name: "Expensive", price: "150.00"})
+
+      # Associate both with supplier
+      Repo.insert_all("products_suppliers", [
+        %{
+          product_id: expensive_product.id,
+          supplier_id: supplier.id,
+          inserted_at: NaiveDateTime.utc_now(),
+          updated_at: NaiveDateTime.utc_now()
+        },
+        %{
+          product_id: cheap_product.id,
+          supplier_id: supplier.id,
+          inserted_at: NaiveDateTime.utc_now(),
+          updated_at: NaiveDateTime.utc_now()
+        }
+      ])
+
+      price_filter = TestResource.filters()[:price]
+
+      options = %{
+        "sort" => %{
+          "sortable?" => false
+        },
+        "pagination" => %{
+          "paginate?" => false
+        },
+        "filters" => %{
+          "under-100" => price_filter
+        }
+      }
+
+      results = TestResource.list_resources(TestResource.fields(), options)
+
+      assert length(results) == 1
+      assert hd(results).id == cheap_product.id
+      refute Enum.find(results, &(&1.id == expensive_product.id))
     end
   end
 end

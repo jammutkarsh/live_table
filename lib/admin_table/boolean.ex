@@ -9,17 +9,17 @@ defmodule AdminTable.Boolean do
   end
 
   def apply(acc, %__MODULE__{options: %{condition: condition}}) do
-  dynamic(^acc and ^condition)
+    dynamic(^acc and ^condition)
   end
 
   def render(assigns) do
-  ~H"""
-  <AdminTableWeb.CoreComponents.input
-    type="checkbox"
-    name={"filters[#{@key}]"}
-    label={@filter.options.label}
-    checked={Map.has_key?(@filters, @key)}
-  />
-  """
+    ~H"""
+    <AdminTableWeb.CoreComponents.input
+      type="checkbox"
+      name={"filters[#{@key}]"}
+      label={@filter.options.label}
+      checked={Map.has_key?(@filters, @key)}
+    />
+    """
   end
 end
