@@ -1,18 +1,52 @@
-# AdminTable
+# 1 Million Rows
 
-To start your Phoenix server:
+Demonstrating the lightning-fast performance of Phoenix LiveView, Ecto, and Elixir by handling 1 million rows of data with real-time filtering, sorting, and searching capabilities.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Features
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- ⚡ Real-time filtering across 1M+ records
+- 🔍 Live search with complex conditions
+- ↕️ Multi-column sorting
+- 📄 Efficient pagination
+- 🔄 Dynamic supplier filtering
+- 💰 Price range filtering
+- 🔗 Complex joins with zero performance impact
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Tech Stack
 
-## Learn more
+- Phoenix 1.7
+- Phoenix LiveView
+- Ecto with PostgreSQL
+- TailwindCSS
+- LiveSelect
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+## Getting Started
+
+1. Clone the repository
+2. Setup dependencies: `mix setup`
+3. Start Phoenix server: `mix phx.server`
+4. Visit [`localhost:4000`](http://localhost:4000)
+
+## Performance
+
+The application demonstrates optimal performance with 1 million rows by leveraging:
+- Efficient SQL query building
+- Smart pagination
+- Indexed database columns
+- LiveView's efficient DOM patching
+
+## TODO
+
+1. Benchmarking Dashboard
+   - Add performance metrics visualization
+   - Compare with traditional approaches
+
+2. Enhanced Features
+   - CSV/Excel export functionality
+   - Custom filter builder
+   - Infinite scroll option
+
+3. Developer Experience
+   - Add detailed API documentation
+   - Create performance testing guide
+   - Add load testing scripts

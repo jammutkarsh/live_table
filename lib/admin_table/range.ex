@@ -109,8 +109,7 @@ defmodule AdminTable.Range do
     )
   end
 
-  def apply(acc, %__MODULE__{field: field, options: %{type: :datetime} = options})
-      when is_atom(field) do
+  def apply(acc, %__MODULE__{field: field, options: %{type: :datetime} = options}) do
     min_value = Map.get(options, :min, options.default_min)
     max_value = Map.get(options, :max, options.default_max)
     dynamic([p], ^acc and fragment("? BETWEEN ? AND ?", field(p, ^field), ^min_value, ^max_value))
@@ -133,7 +132,7 @@ defmodule AdminTable.Range do
         {if @filter.options.unit != "", do: " (#{@filter.options.unit})"}
       </label>
       <div
-        id={"filter-#{@key}"}
+        id={"range_filter[#{@key}]"}
         phx-hook="RangeSlider"
         phx-update="ignore"
         data-key={@key}

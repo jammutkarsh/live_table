@@ -7,7 +7,7 @@ defmodule AdminTable.Catalog do
   alias AdminTable.Repo
 
   alias AdminTable.Catalog.Product
-
+  alias AdminTable.Catalog.Supplier
   @doc """
   Returns the list of products.
 
@@ -21,6 +21,19 @@ defmodule AdminTable.Catalog do
     Repo.all(Product)
   end
 
+  def search_suppliers(text) do
+    Supplier
+    |> where([c], ilike(c.name, ^"%#{text}%"))
+    |> select([c], {c.name, [c.id, c.contact_info]})
+    |> Repo.all()
+  end
+
+  # def get_supplier!(id) do
+  # Supplier
+  #   |> where([s], s.id in ^id)
+  #   |> select([s], {s.name, [s.id, s.contact_info]})
+  #   |> Repo.one
+  # end
   @doc """
   Gets a single product.
 

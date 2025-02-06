@@ -23,8 +23,9 @@ import 'nouislider/dist/nouislider.css';
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
+import live_select from "live_select"
 
-let Hooks = {
+const Hooks = {
   RangeSlider: {
     mounted() {
       const container = this.el;
@@ -127,6 +128,7 @@ let Hooks = {
       }
     }
   },
+  ...live_select
 }
 Hooks.SortableColumn = {
   mounted() {

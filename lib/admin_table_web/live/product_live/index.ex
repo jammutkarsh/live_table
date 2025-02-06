@@ -1,6 +1,7 @@
 defmodule AdminTableWeb.ProductLive.Index do
   use AdminTableWeb, :live_view
-  alias AdminTable.{Boolean, Range}
+  alias AdminTable.{Boolean, Range, Select, Catalog}
+  import LiveSelect
 
   use AdminTableWeb.LiveResource,
     schema: AdminTable.Catalog.Product
@@ -30,15 +31,16 @@ defmodule AdminTableWeb.ProductLive.Index do
           key = key |> String.to_atom()
           Map.put(acc, key, filter)
 
+        {key, %{"id" => id}}, acc ->
+          filter = %AdminTable.Select{} = get_filter(key)
+          id = id |> Enum.map(&String.to_integer/1)
+          filter = %{filter | options: Map.update!(filter.options, :selected, &(&1 ++ id))}
+          key = key |> String.to_existing_atom()
+          Map.put(acc, key, filter)
         {k, _}, acc ->
           key = k |> String.to_existing_atom()
           Map.put(acc, key, get_filter(k))
       end)
-
-    # |> dbg
-
-    # params |> dbg()
-    # Update Workflow
 
     options = %{
       "sort" => %{
@@ -74,10 +76,8 @@ defmodule AdminTableWeb.ProductLive.Index do
       socket.assigns.options
       |> Enum.reduce(%{}, fn
         {"filters", %{"search" => search_term} = v}, acc ->
-        # This encodes filters already in socket.
           filters = encode_filters(v)
           Map.put(acc, "filters", filters) |> Map.put("search", search_term)
-
 
         {_, v}, acc when is_map(v) ->
           Map.merge(acc, v)
@@ -87,17 +87,23 @@ defmodule AdminTableWeb.ProductLive.Index do
         _, _, v -> v
       end)
       |> update_sort_params(sort_params, shift_key)
-      # this updates/merges incoming filter params with current filters.
       |> update_filter_params(filter_params)
       |> Map.take(~w(page per_page search sort_params filters))
       |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-      # |> dbg
-
-    # Update Workflow
 
     socket =
       socket
       |> push_patch(to: ~p"/products?#{options}")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("live_select_change", %{"text" => text, "id" => id}, socket) do
+    options = case get_filter(id) do
+    %AdminTable.Select{options: %{options: _options, options_source: {module, function, args}}} -> apply(module, function, [text | args])
+     %AdminTable.Select{options: %{options: options, options_source: nil}} -> options
+    end
+    send_update(LiveSelect.Component, id: id, options: options)
 
     {:noreply, socket}
   end
@@ -118,12 +124,15 @@ defmodule AdminTableWeb.ProductLive.Index do
         k = k |> to_string
         min = min |> NaiveDateTime.to_iso8601()
         max = max |> NaiveDateTime.to_iso8601()
-
         acc |> Map.merge(%{k => [min: min, max: max]})
 
       {k, %AdminTable.Boolean{field: _, key: key}}, acc ->
         k = k |> to_string
         acc |> Map.merge(%{k => key})
+
+      {k, %AdminTable.Select{options: %{selected: selected}}}, acc ->
+        k = k |> to_string
+        acc |> Map.merge(%{k => %{id: selected}})
 
       _, acc ->
         acc
@@ -147,6 +156,16 @@ defmodule AdminTableWeb.ProductLive.Index do
 
         {k, "false"}, acc ->
           Map.delete(acc, k)
+
+        {key, "[" <> rest}, acc ->
+          case get_filter(key) do
+            %AdminTable.Select{} ->
+              id = ("[" <> rest) |> Jason.decode!() |> List.first()
+              Map.put(acc, key, %{id: [id]})
+
+            true ->
+              acc
+          end
 
         _, acc ->
           acc
@@ -266,10 +285,28 @@ defmodule AdminTableWeb.ProductLive.Index do
             condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")
           }
         ),
-      prices:
-        Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 500, unit: "$"}),
+      # prices:
+      #   Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 500, unit: "$"}),
+      supplier_name:
+        Select.new({:suppliers, :name}, "suppliser_name", %{
+          label: "Supplier",
+          placeholder: "Search for suppliers...",
+          options_source: {AdminTable.Catalog, :search_suppliers, []}
+          # options: [{"Auto Parts Direct", ["id"]}],
+          # option_template: &custom_template/1,
+        })
     ]
   end
+
+  # def custom_template(option) do
+  #   assigns = %{option: option}
+  #   ~H"""
+  #   <div class="flex flex-col">
+  #     <span class="font-bold"><%= @option.label %></span> inas
+  #     <span class="text-sm text-gray-500"><%= @option.value |> Enum.at(0) %></span>
+  #   </div>
+  #   """
+  # end
 
   def sort_link(%{sortable: true} = assigns) do
     ~H"""

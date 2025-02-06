@@ -44,8 +44,6 @@
               )}
             </select>
 
-            <%!-- <.input type="range" name="hello" id="1" value="50"/> --%>
-
             <%= for {key, filter} <- filters() do %>
               {filter.__struct__.render(%{
                 key: key,

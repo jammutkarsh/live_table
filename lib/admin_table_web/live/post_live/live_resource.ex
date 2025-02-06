@@ -29,7 +29,6 @@ defmodule AdminTableWeb.LiveResource do
         |> join_associations(fields)
         |> select_columns(fields)
         |> apply_filters(filters, fields)
-        # |> apply_text_search(options["filters"]["search"], fields)
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
         |> Repo.all()
