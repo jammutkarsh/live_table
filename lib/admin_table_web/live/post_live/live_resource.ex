@@ -31,7 +31,10 @@ defmodule AdminTableWeb.LiveResource do
         |> apply_filters(filters, fields)
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
-        |> Repo.all()
+      end
+
+      def stream_resources(fields, query) do
+      list_resources(fields, query) |> Repo.all()
       end
     end
   end

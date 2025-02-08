@@ -92,7 +92,7 @@ const Hooks = {
         //   connects: "relative z-0 w-full h-full rounded-full overflow-hidden",
         //   connect: "absolute top-0 end-0 z-1 w-full h-full bg-blue-600 origin-[0_0] dark:bg-blue-500",
         //   touchArea: "absolute -top-1 -bottom-1 -start-1 -end-1",
-          // tooltip: "bg-white border border-gray-200 text-sm text-gray-800 py-1 px-2 rounded-lg mb-3 absolute bottom-full start-2/4 -translate-x-2/4 ark:bg-neutral-800 ark:border-neutral-700 ark:text-white"
+        // tooltip: "bg-white border border-gray-200 text-sm text-gray-800 py-1 px-2 rounded-lg mb-3 absolute bottom-full start-2/4 -translate-x-2/4 ark:bg-neutral-800 ark:border-neutral-700 ark:text-white"
         // };
 
         this.slider = noUiSlider.create(sliderTarget, config);
@@ -153,6 +153,22 @@ Hooks.SortableColumn = {
   destroyed() {
     this.el.removeEventListener("click", this.handleClick);
   },
+};
+
+Hooks.DownloadCSV = {
+  mounted() {
+    this.handleEvent("download_csv", ({ path }) => {
+      const link = document.createElement("a");
+      link.href = path;
+      link.setAttribute("download", "");
+      link.style.display = "none";
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+    });
+  }
 };
 
 let csrfToken = document

@@ -58,7 +58,10 @@ defmodule AdminTable.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:nimble_csv, "~> 1.2"},
+      {:oban, "~> 2.19"},
+      {:oban_web, "~> 2.11"},
     ]
   end
 

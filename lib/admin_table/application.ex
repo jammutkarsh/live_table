@@ -17,7 +17,8 @@ defmodule AdminTable.Application do
       # Start a worker by calling: AdminTable.Worker.start_link(arg)
       # {AdminTable.Worker, arg},
       # Start to serve requests, typically the last entry
-      AdminTableWeb.Endpoint
+      AdminTableWeb.Endpoint,
+      {Oban, Application.fetch_env!(:admin_table, Oban)}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

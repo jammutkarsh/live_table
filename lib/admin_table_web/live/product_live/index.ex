@@ -1,13 +1,15 @@
 defmodule AdminTableWeb.ProductLive.Index do
   use AdminTableWeb, :live_view
-  alias AdminTable.{Boolean, Range, Select, Catalog}
-  import LiveSelect
+  alias AdminTable.{Boolean, Range, Select}
 
   use AdminTableWeb.LiveResource,
     schema: AdminTable.Catalog.Product
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+          Phoenix.PubSub.subscribe(AdminTable.PubSub, "csv_exports")
+    end
     {:ok, assign(socket, fields: fields(), options: %{})}
   end
 
@@ -54,10 +56,11 @@ defmodule AdminTableWeb.ProductLive.Index do
       },
       "filters" => filters
     }
+    if params["per_page"] == "All", do: put_in(options, ["pagination", "paginate?"], false)
 
     socket =
       socket
-      |> stream(:resources, list_resources(fields(), options), reset: true)
+      |> stream(:resources, stream_resources(fields(), options), reset: true)
       |> assign(:options, options)
       |> apply_action(socket.assigns.live_action, params)
 
@@ -107,6 +110,41 @@ defmodule AdminTableWeb.ProductLive.Index do
 
     {:noreply, socket}
   end
+
+  def handle_event("export-csv", _params, socket) do
+    headers = Enum.reduce(fields(), [], fn {k, %{label: label}}, acc -> [label | acc] end) |> Enum.reverse()
+
+    query_string = list_resources(fields(), socket.assigns.options) |> inspect()
+    {:ok, _job} = %{
+      query: query_string,
+      headers: headers
+    }
+    |> AdminTable.Workers.CsvExportWorker.new()
+    |> Oban.insert()
+    {:noreply, socket}
+  end
+
+  def handle_info({:csv_ready, file_path}, socket) do
+      static_path = Path.join([:code.priv_dir(:admin_table), "static", "exports"])
+       File.mkdir_p!(static_path)
+
+       filename = Path.basename(file_path)
+       dest_path = Path.join(static_path, filename)
+       File.cp!(file_path, dest_path)
+
+      socket = socket
+      |> push_event("download_csv", %{path: "/exports/#{filename}"})
+      |> put_flash(:info, "File downloaded successfully.")
+
+      Process.send_after(self(), {:cleanup_file, dest_path}, :timer.seconds(20))
+      File.rm(file_path)
+      {:noreply, socket}
+    end
+
+    def handle_info({:cleanup_file, file_path}, socket) do
+      File.rm(file_path)
+      {:noreply, socket}
+    end
 
   def encode_filters(filters) do
     Enum.reduce(filters, %{}, fn
@@ -228,7 +266,7 @@ defmodule AdminTableWeb.ProductLive.Index do
       description: %{
         label: "Description",
         sortable: true,
-        searchable: true
+        searchable: false
       },
       price: %{
         label: "Price",
@@ -238,13 +276,13 @@ defmodule AdminTableWeb.ProductLive.Index do
       supplier_name: %{
         label: "Supplier Name",
         assoc: {:suppliers, :name},
-        searchable: true,
+        searchable: false,
         sortable: false
       },
       supplier_description: %{
         label: "Supplier Email",
         assoc: {:suppliers, :contact_info},
-        searchable: true,
+        searchable: false,
         sortable: true
       },
       category_name: %{
@@ -256,7 +294,7 @@ defmodule AdminTableWeb.ProductLive.Index do
       category_description: %{
         label: "Category Description",
         assoc: {:category, :description},
-        searchable: true,
+        searchable: false,
         sortable: true
       },
       image: %{
@@ -285,8 +323,8 @@ defmodule AdminTableWeb.ProductLive.Index do
             condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")
           }
         ),
-      # prices:
-      #   Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 500, unit: "$"}),
+      prices:
+        Range.new(:price, "10-to-100", %{label: "Enter range", min: 0, max: 500, unit: "$"}),
       supplier_name:
         Select.new({:suppliers, :name}, "suppliser_name", %{
           label: "Supplier",
