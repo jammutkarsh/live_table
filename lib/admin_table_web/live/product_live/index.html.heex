@@ -15,6 +15,7 @@
               <input
                 type="text"
                 name="search"
+                autocomplete="off"
                 id="table-with-pagination-search"
                 class="block w-full px-3 py-2 text-sm border-gray-200 rounded-lg shadow-sm ps-9 focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
                 placeholder="Search for items"
@@ -45,7 +46,7 @@
               class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
             >
               {Phoenix.HTML.Form.options_for_select(
-                ["5", "10", "20", "50", "100", "1000", "All"],
+                ["10", "25", "50"],
                 @options["pagination"]["per_page"]
               )}
             </select>

@@ -94,258 +94,146 @@ end)
 # Print out inserted post count
 IO.puts("Inserted #{Repo.aggregate(Post, :count, :id)} posts")
 
+batch_size = 1_000
+total_products = 1_000_000
+max_concurrency = 8
+
+
 alias AdminTable.Repo
-alias AdminTable.Catalog.{Product, Supplier, Category, Image}
+alias AdminTable.Catalog.{Category, Product, Supplier, Image}
+alias Faker
 
-# Create Categories
-categories = [
-  %{name: "Electronics", description: "Cutting-edge technological devices"},
-  %{name: "Clothing", description: "Fashionable apparel for all ages"},
-  %{name: "Home & Kitchen", description: "Essential items for home and cooking"},
-  %{name: "Books", description: "Literature and educational materials"},
-  %{name: "Sporting Goods", description: "Equipment for sports and outdoor activities"},
-  %{name: "Beauty & Personal Care", description: "Cosmetics and personal grooming products"},
-  %{name: "Toys & Games", description: "Entertainment for children and adults"},
-  %{name: "Furniture", description: "Home and office furniture"},
-  %{name: "Garden & Outdoor", description: "Gardening and outdoor living products"},
-  %{name: "Automotive", description: "Car parts and accessories"}
-]
+Faker.start()
 
-# Insert Categories
-inserted_categories =
-  Enum.map(categories, fn category_attrs ->
-    changeset = Category.changeset(%Category{}, category_attrs)
-    Repo.insert!(changeset)
-  end)
+# Helper functions for more meaningful data
+defmodule SeedHelpers do
+  def get_product_details(category_name) do
+    case category_name do
+      "Electronics" ->
+        {Enum.random(["iPhone 14", "Samsung Galaxy S23", "MacBook Pro", "Dell XPS", "iPad Air"]),
+         Enum.random(30000..150000),
+         "High-quality device with premium features. Includes warranty and after-sales support."}
+      "Clothing" ->
+        {Enum.random(["Cotton T-Shirt", "Denim Jeans", "Formal Shirt", "Winter Jacket"]),
+         Enum.random(499..3999),
+         "Comfortable fit with premium fabric quality. Machine washable."}
+      "Books" ->
+        {Enum.random(["The Silent Patient", "Atomic Habits", "Rich Dad Poor Dad", "Think and Grow Rich"]),
+         Enum.random(199..999),
+         "Bestseller with excellent reader reviews. Available in paperback and hardcover."}
+      "Food" ->
+        {Enum.random(["Organic Honey", "Premium Coffee Beans", "Dark Chocolate", "Dried Fruits"]),
+         Enum.random(99..999),
+         "100% natural ingredients. No artificial preservatives."}
+      _ ->
+        {Enum.random(["Generic Item", "Basic Product"]),
+         Enum.random(99..999),
+         "Standard quality product with good value for money."}
+    end
+  end
 
-# Create Suppliers
-suppliers = [
-  %{
-    name: "Global Tech Distributors",
-    contact_info: "sales@globaltech.com",
-    address: "123 Tech Lane, Silicon Valley, CA 94000"
-  },
-  %{
-    name: "Fashion World Wholesale",
-    contact_info: "wholesale@fashionworld.com",
-    address: "456 Style Street, New York, NY 10001"
-  },
-  %{
-    name: "Kitchen Innovations Inc",
-    contact_info: "orders@kitcheninnovations.com",
-    address: "789 Culinary Road, Chicago, IL 60601"
-  },
-  %{
-    name: "Book Haven Suppliers",
-    contact_info: "procurement@bookhaven.com",
-    address: "101 Literature Avenue, Boston, MA 02101"
-  },
-  %{
-    name: "Sports Equipment Co",
-    contact_info: "sales@sportsequipment.com",
-    address: "202 Athletic Drive, Denver, CO 80201"
-  },
-  %{
-    name: "Beauty Brands United",
-    contact_info: "orders@beautybrands.com",
-    address: "303 Glamour Street, Los Angeles, CA 90001"
-  },
-  %{
-    name: "Toy Universe",
-    contact_info: "wholesale@toyuniverse.com",
-    address: "404 Playful Lane, Orlando, FL 32801"
-  },
-  %{
-    name: "Furniture Masters",
-    contact_info: "sales@furnituremasters.com",
-    address: "505 Design Road, Dallas, TX 75201"
-  },
-  %{
-    name: "Garden Solutions",
-    contact_info: "orders@gardensolutions.com",
-    address: "606 Green Way, Seattle, WA 98101"
-  },
-  %{
-    name: "Auto Parts Direct",
-    contact_info: "procurement@autopartsdirect.com",
-    address: "707 Mechanic Street, Detroit, MI 48201"
-  }
-]
-
-# Insert Suppliers
-inserted_suppliers =
-  Enum.map(suppliers, fn supplier_attrs ->
-    changeset = Supplier.changeset(%Supplier{}, supplier_attrs)
-    Repo.insert!(changeset)
-  end)
-
-image_url_generator = fn category_name ->
-  case category_name do
-    "Electronics" ->
-      "https://picsum.photos/seed/electronics#{:rand.uniform(1000)}/400/300"
-
-    "Clothing" ->
-      "https://picsum.photos/seed/clothing#{:rand.uniform(1000)}/400/300"
-
-    "Home & Kitchen" ->
-      "https://picsum.photos/seed/kitchen#{:rand.uniform(1000)}/400/300"
-
-    "Books" ->
-      "https://picsum.photos/seed/books#{:rand.uniform(1000)}/400/300"
-
-    "Sporting Goods" ->
-      "https://picsum.photos/seed/sports#{:rand.uniform(1000)}/400/300"
-
-    "Beauty & Personal Care" ->
-      "https://picsum.photos/seed/beauty#{:rand.uniform(1000)}/400/300"
-
-    "Toys & Games" ->
-      "https://picsum.photos/seed/toys#{:rand.uniform(1000)}/400/300"
-
-    "Furniture" ->
-      "https://picsum.photos/seed/furniture#{:rand.uniform(1000)}/400/300"
-
-    "Garden & Outdoor" ->
-      "https://picsum.photos/seed/garden#{:rand.uniform(1000)}/400/300"
-
-    "Automotive" ->
-      "https://picsum.photos/seed/auto#{:rand.uniform(1000)}/400/300"
+  def indian_supplier_names do
+    [
+      "Reliance Industries",
+      "Tata Enterprises",
+      "Birla Corporation",
+      "Mahindra Supplies",
+      "Infosys Solutions",
+      "Wipro Limited",
+      "HCL Technologies",
+      "Bajaj Electronics",
+      "Godrej Industries",
+      "ITC Limited",
+      "Dabur India",
+      "Hindustan Unilever",
+      "Patanjali Ayurved",
+      "Asian Paints",
+      "Bharti Airtel"
+    ]
   end
 end
 
-# Function to generate random price
-price_generator = fn ->
-  (:rand.uniform(50000) / 100)
-  |> Float.round(2)
-  |> Decimal.from_float()
-end
+# Create categories
+categories = [
+  "Electronics",
+  "Clothing",
+  "Books",
+  "Food",
+  "Home & Kitchen",
+  "Beauty & Personal Care",
+  "Sports & Fitness",
+  "Toys & Games",
+  "Health & Wellness",
+  "Automotive"
+] |> Enum.map(fn name ->
+  Category.changeset(%Category{}, %{
+    name: name,
+    description: "Quality #{name} from trusted brands"
+  }) |> Repo.insert!()
+end)
 
-# Generate Products with random associations
-products =
-  Enum.flat_map(1..100, fn _index ->
-    # Randomly select a category
-    category = Enum.random(inserted_categories)
+# Create suppliers with Indian names
+suppliers = SeedHelpers.indian_supplier_names()
+|> Enum.map(fn company_name ->
+  Supplier.changeset(%Supplier{}, %{
+    name: company_name,
+    contact_info: "support@#{String.downcase(String.replace(company_name, " ", ""))}.in",
+    address: "#{Faker.Address.street_address()}, #{Enum.random(["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad"])}, India"
+  }) |> Repo.insert!()
+end)
 
-    # Generate 1-3 products for each iteration to ensure variety
-    Enum.map(1..Enum.random(1..3), fn _ ->
-      # Product name generators for each category
-      product_names = %{
-        "Electronics" => [
-          "Smartphone",
-          "Laptop",
-          "Tablet",
-          "Wireless Earbuds",
-          "Smart Watch",
-          "Bluetooth Speaker"
-        ],
-        "Clothing" => ["T-Shirt", "Jeans", "Hoodie", "Jacket", "Sweater", "Dress", "Shorts"],
-        "Home & Kitchen" => [
-          "Blender",
-          "Coffee Maker",
-          "Microwave",
-          "Toaster",
-          "Rice Cooker",
-          "Kettle"
-        ],
-        "Books" => [
-          "Sci-Fi Novel",
-          "Cookbook",
-          "Self-Help Book",
-          "Biography",
-          "Mystery Novel",
-          "Children's Book"
-        ],
-        "Sporting Goods" => [
-          "Basketball",
-          "Tennis Racket",
-          "Running Shoes",
-          "Yoga Mat",
-          "Fitness Tracker",
-          "Bicycle"
-        ],
-        "Beauty & Personal Care" => [
-          "Moisturizer",
-          "Shampoo",
-          "Makeup Kit",
-          "Perfume",
-          "Skincare Set",
-          "Hair Dryer"
-        ],
-        "Toys & Games" => [
-          "Board Game",
-          "Puzzle",
-          "Action Figure",
-          "Remote Control Car",
-          "Building Blocks",
-          "Educational Toy"
-        ],
-        "Furniture" => [
-          "Office Chair",
-          "Desk Lamp",
-          "Bookshelf",
-          "Coffee Table",
-          "Dining Chair",
-          "Bedside Table"
-        ],
-        "Garden & Outdoor" => [
-          "Plant Pot",
-          "Gardening Tools",
-          "Outdoor Grill",
-          "Patio Furniture",
-          "Bird Feeder",
-          "Garden Hose"
-        ],
-        "Automotive" => [
-          "Car Air Freshener",
-          "Phone Mount",
-          "Car Seat Cover",
-          "Tire Pressure Gauge",
-          "Jump Starter",
-          "Car Vacuum"
-        ]
-      }
+# Rest of your code remains same, but modify the product creation part:
+1..div(total_products, batch_size)
+|> Task.async_stream(
+  fn batch_number ->
+    Repo.transaction(fn ->
+      products = Enum.map(1..batch_size, fn _ ->
+        category = Enum.random(categories)
+        {product_name, price_range, description} = SeedHelpers.get_product_details(category.name)
+        price = Decimal.from_float((price_range / 100) |> Float.round(2))
 
-      # Generate product details
-      name = Enum.random(product_names[category.name])
+        # Insert product
+        product = Product.changeset(%Product{}, %{
+          name: product_name,
+          description: description,
+          price: price,
+          stock_quantity: :rand.uniform(1000),
+          category_id: category.id
+        }) |> Repo.insert!()
 
-      product_attrs = %{
-        name: "#{name} - #{:rand.uniform(100)}",
-        description: "High-quality #{name} for everyday use",
-        price: price_generator.(),
-        stock_quantity: :rand.uniform(1000),
-        category_id: category.id
-      }
+        # Rest of your code remains same...
+        Image.changeset(%Image{}, %{
+          url: "https://picsum.photos/seed/#{product.id}/400/300",
+          product_id: product.id
+        }) |> Repo.insert!()
 
-      # Insert product
-      changeset = Product.changeset(%Product{}, product_attrs)
-      product = Repo.insert!(changeset)
-
-      image_attrs = %{
-        url: image_url_generator.(category.name),
-        product_id: product.id
-      }
-
-      Image.changeset(%Image{}, image_attrs) |> Repo.insert!()
-
-      # Associate with 1-3 random suppliers
-      Enum.each(Enum.take_random(inserted_suppliers, :rand.uniform(3)), fn supplier ->
-        # Manually insert into join table since we're using many_to_many
-        Repo.insert_all("products_suppliers", [
-          %{
+        Enum.take_random(suppliers, :rand.uniform(3))
+        |> Enum.each(fn supplier ->
+          Repo.insert_all("products_suppliers", [%{
             product_id: product.id,
             supplier_id: supplier.id,
-            inserted_at: NaiveDateTime.utc_now(),
-            updated_at: NaiveDateTime.utc_now()
-          }
-        ])
+            inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+            updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          }])
+        end)
+
+        product
       end)
 
-      product
-    end)
-  end)
+      IO.puts "Completed batch #{batch_number}/#{div(total_products, batch_size)}"
+      length(products)
+    end, timeout: :infinity)
+  end,
+  max_concurrency: max_concurrency,
+  timeout: :infinity
+)
+|> Stream.run()
 
-# Return some statistics
-IO.puts("Seeding complete!")
-IO.puts("Categories created: #{length(inserted_categories)}")
-IO.puts("Suppliers created: #{length(inserted_suppliers)}")
-IO.puts("Total Products created: #{length(products)}")
+
+IO.puts """
+Seeding complete!
+Categories: #{Repo.aggregate(Category, :count)}
+Suppliers: #{Repo.aggregate(Supplier, :count)}
+Products: #{Repo.aggregate(Product, :count)}
+Images: #{Repo.aggregate(Image, :count)}
+"""

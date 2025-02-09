@@ -70,5 +70,5 @@ config :admin_table, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
   plugins: [Oban.Plugins.Pruner],
-  queues: [exports: 10],
-  testing: :inline
+  queues: [exports: 10]
+  # testing: :inline

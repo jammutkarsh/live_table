@@ -62,6 +62,7 @@ defmodule AdminTable.MixProject do
       {:nimble_csv, "~> 1.2"},
       {:oban, "~> 2.19"},
       {:oban_web, "~> 2.11"},
+      {:faker, "~> 0.18"}
     ]
   end
 

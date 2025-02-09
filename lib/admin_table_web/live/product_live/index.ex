@@ -56,7 +56,6 @@ defmodule AdminTableWeb.ProductLive.Index do
       },
       "filters" => filters
     }
-    if params["per_page"] == "All", do: put_in(options, ["pagination", "paginate?"], false)
 
     socket =
       socket
@@ -114,7 +113,9 @@ defmodule AdminTableWeb.ProductLive.Index do
   def handle_event("export-csv", _params, socket) do
     headers = Enum.reduce(fields(), [], fn {k, %{label: label}}, acc -> [label | acc] end) |> Enum.reverse()
 
-    query_string = list_resources(fields(), socket.assigns.options) |> inspect()
+    options = socket.assigns.options |> put_in(["pagination", "paginate?"], false)
+
+    query_string = list_resources(fields(), options) |> inspect()
     {:ok, _job} = %{
       query: query_string,
       headers: headers
