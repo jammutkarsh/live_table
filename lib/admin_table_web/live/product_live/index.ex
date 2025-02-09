@@ -111,14 +111,19 @@ defmodule AdminTableWeb.ProductLive.Index do
   end
 
   def handle_event("export-csv", _params, socket) do
-    headers = Enum.reduce(fields(), [], fn {k, %{label: label}}, acc -> [label | acc] end) |> Enum.reverse()
+    header_data =
+      fields()
+      |> Enum.reduce([[], []], fn {k, %{label: label}}, [key_names, headers] ->
+        [[k | key_names], [label | headers]]
+      end)
+      |> Enum.map(&Enum.reverse/1) |> dbg
 
     options = socket.assigns.options |> put_in(["pagination", "paginate?"], false)
 
     query_string = list_resources(fields(), options) |> inspect()
     {:ok, _job} = %{
       query: query_string,
-      headers: headers
+      header_data: header_data
     }
     |> AdminTable.Workers.CsvExportWorker.new()
     |> Oban.insert()
