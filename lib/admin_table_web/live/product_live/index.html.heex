@@ -1,4 +1,4 @@
-<div class="flex flex-col" id="products-table" phx-hook="DownloadCSV">
+<div class="flex flex-col" id="products-table" phx-hook="Download">
   <div class="-m-1.5 overflow-x-auto">
     <div class="p-1.5 min-w-full inline-block align-middle">
       <div class="border divide-y divide-gray-200 rounded-lg ark:border-neutral-700 ark:divide-neutral-700">
@@ -9,6 +9,12 @@
             class="px-4 py-2 ml-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
           Export CSV
+          </button>
+          <button type="button" phx-disable-with="Exporting"
+            phx-click="export-pdf"
+            class="px-4 py-2 ml-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+          Export PDF
           </button>
             <div class="relative flex max-w-md">
               <label class="sr-only">Search</label>

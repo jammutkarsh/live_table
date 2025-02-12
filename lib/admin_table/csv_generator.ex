@@ -11,7 +11,6 @@ defmodule AdminTable.CsvGenerator do
     query = get_query(query)
     case stream_data_to_file(query, temp_path, header_data) do
       {:ok, _} -> {:ok, temp_path}
-      error -> error
     end
   end
 

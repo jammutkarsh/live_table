@@ -155,9 +155,9 @@ Hooks.SortableColumn = {
   },
 };
 
-Hooks.DownloadCSV = {
+Hooks.Download = {
   mounted() {
-    this.handleEvent("download_csv", ({ path }) => {
+    this.handleEvent("download", ({ path }) => {
       const link = document.createElement("a");
       link.href = path;
       link.setAttribute("download", "");

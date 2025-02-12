@@ -3,6 +3,8 @@ defmodule AdminTable.CsvGeneratorTest do
   alias AdminTable.CsvGenerator
   alias AdminTable.Catalog.Product
   alias AdminTable.Repo
+  alias NimbleCSV.RFC4180, as: CSV
+
 
   setup do
     # Create some test products
@@ -21,7 +23,6 @@ defmodule AdminTable.CsvGeneratorTest do
     })
 
     on_exit(fn ->
-      # Cleanup any generated files after each test
       Path.wildcard(Path.join(System.tmp_dir!(), "export-*.csv"))
       |> Enum.each(&File.rm/1)
     end)
@@ -32,9 +33,9 @@ defmodule AdminTable.CsvGeneratorTest do
   describe "generate_csv/2" do
     test "successfully generates CSV file with correct headers and data" do
       query = "from p in #{Product}, select: %{name: p.name, price: p.price, stock_quantity: p.stock_quantity}"
-      headers = ["name", "price", "stock_quantity"]
+      header_data = [["name", "price", "stock_quantity"], ["Name", "Price", "Stock Quantity"]]
 
-      {:ok, file_path} = CsvGenerator.generate_csv(query, headers)
+      {:ok, file_path} = CsvGenerator.generate_csv(query, header_data)
 
       assert File.exists?(file_path)
 
@@ -43,7 +44,7 @@ defmodule AdminTable.CsvGeneratorTest do
                                 |> String.split("\r\n", trim: true)
                                 |> Enum.map(&String.split(&1, ","))
 
-      assert header_row == headers
+      assert header_row == Enum.at(header_data, 1)
       assert length(data_rows) == 2
       assert Enum.any?(data_rows, fn row ->
         Enum.at(row, 0) == "Test Product 1" &&
@@ -55,15 +56,15 @@ defmodule AdminTable.CsvGeneratorTest do
     test "handles empty result set" do
       Repo.delete_all(Product)
       query = "from p in #{Product}, select: %{name: p.name, price: p.price}"
-      headers = ["name", "price"]
+      header_data = [["name", "price"], ["Name", "Price"]]
 
-      {:ok, file_path} = CsvGenerator.generate_csv(query, headers)
+      {:ok, file_path} = CsvGenerator.generate_csv(query, header_data)
 
       assert File.exists?(file_path)
       file_content = File.read!(file_path)
       rows = String.split(file_content, "\r\n", trim: true)
       assert length(rows) == 1  # Only header row
-      assert hd(rows) == "name,price"
+      assert hd(rows) == "Name,Price"
     end
 
     test "processes data in chunks of 1000" do
@@ -83,12 +84,15 @@ defmodule AdminTable.CsvGeneratorTest do
           Repo.insert_all(Product, products)
 
           query_string = "#Ecto.Query<from p in \"products\", select: %{name: p.name, price: p.price, stock: p.stock_quantity}>"
-          headers = ["name", "price", "stock_quantity"]
+          headers_labels = ["Name", "Price", "Stock Quantity"]
+
+          headers_keys = ["name", "price", "stock_quantity"]
+          header_data = [headers_keys, headers_labels]
 
           chunk_spy = spawn(fn -> chunk_monitor() end)
           Process.register(chunk_spy, :chunk_monitor)
 
-          {:ok, file_path} = CsvGenerator.generate_csv(query_string, headers)
+          {:ok, file_path} = CsvGenerator.generate_csv(query_string, header_data)
           chunks = get_chunks()
 
           content = File.read!(file_path)
@@ -99,9 +103,8 @@ defmodule AdminTable.CsvGeneratorTest do
           assert Enum.all?(Enum.take(chunks, 2), fn chunk_size -> chunk_size == 1000 end)
           assert List.last(chunks) == 502  # Dont know why it has 502 records
 
-          # Verify file content
           assert length(lines) == 2503  # Why 2503 records?
-          assert Enum.at(lines, 0) == "name,price,stock_quantity"
+          assert Enum.at(lines, 0) == "Name,Price,Stock Quantity"
     end
 
     defp chunk_monitor(chunks \\ []) do
@@ -121,6 +124,25 @@ defmodule AdminTable.CsvGeneratorTest do
         5000 -> raise "Timeout waiting for chunks"
       end
     end
+
+    test "verifies headers align with correct data columns" do
+      query_string = "#Ecto.Query<from p in \"products\", select: %{name: p.name, price: p.price, stock: p.stock_quantity}>"
+
+          headers_labels = ["Name", "Price", "Stock Quantity"]
+
+          headers_keys = ["name", "price", "stock"]
+          header_data = [headers_keys, headers_labels]
+
+          {:ok, csv_path} = CsvGenerator.generate_csv(query_string, header_data)
+
+            rows = csv_path
+            |> File.read!()
+            |> CSV.parse_string()
+
+            assert rows == [["Test Product 1", "19.99", "100"], ["Test Product 2", "29.99", "200"]]
+
+          File.rm!(csv_path)
+        end
 
   end
 

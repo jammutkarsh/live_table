@@ -1,10 +1,10 @@
-defmodule AdminTable.Workers.CsvExportWorker do
+defmodule AdminTable.Workers.PdfExportWorker do
   use Oban.Worker, queue: :exports
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"header_data" => header_data, "query" => query}} = job) do
 
-    case AdminTable.CsvGenerator.generate_csv(query, header_data) do
+    case AdminTable.PdfGenerator.generate_pdf(query, header_data) do
       {:ok, file_path} ->
         Phoenix.PubSub.broadcast(
           AdminTable.PubSub,

@@ -8,7 +8,7 @@ defmodule AdminTableWeb.ProductLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
-          Phoenix.PubSub.subscribe(AdminTable.PubSub, "csv_exports")
+      Phoenix.PubSub.subscribe(AdminTable.PubSub, "exports")
     end
     {:ok, assign(socket, fields: fields(), options: %{})}
   end
@@ -52,7 +52,7 @@ defmodule AdminTableWeb.ProductLive.Index do
       "pagination" => %{
         "paginate?" => true,
         "page" => params["page"] || "1",
-        "per_page" => params["per_page"] || "5"
+        "per_page" => params["per_page"] || "10"
       },
       "filters" => filters
     }
@@ -116,7 +116,7 @@ defmodule AdminTableWeb.ProductLive.Index do
       |> Enum.reduce([[], []], fn {k, %{label: label}}, [key_names, headers] ->
         [[k | key_names], [label | headers]]
       end)
-      |> Enum.map(&Enum.reverse/1) |> dbg
+      |> Enum.map(&Enum.reverse/1)
 
     options = socket.assigns.options |> put_in(["pagination", "paginate?"], false)
 
@@ -130,7 +130,29 @@ defmodule AdminTableWeb.ProductLive.Index do
     {:noreply, socket}
   end
 
-  def handle_info({:csv_ready, file_path}, socket) do
+  def handle_event("export-pdf", _params, socket) do
+    options = socket.assigns.options
+    #|> put_in(["pagination", "per_page"], "10000")
+
+    header_data =
+      fields()
+      |> Enum.reduce([[], []], fn {k, %{label: label}}, [key_names, headers] ->
+        [[k | key_names], [label | headers]]
+      end)
+      |> Enum.map(&Enum.reverse/1)
+
+      query_string = list_resources(fields(), options) |> inspect()
+
+    {:ok, _job} = %{
+      query: query_string,
+      header_data: header_data
+    }
+    |> AdminTable.Workers.PdfExportWorker.new()
+    |> Oban.insert()
+    {:noreply, socket}
+  end
+
+  def handle_info({:file_ready, file_path}, socket) do
       static_path = Path.join([:code.priv_dir(:admin_table), "static", "exports"])
        File.mkdir_p!(static_path)
 
@@ -139,7 +161,7 @@ defmodule AdminTableWeb.ProductLive.Index do
        File.cp!(file_path, dest_path)
 
       socket = socket
-      |> push_event("download_csv", %{path: "/exports/#{filename}"})
+      |> push_event("download", %{path: "/exports/#{filename}"})
       |> put_flash(:info, "File downloaded successfully.")
 
       Process.send_after(self(), {:cleanup_file, dest_path}, :timer.seconds(20))
