@@ -20,8 +20,12 @@ defmodule AdminTable.Join do
   def select_columns(query, fields) do
     select_struct =
       Enum.flat_map(fields, fn
-        {name, %{assoc: {assoc_name, field_name}}} ->
+          {name, %{computed: dynamic_expr}} ->
+          [{name, dynamic_expr}]
+
+          {name, %{assoc: {assoc_name, field_name}}} ->
           [{name, dynamic([{^assoc_name, a}], field(a, ^field_name))}]
+
 
         {name, _opts} ->
           [{name, dynamic([resource: r], field(r, ^name))}]

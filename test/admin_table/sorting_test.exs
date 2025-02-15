@@ -115,6 +115,25 @@ defmodule AdminTable.SortingTest do
       assert %Ecto.Query{} = result
       assert inspect(result) =~ "order_by: [desc: p0.price]"
     end
+
+    test "Sorts by computed fields" do
+      query = from(p in "products", as: :resource)
+
+      sort_params = [amount: :desc]
+
+      fields = [
+        amount: %{
+          label: "Amount",
+          sortable: true,
+          computed: dynamic([resource: r], fragment("? * 0.58", r.price))
+        }
+      ]
+
+      result = Sorting.sort(query, fields, sort_params)
+
+      assert %Ecto.Query{} = result
+      assert inspect(result) =~ "order_by: [desc: fragment(\"? * 0.58\", p0.price)]"
+    end
   end
 
   describe "sort/4 (Joined Table)" do
@@ -224,6 +243,41 @@ defmodule AdminTable.SortingTest do
 
       assert inspect(result) =~
                "order_by: [asc: s1.name, asc: c2.name, desc: p0.price, asc: p0.name]"
+    end
+
+    test "sorts by computed fields with joins" do
+      query =
+        from p0 in AdminTable.Catalog.Product,
+        as: :resource,
+        left_join: s1 in assoc(p0, :suppliers),
+        as: :suppliers,
+        left_join: c2 in assoc(p0, :category),
+        as: :category
+
+      sort_params = [
+        total_value: :desc,
+        supplier_name: :asc
+      ]
+
+      fields = [
+        supplier_name: %{
+          label: "Supplier Name",
+          assoc: {:suppliers, :name},
+          sortable: true
+        },
+        total_value: %{
+          label: "Total Value",
+          sortable: true,
+          computed: dynamic([resource: r, suppliers: s],
+            fragment("? * ? * 0.58", r.price, r.stock_quantity)
+          )
+        }
+      ]
+
+      result = Sorting.sort(query, fields, sort_params)
+
+      assert %Ecto.Query{} = result
+      assert inspect(result) =~ "order_by: [desc: fragment(\"? * ? * 0.58\", p0.price, p0.stock_quantity), asc: s1.name]"
     end
   end
 end

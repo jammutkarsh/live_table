@@ -1,6 +1,7 @@
 defmodule AdminTableWeb.ProductLive.Index do
   use AdminTableWeb, :live_view
   alias AdminTable.{Boolean, Range, Select}
+  import Ecto.Query
 
   use AdminTableWeb.LiveResource,
     schema: AdminTable.Catalog.Product
@@ -330,6 +331,12 @@ defmodule AdminTableWeb.ProductLive.Index do
         sortable: false,
         searchable: false,
         assoc: {:image, :url}
+      },
+      amount: %{
+        label: "Amount",
+        sortable: true,
+        searchable: false,
+        computed: dynamic([resource: r], fragment("? * ?", r.price, r.stock_quantity)),
       }
     ]
   end

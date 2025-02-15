@@ -29,7 +29,10 @@ defmodule AdminTable.Sorting do
               {^sort_by, %{sortable: true, assoc: {assoc_name, field}}} ->
                 dynamic([{^assoc_name, a}], field(a, ^field))
 
-              {^sort_by, %{sortable: true}} ->
+              {^sort_by, %{sortable: true, computed: fragment}} ->
+              fragment
+
+                {^sort_by, %{sortable: true}} ->
                 dynamic([a], field(a, ^sort_by))
 
               _ ->
