@@ -108,8 +108,7 @@ defmodule AdminTable.BooleanTest do
     end
 
     test "filters products by price condition", %{
-      cheap_product: cheap_product,
-      expensive_product: expensive_product
+      cheap_product: cheap_product
     } do
       filter = Boolean.new(:price, "under-100", %{condition: dynamic([p], p.price < 100)})
 

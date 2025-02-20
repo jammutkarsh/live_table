@@ -1,7 +1,6 @@
 defmodule AdminTable.Select do
   import Ecto.Query
   import LiveSelect
-  alias AdminTable.Repo
 
   use Phoenix.Component
   defstruct [:field, :key, :options]
@@ -31,7 +30,7 @@ defmodule AdminTable.Select do
   end
 
   # update to dynamically take primary key. not id.
-  def apply(acc, %__MODULE__{field: field, options: %{selected: values}}) do
+  def apply(acc, %__MODULE__{field: _field, options: %{selected: values}}) do
       dynamic([p], ^acc and p.id in ^values)
   end
 

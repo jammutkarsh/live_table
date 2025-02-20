@@ -2,7 +2,7 @@ defmodule AdminTable.Workers.PdfExportWorker do
   use Oban.Worker, queue: :exports
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"header_data" => header_data, "query" => query}} = job) do
+  def perform(%Oban.Job{args: %{"header_data" => header_data, "query" => query}}) do
 
     case AdminTable.PdfGenerator.generate_pdf(query, header_data) do
       {:ok, file_path} ->

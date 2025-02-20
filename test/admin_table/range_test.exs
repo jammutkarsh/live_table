@@ -103,8 +103,6 @@ defmodule AdminTable.RangeTest do
           slider_classes: "custom-slider"
         })
 
-      filters = %{"price-range" => filter}
-
       html =
         render_component(&Range.render/1, %{
           key: "price-range",

@@ -10,16 +10,16 @@ defmodule AdminTable.Filter do
 
     Enum.reduce(searchable_fields, nil, fn
       field, nil when is_atom(field) ->
-        dynamic([q], ilike(field(q, ^field), ^"%#{search_term}%"))
+        dynamic([p], ilike(field(p, ^field), ^"%#{search_term}%"))
 
       field, acc when is_atom(field) ->
-        dynamic([q], ^acc or ilike(field(q, ^field), ^"%#{search_term}%"))
+        dynamic([p], ^acc or ilike(field(p, ^field), ^"%#{search_term}%"))
 
       {table_name, field}, nil ->
-        dynamic([{^table_name, s}], ilike(field(s, ^field), ^"%#{search_term}%"))
+        dynamic([{^table_name, p}], ilike(field(p, ^field), ^"%#{search_term}%"))
 
       {table_name, field}, acc ->
-        dynamic([{^table_name, s}], ^acc or ilike(field(s, ^field), ^"%#{search_term}%"))
+        dynamic([{^table_name, p}], ^acc or ilike(field(p, ^field), ^"%#{search_term}%"))
     end)
   end
 
@@ -47,7 +47,7 @@ defmodule AdminTable.Filter do
           text_search_condition = apply_text_search(search_term, fields)
           dynamic(^acc and ^text_search_condition)
 
-        {filter_key, filter}, acc ->
+        {_filter_key, filter}, acc ->
           filter.__struct__.apply(acc, filter)
       end)
 

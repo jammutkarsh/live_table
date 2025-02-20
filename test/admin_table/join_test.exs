@@ -2,7 +2,7 @@ defmodule AdminTable.JoinTest do
   use AdminTable.DataCase
   import Ecto.Query
   alias AdminTable.Join
-  alias AdminTable.Catalog.{Product, Category, Image, Supplier}
+  alias AdminTable.Catalog.{Product}
 
   describe "join_associations/2" do
     test "adds correct joins for single association" do

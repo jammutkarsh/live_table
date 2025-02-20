@@ -56,7 +56,7 @@
                 @options["pagination"]["per_page"]
               )}
             </select>
-
+            <div class="flex gap-x-12">
             <%= for {key, filter} <- filters() do %>
               {filter.__struct__.render(%{
                 key: key,
@@ -64,7 +64,9 @@
                 filters: @options["filters"]
               })}
             <% end %>
+            </div>
           </div>
+
         </.form>
         <div class="overflow-hidden">
           <table class="min-w-full divide-y divide-gray-200 ark:divide-neutral-700">

@@ -153,6 +153,7 @@ defmodule AdminTableWeb.ProductLive.Index do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info({:file_ready, file_path}, socket) do
       static_path = Path.join([:code.priv_dir(:admin_table), "static", "exports"])
        File.mkdir_p!(static_path)
