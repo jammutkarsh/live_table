@@ -6,19 +6,21 @@ defmodule AdminTable.PdfGeneratorTest do
 
   setup do
     # Create test products
-    {:ok, product1} = Repo.insert(%Product{
-      name: "Test Product 1",
-      description: "Description 1",
-      price: Decimal.new("19.99"),
-      stock_quantity: 100
-    })
+    {:ok, product1} =
+      Repo.insert(%Product{
+        name: "Test Product 1",
+        description: "Description 1",
+        price: Decimal.new("19.99"),
+        stock_quantity: 100
+      })
 
-    {:ok, product2} = Repo.insert(%Product{
-      name: "Test Product 2",
-      description: "Description 2",
-      price: Decimal.new("29.99"),
-      stock_quantity: 200
-    })
+    {:ok, product2} =
+      Repo.insert(%Product{
+        name: "Test Product 2",
+        description: "Description 2",
+        price: Decimal.new("29.99"),
+        stock_quantity: 200
+      })
 
     on_exit(fn ->
       # Cleanup generated files
@@ -31,7 +33,9 @@ defmodule AdminTable.PdfGeneratorTest do
 
   describe "generate_pdf/2" do
     test "successfully generates PDF file with correct headers and data" do
-      query = "from p in #{Product}, select: %{name: p.name, price: p.price, stock_quantity: p.stock_quantity}"
+      query =
+        "from p in #{Product}, select: %{name: p.name, price: p.price, stock_quantity: p.stock_quantity}"
+
       header_data = [["name", "price", "stock_quantity"], ["Name", "Price", "Stock Quantity"]]
 
       {:ok, file_path} = PdfGenerator.generate_pdf(query, header_data)
@@ -57,20 +61,23 @@ defmodule AdminTable.PdfGeneratorTest do
     test "processes data in chunks of 500" do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      products = for i <- 1..1500 do
-        %{
-          name: "Product #{i}",
-          description: "Description #{i}",
-          price: Decimal.new("#{i}.99"),
-          stock_quantity: i,
-          inserted_at: now,
-          updated_at: now
-        }
-      end
+      products =
+        for i <- 1..1500 do
+          %{
+            name: "Product #{i}",
+            description: "Description #{i}",
+            price: Decimal.new("#{i}.99"),
+            stock_quantity: i,
+            inserted_at: now,
+            updated_at: now
+          }
+        end
 
       Repo.insert_all(Product, products)
 
-      query_string = "#Ecto.Query<from p in \"products\", select: %{name: p.name, price: p.price, stock: p.stock_quantity}>"
+      query_string =
+        "#Ecto.Query<from p in \"products\", select: %{name: p.name, price: p.price, stock: p.stock_quantity}>"
+
       header_data = [["name", "price", "stock"], ["Name", "Price", "Stock"]]
 
       chunk_spy = spawn(fn -> chunk_monitor() end)
@@ -80,7 +87,8 @@ defmodule AdminTable.PdfGeneratorTest do
       chunks = get_chunks()
 
       assert File.exists?(file_path)
-      assert length(chunks) == 4  # 1500 records should be processed in 3 chunks
+      # 1500 records should be processed in 3 chunks
+      assert length(chunks) == 4
       # But why 4 chunks?
       # Getting processed as 1500 = [500, 500, 500, 2] chunks.
       # Where are additional 2 chunks coming from?
@@ -88,14 +96,17 @@ defmodule AdminTable.PdfGeneratorTest do
     end
 
     test "handles special characters in data" do
-      {:ok, special_product} = Repo.insert(%Product{
-        name: "Product @ with special chars",
-        description: "Description with @ symbol",
-        price: Decimal.new("39.99"),
-        stock_quantity: 300
-      })
+      {:ok, special_product} =
+        Repo.insert(%Product{
+          name: "Product @ with special chars",
+          description: "Description with @ symbol",
+          price: Decimal.new("39.99"),
+          stock_quantity: 300
+        })
 
-      query = "from p in #{Product}, where: p.id == #{special_product.id}, select: %{name: p.name}"
+      query =
+        "from p in #{Product}, where: p.id == #{special_product.id}, select: %{name: p.name}"
+
       header_data = [["name"], ["Name"]]
 
       {:ok, file_path} = PdfGenerator.generate_pdf(query, header_data)
@@ -166,6 +177,7 @@ defmodule AdminTable.PdfGeneratorTest do
     receive do
       {:chunk, size} ->
         chunk_monitor([size | chunks])
+
       {:get_chunks, pid} ->
         send(pid, {:chunks, Enum.reverse(chunks)})
     end
@@ -173,6 +185,7 @@ defmodule AdminTable.PdfGeneratorTest do
 
   defp get_chunks do
     send(:chunk_monitor, {:get_chunks, self()})
+
     receive do
       {:chunks, chunks} -> chunks
     after

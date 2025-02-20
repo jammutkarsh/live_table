@@ -40,7 +40,7 @@ defmodule AdminTable.Filter do
   def apply_filters(query, %{"search" => ""} = filters, _) when map_size(filters) == 1, do: query
 
   def apply_filters(query, filters, fields) do
-        conditions =
+    conditions =
       filters
       |> Enum.reduce(true, fn
         {"search", search_term}, acc ->

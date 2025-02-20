@@ -1,23 +1,31 @@
 defmodule AdminTableWeb.LiveResource do
-  alias AdminTable.Filter
-  alias AdminTable.Join
-  alias AdminTable.Paginate
-  alias AdminTable.Sorting
+  alias AdminTable.{
+    Filter,
+    Join,
+    Paginate,
+    Sorting,
+    Helpers,
+    LiveViewHelpers,
+    TableComponent,
+    Repo
+  }
 
   defmacro __using__(opts) do
     quote do
+      import LiveViewHelpers
+      import TableComponent
       import Ecto.Query
-      alias AdminTable.Repo
-      alias AdminTable.Sorting
       import Sorting
       import Paginate
       import Join
       import Filter
+      use Helpers, resource: unquote(opts[:resource])
 
       @resource_opts unquote(opts)
 
       def fields, do: []
-      defoverridable fields: 0
+      def filters, do: []
+      defoverridable fields: 0, filters: 0
 
       def list_resources(fields, options) do
         schema = @resource_opts[:schema]
@@ -34,7 +42,7 @@ defmodule AdminTableWeb.LiveResource do
       end
 
       def stream_resources(fields, query) do
-      list_resources(fields, query) |> Repo.all()
+        list_resources(fields, query) |> Repo.all()
       end
     end
   end

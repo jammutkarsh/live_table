@@ -8,6 +8,7 @@ defmodule AdminTable.Catalog do
 
   alias AdminTable.Catalog.Product
   alias AdminTable.Catalog.Supplier
+
   @doc """
   Returns the list of products.
 

@@ -125,8 +125,8 @@ defmodule AdminTable.RangeTest do
           filter: filter
         })
 
-        assert html =~ ~s(data-start=\"[0,500]\")
-        assert html =~ ~s(data-type=\"number\")
+      assert html =~ ~s(data-start=\"[0,500]\")
+      assert html =~ ~s(data-type=\"number\")
 
       assert html =~ "Range"
     end
@@ -394,398 +394,397 @@ defmodule AdminTable.RangeTest do
     end
   end
 
-#########
+  #########
 
+  describe "Range value formatting" do
+    test "correctly formats values based on type" do
+      date_filter =
+        Range.new(:published_at, "date-range", %{
+          type: :date,
+          min: ~D[2024-01-01],
+          max: ~D[2024-12-31]
+        })
 
-describe "Range value formatting" do
-  test "correctly formats values based on type" do
-    date_filter =
-      Range.new(:published_at, "date-range", %{
-        type: :date,
-        min: ~D[2024-01-01],
-        max: ~D[2024-12-31]
-      })
+      datetime_filter =
+        Range.new(:created_at, "datetime-range", %{
+          type: :datetime,
+          min: ~N[2024-01-01 00:00:00],
+          max: ~N[2024-12-31 23:59:59]
+        })
 
-    datetime_filter =
-      Range.new(:created_at, "datetime-range", %{
-        type: :datetime,
-        min: ~N[2024-01-01 00:00:00],
-        max: ~N[2024-12-31 23:59:59]
-      })
+      date_html =
+        render_component(&Range.render/1, %{
+          key: "date-range",
+          filters: %{"date-range" => date_filter},
+          filter: date_filter
+        })
 
-    date_html =
-      render_component(&Range.render/1, %{
-        key: "date-range",
-        filters: %{"date-range" => date_filter},
-        filter: date_filter
-      })
+      datetime_html =
+        render_component(&Range.render/1, %{
+          key: "datetime-range",
+          filters: %{"datetime-range" => datetime_filter},
+          filter: datetime_filter
+        })
 
-    datetime_html =
-      render_component(&Range.render/1, %{
-        key: "datetime-range",
-        filters: %{"datetime-range" => datetime_filter},
-        filter: datetime_filter
-      })
+      # Check date formatting
+      assert date_html =~ "2024-01-01"
+      # Should not include time part for date type
+      refute date_html =~ "2024-01-01T"
 
-    # Check date formatting
-    assert date_html =~ "2024-01-01"
-    # Should not include time part for date type
-    refute date_html =~ "2024-01-01T"
-
-    # Check datetime formatting
-    assert datetime_html =~ "2024-01-01T00:00:00"
-    assert datetime_html =~ "2024-12-31T23:59:59"
-  end
-end
-
-describe "Range filter with datetime" do
-  test "creates datetime range filter" do
-    filter =
-      Range.new(:created_at, "datetime-range", %{
-        type: :datetime,
-        min: ~N[2024-01-01 00:00:00],
-        max: ~N[2024-12-31 23:59:59]
-      })
-
-    assert filter.options.type == :datetime
-    assert filter.options.min == ~N[2024-01-01 00:00:00]
-    assert filter.options.max == ~N[2024-12-31 23:59:59]
-    # 1 hour step
-    assert filter.options.step == 3600
+      # Check datetime formatting
+      assert datetime_html =~ "2024-01-01T00:00:00"
+      assert datetime_html =~ "2024-12-31T23:59:59"
+    end
   end
 
-  test "applies datetime range filter" do
-    filter =
-      Range.new(:created_at, "datetime-range", %{
-        type: :datetime,
-        min: ~N[2024-01-01 00:00:00],
-        max: ~N[2024-12-31 23:59:59]
-      })
+  describe "Range filter with datetime" do
+    test "creates datetime range filter" do
+      filter =
+        Range.new(:created_at, "datetime-range", %{
+          type: :datetime,
+          min: ~N[2024-01-01 00:00:00],
+          max: ~N[2024-12-31 23:59:59]
+        })
 
-    result = Range.apply(true, filter)
-    query = from(p in "products", where: ^result)
+      assert filter.options.type == :datetime
+      assert filter.options.min == ~N[2024-01-01 00:00:00]
+      assert filter.options.max == ~N[2024-12-31 23:59:59]
+      # 1 hour step
+      assert filter.options.step == 3600
+    end
 
-    assert inspect(query) =~ "BETWEEN"
-    assert inspect(query) =~ "2024-01-01 00:00:00"
-    assert inspect(query) =~ "2024-12-31 23:59:59"
+    test "applies datetime range filter" do
+      filter =
+        Range.new(:created_at, "datetime-range", %{
+          type: :datetime,
+          min: ~N[2024-01-01 00:00:00],
+          max: ~N[2024-12-31 23:59:59]
+        })
+
+      result = Range.apply(true, filter)
+      query = from(p in "products", where: ^result)
+
+      assert inspect(query) =~ "BETWEEN"
+      assert inspect(query) =~ "2024-01-01 00:00:00"
+      assert inspect(query) =~ "2024-12-31 23:59:59"
+    end
+
+    test "renders datetime range component" do
+      filter =
+        Range.new(:created_at, "datetime-range", %{
+          type: :datetime,
+          min: ~N[2024-01-01 00:00:00],
+          max: ~N[2024-12-31 23:59:59],
+          label: "Creation Time"
+        })
+
+      html =
+        render_component(&Range.render/1, %{
+          key: "datetime-range",
+          filter: filter
+        })
+
+      assert html =~ ~s(data-type="datetime")
+      assert html =~ "2024-01-01T00:00:00"
+      assert html =~ "2024-12-31T23:59:59"
+      assert html =~ "Creation Time"
+    end
   end
 
-  test "renders datetime range component" do
-    filter =
-      Range.new(:created_at, "datetime-range", %{
-        type: :datetime,
-        min: ~N[2024-01-01 00:00:00],
-        max: ~N[2024-12-31 23:59:59],
-        label: "Creation Time"
-      })
+  describe "Range filter formatting edge cases" do
+    test "handles timezone formatting in dates" do
+      datetime = ~N[2024-01-01 23:59:59]
 
-    html =
-      render_component(&Range.render/1, %{
-        key: "datetime-range",
-        filter: filter
-      })
+      filter =
+        Range.new(:created_at, "datetime-range", %{
+          type: :datetime,
+          min: datetime,
+          max: datetime
+        })
 
-    assert html =~ ~s(data-type="datetime")
-    assert html =~ "2024-01-01T00:00:00"
-    assert html =~ "2024-12-31T23:59:59"
-    assert html =~ "Creation Time"
+      html =
+        render_component(&Range.render/1, %{
+          key: "datetime-range",
+          filters: %{"datetime-range" => filter},
+          filter: filter
+        })
+
+      assert html =~ "2024-01-01T23:59:59"
+    end
+
+    test "formats dates with leading zeros" do
+      date = ~D[2024-09-09]
+
+      filter =
+        Range.new(:published_at, "date-range", %{
+          type: :date,
+          min: date,
+          max: date
+        })
+
+      html =
+        render_component(&Range.render/1, %{
+          key: "date-range",
+          filters: %{"date-range" => filter},
+          filter: filter
+        })
+
+      # Ensures months and days below 10 are properly zero-padded
+      assert html =~ "2024-09-09"
+    end
   end
-end
 
-describe "Range filter formatting edge cases" do
-  test "handles timezone formatting in dates" do
-    datetime = ~N[2024-01-01 23:59:59]
+  describe "Range filter integration with joined schemas" do
+    alias AdminTable.Repo
+    alias AdminTable.Catalog.{Product, Category, Supplier, Image}
+    alias AdminTable.Range
 
-    filter =
-      Range.new(:created_at, "datetime-range", %{
-        type: :datetime,
-        min: datetime,
-        max: datetime
-      })
+    setup do
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      yesterday = DateTime.add(now, -24 * 60 * 60)
+      tomorrow = DateTime.add(now, 24 * 60 * 60)
 
-    html =
-      render_component(&Range.render/1, %{
-        key: "datetime-range",
-        filters: %{"datetime-range" => filter},
-        filter: filter
-      })
+      # Create categories with different timestamps
+      {:ok, old_category} =
+        %Category{
+          name: "Old Category",
+          description: "Created yesterday",
+          inserted_at: yesterday
+        }
+        |> Repo.insert()
 
-    assert html =~ "2024-01-01T23:59:59"
-  end
+      {:ok, current_category} =
+        %Category{
+          name: "Current Category",
+          description: "Created today",
+          inserted_at: now
+        }
+        |> Repo.insert()
 
-  test "formats dates with leading zeros" do
-    date = ~D[2024-09-09]
+      {:ok, future_category} =
+        %Category{
+          name: "Future Category",
+          description: "Created tomorrow",
+          inserted_at: tomorrow
+        }
+        |> Repo.insert()
 
-    filter =
-      Range.new(:published_at, "date-range", %{
-        type: :date,
-        min: date,
-        max: date
-      })
+      # Create suppliers with stock levels in their descriptions
+      {:ok, supplier_1} =
+        %Supplier{
+          name: "Supplier One",
+          contact_info: "supplier1@example.com",
+          address: "Stock level: High"
+        }
+        |> Repo.insert()
 
-    html =
-      render_component(&Range.render/1, %{
-        key: "date-range",
-        filters: %{"date-range" => filter},
-        filter: filter
-      })
+      {:ok, supplier_2} =
+        %Supplier{
+          name: "Supplier Two",
+          contact_info: "supplier2@example.com",
+          address: "Stock level: Low"
+        }
+        |> Repo.insert()
 
-    # Ensures months and days below 10 are properly zero-padded
-    assert html =~ "2024-09-09"
-  end
-end
+      # Create images
+      {:ok, image_1} =
+        %Image{
+          url: "https://example.com/image1.jpg"
+        }
+        |> Repo.insert()
 
-describe "Range filter integration with joined schemas" do
-  alias AdminTable.Repo
-  alias AdminTable.Catalog.{Product, Category, Supplier, Image}
-  alias AdminTable.Range
+      {:ok, image_2} =
+        %Image{
+          url: "https://example.com/image2.jpg"
+        }
+        |> Repo.insert()
 
-  setup do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-    yesterday = DateTime.add(now, -24 * 60 * 60)
-    tomorrow = DateTime.add(now, 24 * 60 * 60)
+      # Products with all associations
+      {:ok, cheap_old} =
+        %Product{
+          name: "Cheap Old",
+          description: "Old cheap product",
+          price: 10,
+          stock_quantity: 5,
+          category_id: old_category.id
+        }
+        |> Repo.insert()
 
-    # Create categories with different timestamps
-    {:ok, old_category} =
-      %Category{
-        name: "Old Category",
-        description: "Created yesterday",
-        inserted_at: yesterday
-      }
-      |> Repo.insert()
+      {:ok, mid_current} =
+        %Product{
+          name: "Mid Current",
+          description: "Current mid-range product",
+          price: 50,
+          stock_quantity: 3,
+          category_id: current_category.id
+        }
+        |> Repo.insert()
 
-    {:ok, current_category} =
-      %Category{
-        name: "Current Category",
-        description: "Created today",
-        inserted_at: now
-      }
-      |> Repo.insert()
+      {:ok, expensive_future} =
+        %Product{
+          name: "Expensive Future",
+          description: "Future expensive product",
+          price: 100,
+          stock_quantity: 1,
+          category_id: future_category.id
+        }
+        |> Repo.insert()
 
-    {:ok, future_category} =
-      %Category{
-        name: "Future Category",
-        description: "Created tomorrow",
-        inserted_at: tomorrow
-      }
-      |> Repo.insert()
+      # Product with no associations for edge case testing
+      {:ok, orphan_product} =
+        %Product{
+          name: "Orphan Product",
+          description: "No associations",
+          price: 75,
+          stock_quantity: 0
+        }
+        |> Repo.insert()
 
-    # Create suppliers with stock levels in their descriptions
-    {:ok, supplier_1} =
-      %Supplier{
-        name: "Supplier One",
-        contact_info: "supplier1@example.com",
-        address: "Stock level: High"
-      }
-      |> Repo.insert()
+      # Set up many-to-many relationships with timestamps
+      timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
-    {:ok, supplier_2} =
-      %Supplier{
-        name: "Supplier Two",
-        contact_info: "supplier2@example.com",
-        address: "Stock level: Low"
-      }
-      |> Repo.insert()
+      Repo.insert_all("products_suppliers", [
+        %{
+          product_id: cheap_old.id,
+          supplier_id: supplier_1.id,
+          inserted_at: timestamp,
+          updated_at: timestamp
+        },
+        %{
+          product_id: mid_current.id,
+          supplier_id: supplier_1.id,
+          inserted_at: timestamp,
+          updated_at: timestamp
+        },
+        %{
+          product_id: expensive_future.id,
+          supplier_id: supplier_2.id,
+          inserted_at: timestamp,
+          updated_at: timestamp
+        }
+      ])
 
-    # Create images
-    {:ok, image_1} =
-      %Image{
-        url: "https://example.com/image1.jpg"
-      }
-      |> Repo.insert()
-
-    {:ok, image_2} =
-      %Image{
-        url: "https://example.com/image2.jpg"
-      }
-      |> Repo.insert()
-
-    # Products with all associations
-    {:ok, cheap_old} =
-      %Product{
-        name: "Cheap Old",
-        description: "Old cheap product",
-        price: 10,
-        stock_quantity: 5,
-        category_id: old_category.id
-      }
-      |> Repo.insert()
-
-    {:ok, mid_current} =
-      %Product{
-        name: "Mid Current",
-        description: "Current mid-range product",
-        price: 50,
-        stock_quantity: 3,
-        category_id: current_category.id
-      }
-      |> Repo.insert()
-
-    {:ok, expensive_future} =
-      %Product{
-        name: "Expensive Future",
-        description: "Future expensive product",
-        price: 100,
-        stock_quantity: 1,
-        category_id: future_category.id
-      }
-      |> Repo.insert()
-
-    # Product with no associations for edge case testing
-    {:ok, orphan_product} =
-      %Product{
-        name: "Orphan Product",
-        description: "No associations",
-        price: 75,
-        stock_quantity: 0
-      }
-      |> Repo.insert()
-
-    # Set up many-to-many relationships with timestamps
-    timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-
-    Repo.insert_all("products_suppliers", [
       %{
-        product_id: cheap_old.id,
-        supplier_id: supplier_1.id,
-        inserted_at: timestamp,
-        updated_at: timestamp
-      },
-      %{
-        product_id: mid_current.id,
-        supplier_id: supplier_1.id,
-        inserted_at: timestamp,
-        updated_at: timestamp
-      },
-      %{
-        product_id: expensive_future.id,
-        supplier_id: supplier_2.id,
-        inserted_at: timestamp,
-        updated_at: timestamp
+        categories: [old_category, current_category, future_category],
+        suppliers: [supplier_1, supplier_2],
+        images: [image_1, image_2],
+        products: [cheap_old, mid_current, expensive_future, orphan_product],
+        dates: %{today: now, yesterday: yesterday, tomorrow: tomorrow}
       }
-    ])
+    end
 
-    %{
-      categories: [old_category, current_category, future_category],
-      suppliers: [supplier_1, supplier_2],
-      images: [image_1, image_2],
-      products: [cheap_old, mid_current, expensive_future, orphan_product],
-      dates: %{today: now, yesterday: yesterday, tomorrow: tomorrow}
-    }
+    test "filters by base schema field (price)", %{products: [cheap, mid, expensive, _orphan]} do
+      filter = Range.new(:price, "price-range", %{min: 20, max: 75})
+
+      query =
+        Product
+        |> join(:inner, [p], c in assoc(p, :category))
+        |> where(^Range.apply(true, filter))
+        |> Repo.all()
+
+      result_ids = Enum.map(query, & &1.id)
+      assert length(query) == 1
+      assert mid.id in result_ids
+      refute cheap.id in result_ids
+      refute expensive.id in result_ids
+    end
+
+    test "filters by joined schema field (category inserted_at)", %{
+      products: [old, current, future, _orphan],
+      dates: dates
+    } do
+      filter =
+        Range.new({:category, :inserted_at}, "date-range", %{
+          type: :datetime,
+          min: dates.yesterday,
+          max: dates.today
+        })
+
+      query =
+        Product
+        |> join(:inner, [p], category in assoc(p, :category), as: :category)
+        |> where(^Range.apply(true, filter))
+        |> Repo.all()
+
+      result_ids = Enum.map(query, & &1.id)
+      assert length(query) == 2
+      assert old.id in result_ids
+      assert current.id in result_ids
+      refute future.id in result_ids
+    end
+
+    test "filters by joined schema using multiple price ranges" do
+      category_products_filter = Range.new(:price, "category-products-price", %{min: 0, max: 30})
+      direct_products_filter = Range.new(:price, "direct-price", %{min: 40, max: 60})
+
+      query =
+        Product
+        |> join(:inner, [p], c in assoc(p, :category))
+        |> join(:inner, [p, _c], s in assoc(p, :suppliers))
+        |> where(^Range.apply(true, category_products_filter))
+        |> or_where(^Range.apply(true, direct_products_filter))
+        |> distinct(true)
+        |> Repo.all()
+
+      prices = Enum.map(query, & &1.price) |> Enum.map(&Decimal.to_float/1)
+
+      # Should include products with price <= 30 OR price between 40-60
+      assert Enum.any?(prices, &(&1 <= 30))
+      assert Enum.any?(prices, &(&1 >= 40 and &1 <= 60))
+      refute Enum.any?(prices, &(&1 > 60))
+      refute Enum.any?(prices, &(&1 > 30 and &1 < 40))
+    end
+
+    test "handles null associations", %{products: [_cheap, _mid, _expensive, orphan]} do
+      filter =
+        Range.new(:price, "price-range", %{
+          min: 70,
+          max: 80
+        })
+
+      query =
+        Product
+        |> join(:left, [p], c in assoc(p, :category))
+        |> where(^Range.apply(true, filter))
+        |> Repo.all()
+
+      # The orphan product should be included since we're using left join
+      # and it has price = 75 which is within range 70-80
+      assert orphan.id in Enum.map(query, & &1.id)
+    end
+
+    test "combines range filters across all associations", %{
+      products: products,
+      dates: dates
+    } do
+      category_filter =
+        Range.new({:category, :inserted_at}, "category-date-range", %{
+          type: :datetime,
+          min: dates.yesterday,
+          max: dates.today
+        })
+
+      price_filter = Range.new(:price, "price-range", %{min: 40, max: 60})
+      stock_filter = Range.new(:stock_quantity, "stock-range", %{min: 2, max: 4})
+
+      query =
+        Product
+        |> join(:inner, [p], category in assoc(p, :category), as: :category)
+        |> join(:inner, [p, _c], s in assoc(p, :suppliers))
+        |> where(^Range.apply(true, category_filter))
+        |> where(^Range.apply(true, price_filter))
+        |> where(^Range.apply(true, stock_filter))
+        |> Repo.all()
+
+      result = List.first(query)
+
+      # Should match only the mid_current product which:
+      # 1. Has price between 40-60
+      # 2. Has stock between 2-4
+      # 3. Is in a category created between yesterday and today
+      assert result.price == Decimal.new("50")
+      assert result.stock_quantity == 3
+      assert result.id == Enum.find(products, &(&1.name == "Mid Current")).id
+    end
   end
-
-  test "filters by base schema field (price)", %{products: [cheap, mid, expensive, _orphan]} do
-    filter = Range.new(:price, "price-range", %{min: 20, max: 75})
-
-    query =
-      Product
-      |> join(:inner, [p], c in assoc(p, :category))
-      |> where(^Range.apply(true, filter))
-      |> Repo.all()
-
-    result_ids = Enum.map(query, & &1.id)
-    assert length(query) == 1
-    assert mid.id in result_ids
-    refute cheap.id in result_ids
-    refute expensive.id in result_ids
-  end
-
-  test "filters by joined schema field (category inserted_at)", %{
-    products: [old, current, future, _orphan],
-    dates: dates
-  } do
-    filter =
-      Range.new({:category, :inserted_at}, "date-range", %{
-        type: :datetime,
-        min: dates.yesterday,
-        max: dates.today
-      })
-
-    query =
-      Product
-      |> join(:inner, [p], category in assoc(p, :category), as: :category)
-      |> where(^Range.apply(true, filter))
-      |> Repo.all()
-
-    result_ids = Enum.map(query, & &1.id)
-    assert length(query) == 2
-    assert old.id in result_ids
-    assert current.id in result_ids
-    refute future.id in result_ids
-  end
-
-  test "filters by joined schema using multiple price ranges" do
-    category_products_filter = Range.new(:price, "category-products-price", %{min: 0, max: 30})
-    direct_products_filter = Range.new(:price, "direct-price", %{min: 40, max: 60})
-
-    query =
-      Product
-      |> join(:inner, [p], c in assoc(p, :category))
-      |> join(:inner, [p, _c], s in assoc(p, :suppliers))
-      |> where(^Range.apply(true, category_products_filter))
-      |> or_where(^Range.apply(true, direct_products_filter))
-      |> distinct(true)
-      |> Repo.all()
-
-    prices = Enum.map(query, & &1.price) |> Enum.map(&Decimal.to_float/1)
-
-    # Should include products with price <= 30 OR price between 40-60
-    assert Enum.any?(prices, &(&1 <= 30))
-    assert Enum.any?(prices, &(&1 >= 40 and &1 <= 60))
-    refute Enum.any?(prices, &(&1 > 60))
-    refute Enum.any?(prices, &(&1 > 30 and &1 < 40))
-  end
-
-  test "handles null associations", %{products: [_cheap, _mid, _expensive, orphan]} do
-    filter =
-      Range.new(:price, "price-range", %{
-        min: 70,
-        max: 80
-      })
-
-    query =
-      Product
-      |> join(:left, [p], c in assoc(p, :category))
-      |> where(^Range.apply(true, filter))
-      |> Repo.all()
-
-    # The orphan product should be included since we're using left join
-    # and it has price = 75 which is within range 70-80
-    assert orphan.id in Enum.map(query, & &1.id)
-  end
-
-  test "combines range filters across all associations", %{
-    products: products,
-    dates: dates
-  } do
-    category_filter =
-      Range.new({:category, :inserted_at}, "category-date-range", %{
-        type: :datetime,
-        min: dates.yesterday,
-        max: dates.today
-      })
-
-    price_filter = Range.new(:price, "price-range", %{min: 40, max: 60})
-    stock_filter = Range.new(:stock_quantity, "stock-range", %{min: 2, max: 4})
-
-    query =
-      Product
-      |> join(:inner, [p], category in assoc(p, :category), as: :category)
-      |> join(:inner, [p, _c], s in assoc(p, :suppliers))
-      |> where(^Range.apply(true, category_filter))
-      |> where(^Range.apply(true, price_filter))
-      |> where(^Range.apply(true, stock_filter))
-      |> Repo.all()
-
-    result = List.first(query)
-
-    # Should match only the mid_current product which:
-    # 1. Has price between 40-60
-    # 2. Has stock between 2-4
-    # 3. Is in a category created between yesterday and today
-    assert result.price == Decimal.new("50")
-    assert result.stock_quantity == 3
-    assert result.id == Enum.find(products, &(&1.name == "Mid Current")).id
-  end
-end
 end

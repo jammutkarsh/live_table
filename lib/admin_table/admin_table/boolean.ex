@@ -18,7 +18,7 @@ defmodule AdminTable.Boolean do
       type="checkbox"
       name={"filters[#{@key}]"}
       label={@filter.options.label}
-      checked={Map.has_key?(@filters, @key)}
+      checked={Map.has_key?(@applied_filters, @key)}
     />
     """
   end

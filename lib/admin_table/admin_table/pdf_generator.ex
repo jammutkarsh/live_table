@@ -2,10 +2,11 @@ defmodule AdminTable.PdfGenerator do
   alias AdminTable.Repo
 
   def generate_pdf(query, header_data) do
-    timestamp = DateTime.utc_now()
-    |> DateTime.to_string()
-    |> String.replace([" ", ":", "."], "-")
-    |> String.replace(~r/[^a-zA-Z0-9\-]/, "")
+    timestamp =
+      DateTime.utc_now()
+      |> DateTime.to_string()
+      |> String.replace([" ", ":", "."], "-")
+      |> String.replace(~r/[^a-zA-Z0-9\-]/, "")
 
     temp_path = Path.join(System.tmp_dir!(), "export-#{timestamp}.tp")
     query = get_query(query)
@@ -48,7 +49,9 @@ defmodule AdminTable.PdfGenerator do
       {:ok, _} ->
         File.write!(path, "\n)", [:append])
         {:ok, path}
-      error -> error
+
+      error ->
+        error
     end
   end
 
@@ -61,35 +64,42 @@ defmodule AdminTable.PdfGenerator do
   defp stream_data_to_file(query, path, header_keys) do
     atom_keys = Enum.map(header_keys, &String.to_atom/1)
 
-    Repo.transaction(fn ->
-      query
-      |> Repo.stream(max_rows: 500)
-      |> Stream.map(fn row ->
-        atom_keys
+    Repo.transaction(
+      fn ->
+        query
+        |> Repo.stream(max_rows: 500)
+        |> Stream.map(fn row ->
+          atom_keys
           |> Enum.map(fn key -> Map.get(row, key) |> format_value() end)
           |> Enum.join(", ")
           |> Kernel.<>(",\n")
-          end)
-      |> Stream.chunk_every(500)
-      |> Stream.each(fn chunk ->
-        if Process.whereis(:chunk_monitor) do
-          send(:chunk_monitor, {:chunk, length(chunk)})
-        end
-        File.write!(path, Enum.join(chunk, ""), [:append])
-      end)
-      |> Stream.run()
+        end)
+        |> Stream.chunk_every(500)
+        |> Stream.each(fn chunk ->
+          if Process.whereis(:chunk_monitor) do
+            send(:chunk_monitor, {:chunk, length(chunk)})
+          end
 
-      {:ok, path}
-    end, timeout: :infinity)
+          File.write!(path, Enum.join(chunk, ""), [:append])
+        end)
+        |> Stream.run()
+
+        {:ok, path}
+      end,
+      timeout: :infinity
+    )
   end
+
   defp compile_typst_to_pdf(tp_path) do
     pdf_path = String.replace(tp_path, ".tp", ".pdf")
 
     case System.cmd("typst", ["compile", tp_path, pdf_path]) do
       {_, 0} ->
-      {:ok, pdf_path}
+        {:ok, pdf_path}
+
       # File.rm(tp_path)
-      {error, _} -> {:error, "Failed to compile PDF: #{error}"}
+      {error, _} ->
+        {:error, "Failed to compile PDF: #{error}"}
     end
   end
 
@@ -101,15 +111,18 @@ defmodule AdminTable.PdfGenerator do
   def format_value(value), do: "[#{value}]"
 
   def get_query(query) do
-    qs = query
-    |> String.trim_leading("#Ecto.Query<")
-    |> String.trim_trailing(">")
+    qs =
+      query
+      |> String.trim_leading("#Ecto.Query<")
+      |> String.trim_trailing(">")
 
     try do
-      query = Code.eval_string("""
-        import Ecto.Query
-        #{qs}
-      """) |> elem(0)
+      query =
+        Code.eval_string("""
+          import Ecto.Query
+          #{qs}
+        """)
+        |> elem(0)
 
       case query do
         %Ecto.Query{} -> query

@@ -1,6 +1,7 @@
 defmodule AdminTableWeb.Router do
   use AdminTableWeb, :router
   import Oban.Web.Router
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -30,7 +31,7 @@ defmodule AdminTableWeb.Router do
     live "/products/new", ProductLive.Index, :new
     live "/products/:id/edit", ProductLive.Index, :edit
 
-    oban_dashboard "/oban"
+    oban_dashboard("/oban")
     live "/products/:id", ProductLive.Show, :show
     live "/products/:id/show/edit", ProductLive.Show, :edit
   end

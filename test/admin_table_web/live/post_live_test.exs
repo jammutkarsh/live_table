@@ -110,7 +110,5 @@
 #       assert html =~ "some updated body"
 #     end
 #   end
-  
-  
-  
+
 # end

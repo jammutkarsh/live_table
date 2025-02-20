@@ -31,7 +31,7 @@ defmodule AdminTable.Select do
 
   # update to dynamically take primary key. not id.
   def apply(acc, %__MODULE__{field: _field, options: %{selected: values}}) do
-      dynamic([p], ^acc and p.id in ^values)
+    dynamic([p], ^acc and p.id in ^values)
   end
 
   # upgrade to use asynchronous option fetching.
@@ -48,7 +48,7 @@ defmodule AdminTable.Select do
         dropdown_extra_class="max-h-60 overflow-y-scroll"
       >
         <:option :let={option}>
-          <%= render_option_template(@filter.options.option_template, option) %>
+          {render_option_template(@filter.options.option_template, option)}
         </:option>
       </.live_select>
     </div>
@@ -56,18 +56,18 @@ defmodule AdminTable.Select do
   end
 
   def render_option_template(nil, %{label: label, value: [id, description]}) do
-      assigns = %{label: label, id: id, description: description}
-      ~H"""
-      <span class="text-sm"><%= @label %></span>
-      <br />
-      <span class="text-xs text-gray-600"><%= @id %> in</span>
-      <span class="text-xs text-gray-600"><%= @description %></span>
-      """
+    assigns = %{label: label, id: id, description: description}
+
+    ~H"""
+    <span class="text-sm">{@label}</span>
+    <br />
+    <span class="text-xs text-gray-600">{@id} in</span>
+    <span class="text-xs text-gray-600">{@description}</span>
+    """
   end
 
-    # Custom template provided as a function
+  # Custom template provided as a function
   def render_option_template(template_fn, option) do
     template_fn.(option)
   end
-
 end

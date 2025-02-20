@@ -54,7 +54,7 @@ defmodule AdminTable.FilterTest do
     test "doesn't apply search to non-searchable column" do
       fields = [
         name: %{searchable: true},
-        description: %{searchable: false},
+        description: %{searchable: false}
       ]
 
       result = AdminTable.Filter.apply_text_search("search term", fields)

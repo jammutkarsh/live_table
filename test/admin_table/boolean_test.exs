@@ -58,7 +58,7 @@ defmodule AdminTable.BooleanTest do
         render_component(&Boolean.render/1, %{
           filter: filter,
           key: key,
-          filters: filters
+          applied_filters: filters
         })
 
       assert html =~ ~s(type="checkbox")
@@ -75,13 +75,13 @@ defmodule AdminTable.BooleanTest do
         })
 
       key = "under-100"
-      filters = %{"under-100" => true}
+      applied_filters = %{"under-100" => true}
 
       html =
         render_component(&Boolean.render/1, %{
           filter: filter,
           key: key,
-          filters: filters
+          applied_filters: applied_filters
         })
 
       assert html =~ ~s(type="checkbox")
@@ -163,7 +163,7 @@ defmodule AdminTable.BooleanTest do
         render_component(&Boolean.render/1, %{
           filter: filter,
           key: "under$100",
-          filters: %{}
+          applied_filters: %{}
         })
 
       assert html =~ ~s(name="filters[under$100]")
@@ -183,7 +183,7 @@ defmodule AdminTable.BooleanTest do
         render_component(&Boolean.render/1, %{
           filter: filter,
           key: "test",
-          filters: %{}
+          applied_filters: %{}
         })
 
       # Label text between label tag should be empty

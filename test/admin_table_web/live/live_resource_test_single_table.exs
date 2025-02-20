@@ -127,7 +127,7 @@ defmodule TestWeb.LiveResourceTest do
   end
 
   describe "Pagination" do
-  test "list_resources returns all resources when no pagination", %{posts: posts} do
+    test "list_resources returns all resources when no pagination", %{posts: posts} do
       fields = TestResource.fields()
 
       options = %{
@@ -179,7 +179,7 @@ defmodule TestWeb.LiveResourceTest do
       }
 
       results = TestResource.list_resources(TestResource.fields(), options)
-      
+
       assert length(results) == 1
       assert Enum.find(results, &(&1.body == "A Post"))
     end

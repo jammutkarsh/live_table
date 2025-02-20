@@ -23,16 +23,15 @@ defmodule AdminTable.Sorting do
     sorts =
       Enum.reduce(sort_params, [], fn
         {sort_by, sort_order}, acc ->
-
           sort_expr =
             Enum.find_value(fields, fn
               {^sort_by, %{sortable: true, assoc: {assoc_name, field}}} ->
                 dynamic([{^assoc_name, a}], field(a, ^field))
 
               {^sort_by, %{sortable: true, computed: fragment}} ->
-              fragment
+                fragment
 
-                {^sort_by, %{sortable: true}} ->
+              {^sort_by, %{sortable: true}} ->
                 dynamic([a], field(a, ^sort_by))
 
               _ ->

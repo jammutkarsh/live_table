@@ -11,9 +11,10 @@ defmodule AdminTable.SelectTest do
     test "creates struct with correct attributes" do
       field = {:categories, :id}
       key = "category-select"
+
       options = %{
         label: "Category",
-        placeholder: "Select category",
+        placeholder: "Select category"
       }
 
       result = Select.new(field, key, options)
@@ -62,11 +63,13 @@ defmodule AdminTable.SelectTest do
       result = Select.apply(true, filter)
 
       assert is_struct(result, Ecto.Query.DynamicExpr)
-      query = from p in Product,
-                join: c in Category,
-                as: :categories,
-                on: c.id == p.category_id,
-                where: ^result
+
+      query =
+        from p in Product,
+          join: c in Category,
+          as: :categories,
+          on: c.id == p.category_id,
+          where: ^result
 
       assert inspect(query) =~ "where: ^true and c1.id in ^[1, 2]"
     end
@@ -77,29 +80,33 @@ defmodule AdminTable.SelectTest do
 
       result = Select.apply(initial_condition, filter)
 
-      query = from p in Product,
-                join: c in Category,
-                as: :categories,
-                on: c.id == p.category_id,
-                where: ^result
+      query =
+        from p in Product,
+          join: c in Category,
+          as: :categories,
+          on: c.id == p.category_id,
+          where: ^result
+
       assert inspect(query) =~ "where: p0.price > 100 and c1.id in ^[1]"
     end
   end
 
   describe "Select.render/1" do
     test "renders select component with correct attributes" do
-      filter = Select.new({:categories, :id}, "category", %{
-        label: "Category",
-        placeholder: "Choose category",
-        css_classes: "custom-wrapper",
-        label_classes: "custom-label"
-      })
+      filter =
+        Select.new({:categories, :id}, "category", %{
+          label: "Category",
+          placeholder: "Choose category",
+          css_classes: "custom-wrapper",
+          label_classes: "custom-label"
+        })
 
-      html = render_component(&Select.render/1, %{
-        key: "category",
-        filter: filter,
-        filters: %{}
-      })
+      html =
+        render_component(&Select.render/1, %{
+          key: "category",
+          filter: filter,
+          filters: %{}
+        })
 
       assert html =~ "Category"
       assert html =~ "Choose category"
@@ -130,27 +137,36 @@ defmodule AdminTable.SelectTest do
   describe "Select filter integration" do
     setup do
       # Create categories
-      {:ok, category1} = %Category{name: "Electronics", description: "Electronic items"} |> Repo.insert()
+      {:ok, category1} =
+        %Category{name: "Electronics", description: "Electronic items"} |> Repo.insert()
+
       {:ok, category2} = %Category{name: "Books", description: "Book items"} |> Repo.insert()
 
       # Create suppliers
-      {:ok, supplier1} = %Supplier{name: "Supplier A", contact_info: "supplier_a@example.com"} |> Repo.insert()
-      {:ok, supplier2} = %Supplier{name: "Supplier B", contact_info: "supplier_b@example.com"} |> Repo.insert()
+      {:ok, supplier1} =
+        %Supplier{name: "Supplier A", contact_info: "supplier_a@example.com"} |> Repo.insert()
+
+      {:ok, supplier2} =
+        %Supplier{name: "Supplier B", contact_info: "supplier_b@example.com"} |> Repo.insert()
 
       # Create products
-      {:ok, product1} = %Product{
-        name: "Laptop",
-        description: "High-end laptop",
-        price: 1000,
-        category_id: category1.id
-      } |> Repo.insert()
+      {:ok, product1} =
+        %Product{
+          name: "Laptop",
+          description: "High-end laptop",
+          price: 1000,
+          category_id: category1.id
+        }
+        |> Repo.insert()
 
-      {:ok, product2} = %Product{
-        name: "Book",
-        description: "Programming book",
-        price: 50,
-        category_id: category2.id
-      } |> Repo.insert()
+      {:ok, product2} =
+        %Product{
+          name: "Book",
+          description: "Programming book",
+          price: 50,
+          category_id: category2.id
+        }
+        |> Repo.insert()
 
       # Set up many-to-many relationships
       timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
@@ -191,7 +207,10 @@ defmodule AdminTable.SelectTest do
       refute product2.id in result_ids
     end
 
-    test "filters by supplier through association", %{suppliers: [supplier1, _], products: [product1, _]} do
+    test "filters by supplier through association", %{
+      suppliers: [supplier1, _],
+      products: [product1, _]
+    } do
       filter = Select.new({:suppliers, :id}, "supplier", %{selected: [supplier1.id]})
 
       query =

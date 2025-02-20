@@ -98,7 +98,6 @@ batch_size = 1_000
 total_products = 1_000_000
 max_concurrency = 8
 
-
 alias AdminTable.Repo
 alias AdminTable.Catalog.{Category, Product, Supplier, Image}
 alias Faker
@@ -111,23 +110,28 @@ defmodule SeedHelpers do
     case category_name do
       "Electronics" ->
         {Enum.random(["iPhone 14", "Samsung Galaxy S23", "MacBook Pro", "Dell XPS", "iPad Air"]),
-         Enum.random(30000..150000),
+         Enum.random(30000..150_000),
          "High-quality device with premium features. Includes warranty and after-sales support."}
+
       "Clothing" ->
         {Enum.random(["Cotton T-Shirt", "Denim Jeans", "Formal Shirt", "Winter Jacket"]),
-         Enum.random(499..3999),
-         "Comfortable fit with premium fabric quality. Machine washable."}
+         Enum.random(499..3999), "Comfortable fit with premium fabric quality. Machine washable."}
+
       "Books" ->
-        {Enum.random(["The Silent Patient", "Atomic Habits", "Rich Dad Poor Dad", "Think and Grow Rich"]),
-         Enum.random(199..999),
+        {Enum.random([
+           "The Silent Patient",
+           "Atomic Habits",
+           "Rich Dad Poor Dad",
+           "Think and Grow Rich"
+         ]), Enum.random(199..999),
          "Bestseller with excellent reader reviews. Available in paperback and hardcover."}
+
       "Food" ->
         {Enum.random(["Organic Honey", "Premium Coffee Beans", "Dark Chocolate", "Dried Fruits"]),
-         Enum.random(99..999),
-         "100% natural ingredients. No artificial preservatives."}
+         Enum.random(99..999), "100% natural ingredients. No artificial preservatives."}
+
       _ ->
-        {Enum.random(["Generic Item", "Basic Product"]),
-         Enum.random(99..999),
+        {Enum.random(["Generic Item", "Basic Product"]), Enum.random(99..999),
          "Standard quality product with good value for money."}
     end
   end
@@ -154,86 +158,103 @@ defmodule SeedHelpers do
 end
 
 # Create categories
-categories = [
-  "Electronics",
-  "Clothing",
-  "Books",
-  "Food",
-  "Home & Kitchen",
-  "Beauty & Personal Care",
-  "Sports & Fitness",
-  "Toys & Games",
-  "Health & Wellness",
-  "Automotive"
-] |> Enum.map(fn name ->
-  Category.changeset(%Category{}, %{
-    name: name,
-    description: "Quality #{name} from trusted brands"
-  }) |> Repo.insert!()
-end)
+categories =
+  [
+    "Electronics",
+    "Clothing",
+    "Books",
+    "Food",
+    "Home & Kitchen",
+    "Beauty & Personal Care",
+    "Sports & Fitness",
+    "Toys & Games",
+    "Health & Wellness",
+    "Automotive"
+  ]
+  |> Enum.map(fn name ->
+    Category.changeset(%Category{}, %{
+      name: name,
+      description: "Quality #{name} from trusted brands"
+    })
+    |> Repo.insert!()
+  end)
 
 # Create suppliers with Indian names
-suppliers = SeedHelpers.indian_supplier_names()
-|> Enum.map(fn company_name ->
-  Supplier.changeset(%Supplier{}, %{
-    name: company_name,
-    contact_info: "support@#{String.downcase(String.replace(company_name, " ", ""))}.in",
-    address: "#{Faker.Address.street_address()}, #{Enum.random(["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad"])}, India"
-  }) |> Repo.insert!()
-end)
+suppliers =
+  SeedHelpers.indian_supplier_names()
+  |> Enum.map(fn company_name ->
+    Supplier.changeset(%Supplier{}, %{
+      name: company_name,
+      contact_info: "support@#{String.downcase(String.replace(company_name, " ", ""))}.in",
+      address:
+        "#{Faker.Address.street_address()}, #{Enum.random(["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad"])}, India"
+    })
+    |> Repo.insert!()
+  end)
 
 # Rest of your code remains same, but modify the product creation part:
 1..div(total_products, batch_size)
 |> Task.async_stream(
   fn batch_number ->
-    Repo.transaction(fn ->
-      products = Enum.map(1..batch_size, fn _ ->
-        category = Enum.random(categories)
-        {product_name, price_range, description} = SeedHelpers.get_product_details(category.name)
-        price = Decimal.from_float((price_range / 100) |> Float.round(2))
+    Repo.transaction(
+      fn ->
+        products =
+          Enum.map(1..batch_size, fn _ ->
+            category = Enum.random(categories)
 
-        # Insert product
-        product = Product.changeset(%Product{}, %{
-          name: product_name,
-          description: description,
-          price: price,
-          stock_quantity: :rand.uniform(1000),
-          category_id: category.id
-        }) |> Repo.insert!()
+            {product_name, price_range, description} =
+              SeedHelpers.get_product_details(category.name)
 
-        # Rest of your code remains same...
-        Image.changeset(%Image{}, %{
-          url: "https://picsum.photos/seed/#{product.id}/400/300",
-          product_id: product.id
-        }) |> Repo.insert!()
+            price = Decimal.from_float((price_range / 100) |> Float.round(2))
 
-        Enum.take_random(suppliers, :rand.uniform(3))
-        |> Enum.each(fn supplier ->
-          Repo.insert_all("products_suppliers", [%{
-            product_id: product.id,
-            supplier_id: supplier.id,
-            inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-            updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-          }])
-        end)
+            # Insert product
+            product =
+              Product.changeset(%Product{}, %{
+                name: product_name,
+                description: description,
+                price: price,
+                stock_quantity: :rand.uniform(1000),
+                category_id: category.id
+              })
+              |> Repo.insert!()
 
-        product
-      end)
+            # Rest of your code remains same...
+            Image.changeset(%Image{}, %{
+              url: "https://picsum.photos/seed/#{product.id}/400/300",
+              product_id: product.id
+            })
+            |> Repo.insert!()
 
-      IO.puts "Completed batch #{batch_number}/#{div(total_products, batch_size)}"
-      length(products)
-    end, timeout: :infinity)
+            Enum.take_random(suppliers, :rand.uniform(3))
+            |> Enum.each(fn supplier ->
+              Repo.insert_all("products_suppliers", [
+                %{
+                  product_id: product.id,
+                  supplier_id: supplier.id,
+                  inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+                  updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+                }
+              ])
+            end)
+
+            product
+          end)
+
+        IO.puts("Completed batch #{batch_number}/#{div(total_products, batch_size)}")
+        length(products)
+      end,
+      timeout: :infinity
+    )
   end,
   max_concurrency: max_concurrency,
   timeout: :infinity
 )
 |> Stream.run()
 
-
-IO.puts """
+IO.puts("""
 Seeding complete!
 Categories: #{Repo.aggregate(Category, :count)}
 Suppliers: #{Repo.aggregate(Supplier, :count)}
 Products: #{Repo.aggregate(Product, :count)}
 Images: #{Repo.aggregate(Image, :count)}
-"""
+""")

@@ -248,11 +248,11 @@ defmodule AdminTable.SortingTest do
     test "sorts by computed fields with joins" do
       query =
         from p0 in AdminTable.Catalog.Product,
-        as: :resource,
-        left_join: s1 in assoc(p0, :suppliers),
-        as: :suppliers,
-        left_join: c2 in assoc(p0, :category),
-        as: :category
+          as: :resource,
+          left_join: s1 in assoc(p0, :suppliers),
+          as: :suppliers,
+          left_join: c2 in assoc(p0, :category),
+          as: :category
 
       sort_params = [
         total_value: :desc,
@@ -268,16 +268,20 @@ defmodule AdminTable.SortingTest do
         total_value: %{
           label: "Total Value",
           sortable: true,
-          computed: dynamic([resource: r, suppliers: s],
-            fragment("? * ? * 0.58", r.price, r.stock_quantity)
-          )
+          computed:
+            dynamic(
+              [resource: r, suppliers: s],
+              fragment("? * ? * 0.58", r.price, r.stock_quantity)
+            )
         }
       ]
 
       result = Sorting.sort(query, fields, sort_params)
 
       assert %Ecto.Query{} = result
-      assert inspect(result) =~ "order_by: [desc: fragment(\"? * ? * 0.58\", p0.price, p0.stock_quantity), asc: s1.name]"
+
+      assert inspect(result) =~
+               "order_by: [desc: fragment(\"? * ? * 0.58\", p0.price, p0.stock_quantity), asc: s1.name]"
     end
   end
 end
