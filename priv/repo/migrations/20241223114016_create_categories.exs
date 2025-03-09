@@ -1,4 +1,4 @@
-defmodule AdminTable.Repo.Migrations.CreateCategories do
+defmodule LiveTable.Repo.Migrations.CreateCategories do
   use Ecto.Migration
 
   def change do

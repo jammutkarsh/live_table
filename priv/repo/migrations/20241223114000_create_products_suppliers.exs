@@ -1,4 +1,4 @@
-defmodule AdminTable.Repo.Migrations.CreateProductsSuppliers do
+defmodule LiveTable.Repo.Migrations.CreateProductsSuppliers do
   use Ecto.Migration
 
   def change do

@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "live-select": "^1.0.0",
+    "nouislider": "^15.0.0"
+  },
+  "dependencies": {}
+}

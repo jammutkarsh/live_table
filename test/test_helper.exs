@@ -1,2 +1,4 @@
 ExUnit.start()
-Ecto.Adapters.SQL.Sandbox.mode(AdminTable.Repo, :manual)
+{:ok, _} = LiveTable.Repo.start_link()
+
+Ecto.Adapters.SQL.Sandbox.mode(LiveTable.Repo, :manual)

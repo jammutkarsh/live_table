@@ -1,4 +1,4 @@
-defmodule AdminTable.Repo.Migrations.CreateImages do
+defmodule LiveTable.Repo.Migrations.CreateImages do
   use Ecto.Migration
 
   def change do
