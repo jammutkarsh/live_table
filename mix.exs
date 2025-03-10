@@ -1,7 +1,7 @@
 defmodule LiveTable.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @source_url "https://github.com/gurujada/live_table"
 
   def project do
@@ -9,6 +9,7 @@ defmodule LiveTable.MixProject do
       app: :live_table,
       version: @version,
       elixir: "~> 1.14",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -36,7 +37,8 @@ defmodule LiveTable.MixProject do
       {:live_select, "~> 1.0"},
       {:oban_web, "~> 2.11"},
       {:postgrex, ">= 0.0.0"},
-      {:ex_doc, "~> 0.30", runtime: false}
+      {:ex_doc, "~> 0.30", runtime: false},
+      {:ecto_sql, "~> 3.10"}
     ]
   end
 
@@ -52,9 +54,11 @@ defmodule LiveTable.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+  
   defp docs do
     [
-      
       main: "readme",
       name: "LiveTable",
       source_url: @source_url,

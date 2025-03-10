@@ -1,115 +1,63 @@
 # Exports
 ## Export Support
 
-LiveTable supports both CSV and PDF exports with background processing:
+LiveTable supports both CSV and PDF exports with background processing. 
+It uses Oban to handle bakground jobs, so that export file can be prepared without hanging the LiveView.
 
-- CSV exports are handled by LiveTable.CsvGenerator
-- PDF exports use Typst for formatting and generation. Handled by LiveTable.PdfGenerator
-- Automatic file cleanup
+- CSV exports are handled by [`LiveTable.CsvGenerator`](https://github.com/gurujada/live_table/blob/master/lib/live_table/csv_generator.ex).
+  Makes use of [`NimbleCSV`](https://hex.pm/packages/nimble_csv) under the hood.
+- PDF exports use [`Typst`](https://typst.app/universe) for formatting and generation. Handled by [`LiveTable.PdfGenerator`](https://github.com/gurujada/live_table/blob/master/lib/live_table/pdf_generator.ex)
 
-## Customization
+The headers are the same as that rendered by the table. By default, all records are exported without pagination. 
 
-### Custom Components
 
-You can provide your own components module:
+## Configuration
+### Oban
+Configure your Oban instance and queues in your `config.exs`:
 
 ```elixir
-config :live_table,
-  components: MyApp.CustomComponents
+# config/config.exs
+config :live_table, Oban,
+  repo: YourApp.Repo,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [exports: 10]
+  # the queue named `exports` will be used for export jobs
 ```
 
-### Custom Styling
-
-The library uses Tailwind CSS by default, but you can customize the appearance by:
-
-1. Overriding the default classes in the configuration
-2. Providing custom templates for components
-
-## Background Processing
-
-LiveTable uses Oban for handling resource-intensive export operations asynchronously, preventing LiveView timeouts and ensuring a smooth user experience.
-
-### How it Works
-
-1. **Job Queuing**
-   When a user requests an export, LiveTable:
-   - Generates a unique export topic
-   - Subscribes the LiveView process to this topic
-   - Queues an Oban job with the export parameters
-
-```elixir
-def handle_event("export-csv", _params, socket) do
-  {export_topic, updated_socket} = maybe_subscribe(socket)
-
-  {:ok, _job} =
-    %{
-      query: query_string,
-      header_data: header_data,
-      topic: export_topic
-    }
-    |> LiveTable.Workers.CsvExportWorker.new()
-    |> Oban.insert()
-
-  {:noreply, updated_socket}
-end
-```
-
-2. **Background Processing**
-   The Oban worker processes the export in the background:
-   - Streams data in chunks to manage memory usage
-   - Monitors progress
-   - Generates the export file
-
-```elixir
-# In CsvExportWorker
-def perform(%Oban.Job{args: %{"header_data" => header_data, "query" => query, "topic" => topic}}) do
-  case LiveTable.CsvGenerator.generate_csv(query, header_data) do
-    {:ok, file_path} ->
-      Phoenix.PubSub.broadcast(
-        Application.fetch_env!(:live_table, :pubsub),
-        topic,
-        {:file_ready, file_path}
-      )
-      :ok
+#### Oban Web: Optional
+You can configure oban web in your router to monitor the background jobs.
+  
+  ```elixir
+  # lib/your_app_web/router.ex
+  import Oban.Web.Router
+ 
+  scope "/", YouAppWeb do
+    # your other routes
+    oban_dashboard("/oban")
   end
-end
-```
+  ```
 
-4. **File Delivery**
-   Once the export is complete:
-   - The worker broadcasts a `:file_ready` message
-   - The LiveView triggers the file download
-   - The temporary file is automatically cleaned up
+> **Note**: Remember to add exports to your list of allowed static paths in `lib/app_web.ex`
 
 ```elixir
-# In your LiveView
-def handle_info({:file_ready, file_path}, socket) do
-  socket =
-    socket
-    |> push_event("download", %{path: "/exports/#{filename}"})
-    |> put_flash(:info, "File downloaded successfully.")
-
-  Process.send_after(self(), {:cleanup_file, dest_path}, :timer.seconds(20))
-  {:noreply, socket}
-end
+def static_paths, do: ~w(assets fonts images favicon.ico exports robots.txt)
 ```
 
-### Configuration
 
-Configure the export queue in your Oban config:
+## CSV Exports
+LiveTable uses [`NimbleCSV`](https://hex.pm/packages/nimble_csv) in conjunction with Oban for handling CSV exports.
+Records are streamed inside of a [`Repo.transaction/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:transaction/2) function using [`Repo.stream/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:stream/2),
+so that no more than a 1000 records are loaded into memory at a time.
+This makes it extremely efficient and blazing fast for exporting large datasets, all the while remaining scalable.
 
-```elixir
-config :your_app, Oban,
-  queues: [exports: 10]  # Adjust concurrency as needed
-```
+## PDF Exports
+LiveTable uses [`Typst`](https://typst.app/universe) in conjunction with Oban for handling PDF exports.
+Typst is a Rust based typesetting engine that generates PDFs from .tp files
+This makes it extremely fast and well suited to handle large datasets.
 
-### Supported Export Formats
+Records are streamed inside of a [`Repo.transaction/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:transaction/2) function using [`Repo.stream/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:stream/2),
+so that no more than a 500 records are loaded into memory at a time.
 
-- **CSV Export**: Efficient streaming of large datasets
-- **PDF Export**: Uses Typst for professional-looking documents
-
-Both export types support:
-- Custom headers and formatting
-- Progress tracking
-- Automatic file cleanup
-- Error handling and retry logic
+> **Note**: LiveTable uses `System.cmd/2` to compile the .tp file into a PDF. Ensure that you have `typst` installed on your system.

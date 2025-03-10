@@ -95,7 +95,6 @@ defmodule LiveTable.TableComponent do
     """
   end
 
-  
   # Renders filter options based on provided filters configuration
   def filters(assigns) do
     ~H"""
@@ -111,7 +110,6 @@ defmodule LiveTable.TableComponent do
     """
   end
 
-  
   # Renders pagination controls with previous/next buttons and current page display
   def paginate(assigns) do
     ~H"""
@@ -123,11 +121,12 @@ defmodule LiveTable.TableComponent do
           class={[
             "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
             if String.to_integer(@current_page) == 1 do
-              "text-gray-400 border-gray-200 cursor-not-allowed"
+              "text-gray-400 border-gray-200 pointer-events-none"
             else
               "text-gray-600 border-gray-300 hover:bg-gray-50"
             end
           ]}
+          aria-disabled={String.to_integer(@current_page) == 1}
           aria-label="Previous page"
         >
           <span class="sr-only">Previous</span>
@@ -156,7 +155,6 @@ defmodule LiveTable.TableComponent do
     """
   end
 
-  
   # Renders CSV and PDF export buttons with loading states
   def exports(assigns) do
     ~H"""

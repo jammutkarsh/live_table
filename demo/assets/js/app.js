@@ -5,7 +5,7 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 
-import { TableHooks } from "../../../lib/live_table/assets/js/hooks/hooks.js";
+import { TableHooks } from "../../../assets/js/hooks/hooks.js";
 
 const Hooks = {
   ...TableHooks,

@@ -1,13 +1,13 @@
 defmodule DemoWeb.PostLive.Index do
   use DemoWeb, :live_view
   use LiveTable.LiveResource,
-    schema: Post,
+    schema: Demo.Timeline.Post,
     resource: "posts"
 
 
   @impl true
   def mount(_params, _session, socket) do
-    {:noreply, assign(socket, :page_title, "Listing Posts")}
+    {:ok, assign(socket, :page_title, "Listing Posts")}
   end
 
   def fields() do
