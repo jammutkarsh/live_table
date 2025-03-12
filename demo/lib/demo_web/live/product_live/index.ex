@@ -83,8 +83,8 @@ defmodule DemoWeb.ProductLive.Index do
           :supplier_email,
           "supplier",
           %{
-            label: "Email",
-            condition: dynamic([p, s], s.contact_info == "procurement@autopartsdirect.com")
+            label: "Mahindra",
+            condition: dynamic([p, s], s.name == "Mahindra Supplies")
           }
         ),
       prices:

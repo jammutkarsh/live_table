@@ -3,6 +3,8 @@
   LiveTable is a powerful Phoenix LiveView component library that provides dynamic, interactive tables with built-in support for sorting, filtering, pagination, and data export capabilities.
   Makes use of [`Oban`](https://hex.pm/packages/oban), [`NimbleCSV`](https://hex.pm/packages/nimble_csv) and [`Typst`](https://typst.app/universe) to handle exports.
 
+  **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
+
 ## Features
 
   - **Advanced Filtering System**
@@ -61,7 +63,7 @@
   Add the following to your `assets/js/app.js`:
 
   ```js
-  import {TableHooks} from "../../deps/live_table/assets/js/hooks/hooks.js"
+  import { TableHooks } from "../../deps/live_table/priv/static/live-table.js"
   let liveSocket = new LiveSocket("/live", Socket, {
     params: {_csrf_token: csrfToken},
     hooks: TableHooks
@@ -77,6 +79,10 @@ content: [
   // Other paths
   "../../lib/live_table/**/*.*ex"  // Add this line
 ]
+```
+And add the following to your `assets/css/app.css`:
+```css
+@import "../../deps/live_table/priv/static/live-table.css";
 ```
 
 ### Oban

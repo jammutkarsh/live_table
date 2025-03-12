@@ -38,7 +38,8 @@ defmodule LiveTable.MixProject do
       {:oban_web, "~> 2.11"},
       {:postgrex, ">= 0.0.0"},
       {:ex_doc, "~> 0.30", runtime: false},
-      {:ecto_sql, "~> 3.10"}
+      {:ecto_sql, "~> 3.10"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev}
     ]
   end
 
@@ -50,13 +51,13 @@ defmodule LiveTable.MixProject do
         "GitHub" => @source_url,
         "Docs" => "https://hexdocs.pm/live_table"
       },
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE assets)
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE priv/static/)
     ]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
-  
+
   defp docs do
     [
       main: "readme",
