@@ -1,7 +1,7 @@
 defmodule LiveTable.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
   @source_url "https://github.com/gurujada/live_table"
 
   def project do
@@ -21,7 +21,6 @@ defmodule LiveTable.MixProject do
 
   def application do
     [
-      mod: {LiveTable.Application, []},
       extra_applications: [:logger]
     ]
   end
