@@ -3,18 +3,13 @@ defmodule LiveTable.Application do
   use Application
 
   def start(_type, _args) do
-    children = children(Mix.env())
+    children = if Application.get_env(:live_table, :start_repo, false) do
+      [LiveTable.Repo]
+    else
+      []
+    end
 
     opts = [strategy: :one_for_one, name: LiveTable.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  defp children(:test) do
-    [LiveTable.Repo]
-  end
-
-  # In other environments, don't start any children
-  defp children(_) do
-    []
   end
 end
