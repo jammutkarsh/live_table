@@ -82,9 +82,9 @@ end)
 # Print out inserted post count
 IO.puts("Inserted #{Repo.aggregate(Post, :count, :id)} posts")
 
-batch_size = 1_000
-total_products = 1_000_000
-max_concurrency = 8
+batch_size = 1_00
+total_products = 1_00_000
+max_concurrency = 2
 
 alias Demo.Repo
 alias Demo.Catalog.{Category, Product, Supplier, Image}
