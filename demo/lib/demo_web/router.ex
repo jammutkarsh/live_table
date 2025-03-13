@@ -1,7 +1,7 @@
 defmodule DemoWeb.Router do
   use DemoWeb, :router
- import Oban.Web.Router
- 
+  import Oban.Web.Router
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -18,11 +18,9 @@ defmodule DemoWeb.Router do
   scope "/", DemoWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-
     live "/posts", PostLive.Index, :index
- oban_dashboard("/oban")
-    live "/products", ProductLive.Index, :index
+    oban_dashboard("/oban")
+    live "/", ProductLive.Index, :index
   end
 
   # Other scopes may use custom stacks.

@@ -18,7 +18,7 @@ defmodule Demo.Application do
       # {Demo.Worker, arg},
       # Start to serve requests, typically the last entry
       DemoWeb.Endpoint,
-            {Oban, Application.fetch_env!(:live_table, Oban)},
+      {Oban, Application.fetch_env!(:live_table, Oban)}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

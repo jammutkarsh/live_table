@@ -4,8 +4,18 @@ defmodule DemoWeb.PostLiveTest do
   import Phoenix.LiveViewTest
   import Demo.TimelineFixtures
 
-  @create_attrs %{body: "some body", likes_count: 42, repost_count: 42, photo_locations: ["option1", "option2"]}
-  @update_attrs %{body: "some updated body", likes_count: 43, repost_count: 43, photo_locations: ["option1"]}
+  @create_attrs %{
+    body: "some body",
+    likes_count: 42,
+    repost_count: 42,
+    photo_locations: ["option1", "option2"]
+  }
+  @update_attrs %{
+    body: "some updated body",
+    likes_count: 43,
+    repost_count: 43,
+    photo_locations: ["option1"]
+  }
   @invalid_attrs %{body: nil, likes_count: nil, repost_count: nil, photo_locations: []}
 
   defp create_post(_) do

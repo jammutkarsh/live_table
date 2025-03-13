@@ -1,7 +1,15 @@
 defmodule LiveTable.RangeTest do
   use LiveTable.DataCase
   import Phoenix.LiveViewTest
-  alias LiveTable.{Range, Repo, Catalog.Product, Catalog.Category, Catalog.Supplier, Catalog.Image}
+
+  alias LiveTable.{
+    Range,
+    Repo,
+    Catalog.Product,
+    Catalog.Category,
+    Catalog.Supplier,
+    Catalog.Image
+  }
 
   describe "Range.new/3" do
     test "creates struct with correct attributes" do
@@ -531,7 +539,7 @@ defmodule LiveTable.RangeTest do
   end
 
   describe "Range filter integration with joined schemas" do
-     setup do
+    setup do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
       yesterday = DateTime.add(now, -24 * 60 * 60)
       tomorrow = DateTime.add(now, 24 * 60 * 60)

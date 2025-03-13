@@ -11,20 +11,20 @@ defmodule LiveTable.TableComponent do
         <div class="p-1.5 min-w-full inline-block align-middle">
           <div class="border divide-y divide-gray-200 rounded-lg ark:border-neutral-700 ark:divide-neutral-700">
             <.form for={%{}} phx-debounce="300" phx-change="sort">
-              <div class="flex px-4 py-3">
-                <div class="relative flex max-w-md">
+              <div class="flex flex-col sm:flex-row flex-wrap items-start gap-6 px-4 py-4 w-full">
+                <div class="relative w-full sm:w-auto sm:min-w-[320px] sm:max-w-md">
                   <label class="sr-only">Search</label>
                   <input
                     type="text"
                     name="search"
                     autocomplete="off"
                     id="table-with-pagination-search"
-                    class="block w-full px-3 py-2 text-sm border-gray-200 rounded-lg shadow-sm ps-9 focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
+                    class="block w-full pl-11 pr-4 py-2.5 text-sm border-gray-200 rounded-lg shadow-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
                     placeholder="Search for items"
                     value={@options["filters"]["search"]}
                   />
 
-                  <div class="absolute inset-y-0 flex items-center pointer-events-none start-0 ps-3">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none translate-y-[1px]">
                     <svg
                       class="text-gray-400 size-4 ark:text-neutral-500"
                       xmlns="http://www.w3.org/2000/svg"
@@ -45,7 +45,7 @@ defmodule LiveTable.TableComponent do
                 <select
                   name="per_page"
                   value={@options["pagination"]["per_page"]}
-                  class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
+                  class="block min-w-[160px] px-4 py-2 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
                 >
                   {Phoenix.HTML.Form.options_for_select(
                     ["10", "25", "50"],
@@ -98,7 +98,7 @@ defmodule LiveTable.TableComponent do
   # Renders filter options based on provided filters configuration
   def filters(assigns) do
     ~H"""
-    <div class="flex gap-x-12">
+    <div class="flex flex-wrap items-center gap-8">
       <%= for {key, filter} <- @filters do %>
         {filter.__struct__.render(%{
           key: key,
@@ -158,7 +158,7 @@ defmodule LiveTable.TableComponent do
   # Renders CSV and PDF export buttons with loading states
   def exports(assigns) do
     ~H"""
-    <div class="flex gap-2">
+    <div class="flex gap-4 w-full sm:w-auto">
       <button
         type="button"
         phx-disable-with="Exporting CSV..."

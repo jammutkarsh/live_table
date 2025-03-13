@@ -2,6 +2,6 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-@import "../../../priv/static/live-table.css";
+@import "../deps/live_table/priv/static/live-table.css";
 
 /* This file is for your main application CSS */

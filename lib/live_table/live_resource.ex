@@ -21,7 +21,7 @@ defmodule LiveTable.LiveResource do
       import Filter
       use Helpers, resource: unquote(opts[:resource])
       alias LiveTable.{Boolean, Select, Range}
-      
+
       @resource_opts unquote(opts)
       @repo Application.compile_env(:live_table, :repo)
 

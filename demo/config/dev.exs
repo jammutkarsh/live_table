@@ -63,7 +63,7 @@ config :demo, DemoWeb.Endpoint,
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/demo_web/(controllers|live|components)/.*(ex|heex)$",
-       ~r"../../lib/*.*(ex)$"
+      ~r"../../lib/*.*(ex)$"
     ]
   ]
 

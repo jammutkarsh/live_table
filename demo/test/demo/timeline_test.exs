@@ -21,7 +21,12 @@ defmodule Demo.TimelineTest do
     end
 
     test "create_post/1 with valid data creates a post" do
-      valid_attrs = %{body: "some body", likes_count: 42, repost_count: 42, photo_locations: ["option1", "option2"]}
+      valid_attrs = %{
+        body: "some body",
+        likes_count: 42,
+        repost_count: 42,
+        photo_locations: ["option1", "option2"]
+      }
 
       assert {:ok, %Post{} = post} = Timeline.create_post(valid_attrs)
       assert post.body == "some body"
@@ -36,7 +41,13 @@ defmodule Demo.TimelineTest do
 
     test "update_post/2 with valid data updates the post" do
       post = post_fixture()
-      update_attrs = %{body: "some updated body", likes_count: 43, repost_count: 43, photo_locations: ["option1"]}
+
+      update_attrs = %{
+        body: "some updated body",
+        likes_count: 43,
+        repost_count: 43,
+        photo_locations: ["option1"]
+      }
 
       assert {:ok, %Post{} = post} = Timeline.update_post(post, update_attrs)
       assert post.body == "some updated body"

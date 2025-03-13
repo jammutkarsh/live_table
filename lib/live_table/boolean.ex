@@ -46,17 +46,17 @@ defmodule LiveTable.Boolean do
   use Phoenix.Component
 
   defstruct [:field, :key, :options]
-  
+
   @doc false
   def new(field, key, options) do
     %__MODULE__{field: field, key: key, options: options}
   end
-  
+
   @doc false
   def apply(acc, %__MODULE__{options: %{condition: condition}}) do
     dynamic(^acc and ^condition)
   end
-  
+
   @doc false
   def render(assigns) do
     components_module = Application.get_env(:live_table, :components, LiveTable.Components)

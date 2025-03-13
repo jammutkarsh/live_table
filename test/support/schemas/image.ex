@@ -7,6 +7,4 @@ defmodule LiveTable.Catalog.Image do
 
     timestamps(type: :utc_datetime)
   end
-
-
 end

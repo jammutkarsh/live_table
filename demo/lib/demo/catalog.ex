@@ -9,5 +9,4 @@ defmodule Demo.Catalog do
     |> select([c], {c.name, [c.id, c.contact_info]})
     |> Repo.all()
   end
-
 end

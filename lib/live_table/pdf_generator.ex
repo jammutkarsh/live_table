@@ -1,14 +1,13 @@
 defmodule LiveTable.PdfGenerator do
   @moduledoc false
-  
-  
+
   # A module for generating PDF files from Ecto queries using Typst.
   # This module provides functionality to convert Ecto queries into formatted PDF files,
   # with support for custom headers and efficient streaming of large datasets. It uses
   # Typst as an intermediate format for PDF generation.
-  
+
   @repo Application.compile_env(:live_table, :repo)
- 
+
   # Generates a PDF file from an Ecto query with specified headers.
   def generate_pdf(query, header_data) do
     timestamp =
@@ -120,7 +119,7 @@ defmodule LiveTable.PdfGenerator do
   end
 
   defp format_value(value), do: "[#{value}]"
-  
+
   def get_query(query) do
     qs =
       query

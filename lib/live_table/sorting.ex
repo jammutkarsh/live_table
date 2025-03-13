@@ -10,7 +10,6 @@ defmodule LiveTable.Sorting do
     query |> sort(fields, sort_params)
   end
 
-
   # Builds ORDER BY expressions based on sort params and field definitions
   def sort(query, fields, sort_params) do
     sorts =

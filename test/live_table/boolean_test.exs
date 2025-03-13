@@ -3,9 +3,9 @@ defmodule LiveTable.BooleanTest do
   import Phoenix.LiveViewTest
   alias LiveTable.{Boolean, Repo, Catalog.Product}
   use LiveTable.FilterHelpers
-  
+
   def filters(), do: []
-  
+
   describe "Boolean.new/3" do
     test "creates struct with correct attributes" do
       field = :price

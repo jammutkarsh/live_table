@@ -38,7 +38,7 @@ export const RangeSlider = {
 
     if (!this.slider) {
       const config = {
-        start: start,
+        start,
         range: { min, max },
         connect: true,
         tooltips: true,

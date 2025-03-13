@@ -6,7 +6,7 @@ config :live_table,
 config :esbuild,
   version: "0.17.11",
   live_table: [
-     args: ~w(
+    args: ~w(
        js/hooks/hooks.js
        --bundle
        --target=es2017
@@ -14,8 +14,8 @@ config :esbuild,
        --outfile=../priv/static/live-table.js
        --alias:live_select=#{Path.expand("../deps/live_select/priv/static/live_select.min.js", __DIR__)}
      ),
-     cd: Path.expand("../assets", __DIR__)
-   ],
+    cd: Path.expand("../assets", __DIR__)
+  ],
   live_table_css: [
     args: ~w(
       css/live-table.css

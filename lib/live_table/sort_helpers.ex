@@ -36,7 +36,6 @@ defmodule LiveTable.SortHelpers do
     """
   end
 
-  
   # Renders a non-sortable column header
   def sort_link(assigns) do
     ~H"""

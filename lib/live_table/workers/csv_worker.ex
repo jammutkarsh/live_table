@@ -1,5 +1,5 @@
 defmodule LiveTable.Workers.CsvExportWorker do
-@moduledoc false
+  @moduledoc false
   use Oban.Worker, queue: :exports
 
   @impl Oban.Worker

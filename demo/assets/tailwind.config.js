@@ -9,7 +9,7 @@ module.exports = {
     "./js/**/*.js",
     "../lib/demo_web.ex",
     "../lib/demo_web/**/*.*ex",
-    "../../lib/live_table/**/*.*ex",
+    "../deps/live_table/priv/static/*.js",
   ],
   theme: {
     extend: {
