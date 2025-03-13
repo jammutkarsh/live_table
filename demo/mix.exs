@@ -58,7 +58,7 @@ defmodule Demo.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:live_table, path: "../", override: true},
+      {:live_table, github: "gurujada/live_table"},
       {:faker, "~> 0.17"}
     ]
   end
