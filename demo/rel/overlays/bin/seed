@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/app/bin/demo eval "Demo.Release.seed()"
