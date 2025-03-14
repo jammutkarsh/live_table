@@ -76,7 +76,7 @@ defmodule LiveTable.ExportHelpers do
       @impl true
       def handle_info({:file_ready, file_path}, socket) do
         app_name = Mix.Project.config()[:app]
-        static_path = Path.join([:code.priv_dir(app_name), "static", "exports"]) |> dbg
+        static_path = Path.join([:code.priv_dir(app_name), "static", "exports"])
         File.mkdir_p!(static_path)
 
         filename = Path.basename(file_path)

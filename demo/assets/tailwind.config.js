@@ -10,6 +10,7 @@ module.exports = {
     "../lib/demo_web.ex",
     "../lib/demo_web/**/*.*ex",
     "../deps/live_table/priv/static/*.js",
+    "../deps/live_table/**/*.*ex",
   ],
   theme: {
     extend: {

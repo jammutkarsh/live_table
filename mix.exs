@@ -1,7 +1,7 @@
 defmodule LiveTable.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.2.0"
   @source_url "https://github.com/gurujada/live_table"
 
   def project do
@@ -33,7 +33,7 @@ defmodule LiveTable.MixProject do
       {:jason, "~> 1.2"},
       {:nimble_csv, "~> 1.2"},
       {:oban, "~> 2.19"},
-      {:live_select, "~> 1.0"},
+      {:live_select, "~> 1.5.4"},
       {:oban_web, "~> 2.11"},
       {:postgrex, ">= 0.0.0"},
       {:ex_doc, "~> 0.30", runtime: false},

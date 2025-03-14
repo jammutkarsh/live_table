@@ -44,7 +44,7 @@ defmodule LiveTable do
     ```elixir
     def deps do
       [
-        {:live_table, "~> 0.1.1"}
+        {:live_table, "~> 0.2.0"}
       ]
     ```
 
@@ -78,7 +78,8 @@ defmodule LiveTable do
   ```javascript
   content: [
     // Other paths
-    "../../lib/live_table/**/*.*ex"  // Add this line
+    "../deps/live_table/priv/static/*.js",
+    "../deps/live_table/**/*.*ex"
   ]
   ```
   And add the following to your `assets/css/app.css`:
@@ -183,7 +184,7 @@ defmodule LiveTable do
         streams={@streams}
       />
     ```
-
+  > **Note**: Using `shift` + click on a column header will sort by multiple columns.
 
   ## Filter Types
 

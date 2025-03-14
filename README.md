@@ -43,7 +43,7 @@
   ```elixir
   def deps do
     [
-      {:live_table, "~> 0.1.1"}
+      {:live_table, "~> 0.2.0"}
     ]
   ```
 
@@ -77,7 +77,8 @@ Add the following to your `assets/tailwind.config.js`:
 ```javascript
 content: [
   // Other paths
-  "../../lib/live_table/**/*.*ex"  // Add this line
+  "../deps/live_table/priv/static/*.js",
+  "../deps/live_table/**/*.*ex"
 ]
 ```
 And add the following to your `assets/css/app.css`:
@@ -182,6 +183,8 @@ def static_paths, do: ~w(assets fonts images favicon.ico exports robots.txt)
       streams={@streams}
     />
   ```
+
+  > **Note**: Using `shift` + click on a column header will sort by multiple columns.
 
 
 ## Filter Types
