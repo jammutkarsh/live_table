@@ -69,10 +69,10 @@ FROM ${RUNNER_IMAGE}
 
 RUN apt-get update -y && \
     apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
-    curl \
+    curl xz-utils \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-RUN curl -L -o typst.tar.xz "https://github.com/typst/typst/releases/download/v0.13.1/typst-riscv64gc-unknown-linux-gnu.tar.xz" && \
+RUN curl -L -o typst.tar.xz "https://github.com/typst/typst/releases/download/v0.10.0/typst-x86_64-unknown-linux-musl.tar.xz" && \
     tar -xf typst.tar.xz && \
     mv typst-x86_64-unknown-linux-musl/typst /usr/local/bin/ && \
     rm -rf typst-x86_64-unknown-linux-musl typst.tar.xz && \
