@@ -5,6 +5,7 @@
 
   **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
 
+![Demo](demo.png)
 ## Features
 
   - **Advanced Filtering System**

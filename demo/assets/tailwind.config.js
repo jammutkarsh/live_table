@@ -9,8 +9,9 @@ module.exports = {
     "./js/**/*.js",
     "../lib/demo_web.ex",
     "../lib/demo_web/**/*.*ex",
-    "../deps/live_table/priv/static/*.js",
-    "../deps/live_table/**/*.*ex",
+    // "../deps/live_table/priv/static/*.js",  // Use this in production
+    // "../deps/live_table/**/*.*ex",  // Use this in production
+    "../../**/*.*ex" // Use this if you've cloned the repo - to use styles from the parent folder.
   ],
   theme: {
     extend: {

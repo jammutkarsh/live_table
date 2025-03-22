@@ -63,7 +63,7 @@ defmodule LiveTable.ExportHelpers do
             updated_socket = assign(socket, export_topic: export_topic)
 
             if connected?(socket) do
-              Phoenix.PubSub.subscribe(Demo.PubSub, export_topic)
+              Phoenix.PubSub.subscribe(Application.fetch_env!(:live_table, :pubsub), export_topic)
             end
 
             {export_topic, updated_socket}

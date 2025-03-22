@@ -21,6 +21,7 @@ defmodule LiveTable.MixProject do
 
   def application do
     [
+      mod: {LiveTable.TestApplication, []},
       extra_applications: [:logger]
     ]
   end

@@ -5,6 +5,7 @@ defmodule LiveTable do
     Makes use of [`Oban`](https://hex.pm/packages/oban), [`NimbleCSV`](https://hex.pm/packages/nimble_csv) and [`Typst`](https://typst.app/universe) to handle exports.
 
   **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
+  ![Demo](demo.png)
 
   ## Features
 

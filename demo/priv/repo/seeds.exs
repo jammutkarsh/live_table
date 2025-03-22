@@ -83,7 +83,7 @@ end)
 IO.puts("Inserted #{Repo.aggregate(Post, :count, :id)} posts")
 
 batch_size = 1_00
-total_products = 1_00_000
+total_products = 10_00_000
 max_concurrency = 2
 
 alias Demo.Repo

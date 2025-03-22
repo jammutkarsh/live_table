@@ -43,8 +43,12 @@ defmodule LiveTable.LiveResource do
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
       end
 
-      def stream_resources(fields, query) do
-        list_resources(fields, query) |> @repo.all()
+      def stream_resources(fields, options) do
+        per_page = options["pagination"]["per_page"] |> String.to_integer()
+
+        list_resources(fields, options)
+        |> @repo.all()
+        |> Enum.split(per_page)
       end
     end
   end

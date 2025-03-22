@@ -2,7 +2,6 @@ defmodule LiveTable.TableComponent do
   @moduledoc false
   use Phoenix.Component
   import LiveTable.SortHelpers
-
   # Renders the main table component with search, pagination, filters and export options
   def live_table(assigns) do
     ~H"""
@@ -12,7 +11,15 @@ defmodule LiveTable.TableComponent do
           <div class="border divide-y divide-gray-200 rounded-lg ark:border-neutral-700 ark:divide-neutral-700">
             <.form for={%{}} phx-debounce="300" phx-change="sort">
               <div class="flex px-4 py-3">
-                <div class="relative flex max-w-md">
+                <div
+                  :if={
+                    Enum.any?(@fields, fn
+                      {_, %{searchable: true}} -> true
+                      _ -> false
+                    end)
+                  }
+                  class="relative flex max-w-md"
+                >
                   <label class="sr-only">Search</label>
                   <input
                     type="text"
@@ -57,7 +64,7 @@ defmodule LiveTable.TableComponent do
                 <.exports />
               </div>
             </.form>
-            <div class="overflow-hidden">
+            <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200 ark:divide-neutral-700">
                 <thead class="bg-gray-50 ark:bg-neutral-700">
                   <tr>
@@ -76,6 +83,27 @@ defmodule LiveTable.TableComponent do
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 ark:divide-neutral-700">
+                  <tr class="only:block hidden">
+                    <td colspan={length(@fields)} class="px-4 py-8 text-center sm:px-6">
+                      <div class="flex flex-col items-center justify-center space-y-2">
+                        <svg
+                          class="w-12 h-12 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 13h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p class="text-gray-500 text-base">No records found</p>
+                        <p class="text-gray-400 text-sm">Try adjusting your search or filters</p>
+                      </div>
+                    </td>
+                  </tr>
                   <tr :for={{id, resource} <- @streams.resources} id={id}>
                     <td
                       :for={{key, _field} <- @fields}
@@ -87,7 +115,11 @@ defmodule LiveTable.TableComponent do
                 </tbody>
               </table>
             </div>
-            <.paginate current_page={@options["pagination"]["page"]} />
+            <.paginate
+              :if={@options["pagination"]["paginate?"]}
+              current_page={@options["pagination"]["page"]}
+              has_next_page={@options["pagination"][:has_next_page]}
+            />
           </div>
         </div>
       </div>
@@ -106,6 +138,14 @@ defmodule LiveTable.TableComponent do
           applied_filters: @applied_filters
         })}
       <% end %>
+      <.link
+        :if={@applied_filters != %{"search" => ""}}
+        phx-click="sort"
+        phx-value-clear_filters="true"
+        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ark:bg-neutral-900 ark:border-neutral-700 ark:text-white ark:hover:bg-neutral-800"
+      >
+        Clear Filters
+      </.link>
     </div>
     """
   end
@@ -142,7 +182,14 @@ defmodule LiveTable.TableComponent do
         <.link
           phx-click="sort"
           phx-value-page={String.to_integer(@current_page) + 1}
-          class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md transition hover:bg-gray-50 flex items-center gap-1"
+          class={[
+            "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
+            if !@has_next_page do
+              "text-gray-400 border-gray-200 pointer-events-none"
+            else
+              "text-gray-600 border-gray-300 hover:bg-gray-50"
+            end
+          ]}
           aria-label="Next page"
         >
           <span class="sr-only">Next</span>

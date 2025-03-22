@@ -16,7 +16,7 @@ defmodule LiveTable.Paginate do
     offset = max((page - 1) * per_page, 0)
 
     query
-    |> limit(^per_page)
+    |> limit(^per_page + 1)
     |> offset(^offset)
   end
 end

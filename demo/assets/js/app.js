@@ -5,7 +5,11 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 
-import TableHooks from "../../deps/live_table/priv/static/live-table.js";
+// Use this in production
+// import TableHooks from "../../deps/live_table/priv/static/live-table.js";
+
+import TableHooks from "../../../priv/static/live-table.js"; // If you've cloned the repo, use this - to pull assets from parent directory.
+
 
 const Hooks = {
   ...TableHooks,

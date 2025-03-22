@@ -10,7 +10,7 @@ defmodule LiveTable.LiveViewHelpers do
       def handle_params(params, _url, socket) do
         sort_params =
           Map.get(params, "sort_params", %{"id" => "asc"})
-          |> Enum.map(fn {k, v} -> {String.to_atom(k), String.to_atom(v)} end)
+          |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} end)
 
         filters =
           Map.get(params, "filters", %{})
@@ -45,13 +45,16 @@ defmodule LiveTable.LiveViewHelpers do
           },
           "pagination" => %{
             "paginate?" => true,
-            "page" => params["page"] || "1",
-            "per_page" => params["per_page"] || "10"
+            "page" => params["page"] |> validate_page_num(),
+            "per_page" => params["per_page"] |> validate_per_page()
           },
           "filters" => filters
         }
 
-        resources = stream_resources(fields(), options)
+        {resources, overflow} = stream_resources(fields(), options)
+        has_next_page = length(overflow) > 0
+
+        options = put_in(options["pagination"][:has_next_page], has_next_page)
 
         socket =
           socket
@@ -66,8 +69,59 @@ defmodule LiveTable.LiveViewHelpers do
         {:noreply, socket}
       end
 
+      defp validate_page_num(nil), do: "1"
+
+      defp validate_page_num(n) when is_binary(n) do
+        try do
+          num = String.to_integer(n)
+
+          cond do
+            num > 0 -> n
+            true -> "1"
+          end
+        rescue
+          ArgumentError -> "1"
+        end
+      end
+
+      defp validate_per_page(nil), do: "10"
+
+      defp validate_per_page(n) when is_binary(n) do
+        try do
+          num = String.to_integer(n)
+
+          cond do
+            num > 0 and num <= 50 -> n
+            true -> "50"
+          end
+        rescue
+          ArgumentError -> "10"
+        end
+      end
+
       @impl true
       # Handles all LiveTable related events like sort, paginate and filter
+
+      def handle_event("sort", %{"clear_filters" => "true"}, socket) do
+        options =
+          socket.assigns.options
+          |> Enum.reduce(%{}, fn
+            {"filters", _v}, acc ->
+              Map.put(acc, "filters", %{})
+
+            {_, v}, acc when is_map(v) ->
+              Map.merge(acc, v)
+          end)
+          |> Map.take(~w(page per_page sort_params))
+          |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
+
+        socket =
+          socket
+          |> push_patch(to: ~p"/#{@resource_name}?#{options}")
+
+        {:noreply, socket}
+      end
+
       def handle_event("sort", params, socket) do
         shift_key = Map.get(params, "shift_key", false)
         sort_params = Map.get(params, "sort", nil)
