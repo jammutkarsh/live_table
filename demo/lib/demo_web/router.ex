@@ -18,10 +18,19 @@ defmodule DemoWeb.Router do
   scope "/", DemoWeb do
     pipe_through :browser
 
+    oban_dashboard("/oban")
     get "/", PageController, :home
     live "/posts", PostLive.Index, :index
-    oban_dashboard("/oban")
     live "/products", ProductLive.Index, :index
+    live "/employees", BasicTableLive
+    live "/boolean", Filters.BooleanLive
+    live "/range", Filters.RangeLive
+    live "/datetimerange", Filters.DateRangeLive
+    live "/select", Filters.SelectLive
+    live "/search", SearchLive
+    live "/joins", JoinLive
+    live "/joinslive", JoinsLive
+
   end
 
   # Other scopes may use custom stacks.

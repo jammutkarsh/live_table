@@ -8,6 +8,10 @@ defmodule Demo.Catalog.Product do
     field :price, :decimal
     field :stock_quantity, :integer
 
+    field :active, :boolean, default: true
+    field :featured, :boolean, default: false
+    field :in_stock, :boolean, default: true
+
     belongs_to :category, Demo.Catalog.Category
 
     many_to_many :suppliers, Demo.Catalog.Supplier,
@@ -21,7 +25,7 @@ defmodule Demo.Catalog.Product do
   @doc false
   def changeset(product, attrs) do
     product
-    |> cast(attrs, [:name, :description, :price, :stock_quantity, :category_id])
-    |> validate_required([:name, :description, :price, :stock_quantity])
+    |> cast(attrs, [:name, :description, :price, :stock_quantity, :category_id, :active, :featured, :in_stock])
+    |> validate_required([:name, :price, :stock_quantity, :category_id])
   end
 end
