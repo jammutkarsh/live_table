@@ -6,20 +6,24 @@ defmodule LiveTable.LiveResource do
     Paginate,
     Sorting,
     Helpers,
-    LiveViewHelpers,
-    TableComponent
+    TableComponent,
+    TableConfig
   }
 
   defmacro __using__(opts) do
     quote do
-      import LiveViewHelpers
-      import TableComponent
       import Ecto.Query
       import Sorting
       import Paginate
       import Join
       import Filter
-      use Helpers, resource: unquote(opts[:resource])
+
+      use Helpers,
+        resource: unquote(opts[:resource]),
+        table_options: TableConfig.get_table_options(table_options())
+
+      use TableComponent, table_options: TableConfig.get_table_options(table_options())
+
       alias LiveTable.{Boolean, Select, Range}
 
       @resource_opts unquote(opts)
@@ -27,7 +31,10 @@ defmodule LiveTable.LiveResource do
 
       def fields, do: []
       def filters, do: []
-      defoverridable fields: 0, filters: 0
+
+      def table_options(), do: %{}
+
+      defoverridable fields: 0, filters: 0, table_options: 0
 
       def list_resources(fields, options) do
         schema = @resource_opts[:schema]
@@ -43,12 +50,20 @@ defmodule LiveTable.LiveResource do
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
       end
 
-      def stream_resources(fields, options) do
+      def stream_resources(fields, %{"pagination" => %{"paginate?" => true}} = options) do
         per_page = options["pagination"]["per_page"] |> String.to_integer()
 
         list_resources(fields, options)
         |> @repo.all()
         |> Enum.split(per_page)
+      end
+
+      def stream_resources(fields, %{"pagination" => %{"paginate?" => false}} = options) do
+        list_resources(fields, options) |> @repo.all()
+      end
+
+      def get_merged_table_options do
+        TableConfig.get_table_options(table_options())
       end
     end
   end

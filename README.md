@@ -6,6 +6,7 @@
   **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
 
 ![Demo](demo.png)
+
 ## Features
 
   - **Advanced Filtering System**
@@ -119,6 +120,11 @@ You can configure oban web in your router to monitor the background jobs.
 ```elixir
 def static_paths, do: ~w(assets fonts images favicon.ico exports robots.txt)
 ```
+
+
+## Table Configuration
+LiveTable supports flexible configuration options at both the application and table level. See [Table Configuration](table_config.md) for detailed documentation.
+
 
 ## Basic Usage
 

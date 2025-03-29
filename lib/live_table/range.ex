@@ -21,7 +21,7 @@ defmodule LiveTable.Range do
   - `:slider_classes` - CSS classes for the slider element
   - `:label_classes` - CSS classes for the label element
 
-  For default values, see: [LiveTable.Range source code](https://github.com/your-repo/admin-table/blob/main/lib/live_table/range.ex)
+  For default values, see: [LiveTable.Range source code](https://github.com/gurujada/live_table/blob/master/lib/live_table/range.ex)
 
   ## Types Support
   The module supports three types of range filters:
@@ -102,11 +102,6 @@ defmodule LiveTable.Range do
     max: ~D[2024-12-31],
   })
   ```
-
-  ### TODO:
-  - [ ] Set slider value based on URL params
-  - [ ] Format the slider appearance. Apply classes at [Preline UI](https://preline.co/docs/advanced-range-slider.html#range-with-tooltip)
-  - [ ] Add support for customizing the range slider appearance(The slider classes should apply to the slider element)
   """
 
   import Ecto.Query

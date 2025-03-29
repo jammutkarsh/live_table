@@ -6,7 +6,10 @@ defmodule LiveTable.Helpers do
     quote do
       import LiveTable.SortHelpers
       use LiveTable.FilterHelpers
-      use LiveTable.LiveViewHelpers, resource: unquote(opts[:resource])
+
+      use LiveTable.LiveViewHelpers,
+        resource: unquote(opts[:resource]),
+        table_options: unquote(opts[:table_options])
 
       def parse_range_values(:number, min, max) do
         {min_float, _} = Float.parse(min)

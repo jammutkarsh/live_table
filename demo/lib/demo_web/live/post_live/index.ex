@@ -18,4 +18,8 @@ defmodule DemoWeb.PostLive.Index do
       repost_count: %{label: "Repost count", sortable: true}
     ]
   end
+
+  def table_options do
+    %{pagination: %{enabled: true, sizes: [5, 10, 100]}, exports: %{enabled: false}}
+  end
 end

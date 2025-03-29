@@ -22,7 +22,7 @@ defmodule LiveTable.Select do
     - `:label_classes` - CSS classes for the label element
     - `:select_classes` - CSS classes for the select element
 
-    For default values, see: [LiveTable.Select source code](https://github.com/your-repo/admin-table/blob/main/lib/live_table/select.ex)
+    For default values, see: [LiveTable.Select source code](https://github.com/gurujada/live_table/blob/master/lib/live_table/select.ex)
 
   ## Working with Options
 
@@ -46,7 +46,7 @@ defmodule LiveTable.Select do
   ### 2. Dynamic Options via `options_source`
 
   Load options dynamically using a function or module. Used for fetching new options based on typed input.
-  Uses `apply/3` under the hood to apply the function. Uses [`live-select-change`](git link) event to update the options.
+  Uses `apply/3` under the hood to apply the function. Uses [`live-select-change`](https://github.com/gurujada/live_table/blob/master/lib/live_table/liveview_helpers.ex#L109) event to update the options.
 
     ```elixir
       # Point to your custom function
@@ -79,7 +79,7 @@ defmodule LiveTable.Select do
     ```elixir
     %{label: label, value: [id, description]}
     ```
-    The default template can be seen at [git link](https://)
+    The default template can be seen at [git link](https://github.com/gurujada/live_table/blob/master/lib/live_table/select.ex#L211)
 
   ### Custom Template
     Custom templates can be provided as functions that take an option map and return rendered HTML:
@@ -143,11 +143,6 @@ defmodule LiveTable.Select do
 
     Currently, nested relations are not supported.
 
-  ### TODO:
-    - [ ] Interface the select classes with the live-select component.
-    - [ ] Update state from URL params.
-    - [ ] Add support for multiple option selection.
-    - [ ] Move away from live_select
   """
   import Ecto.Query
   import LiveSelect

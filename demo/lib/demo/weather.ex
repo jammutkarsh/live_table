@@ -1,5 +1,4 @@
 defmodule Demo.Weather do
-  import Ecto.Query
   alias Demo.Repo
   alias Demo.Weather.Record
 

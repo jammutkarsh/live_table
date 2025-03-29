@@ -2,15 +2,21 @@ defmodule LiveTable.LiveViewHelpers do
   @moduledoc false
   defmacro __using__(opts) do
     quote do
-      @resource_name unquote(opts[:resource])
+            @resource_name unquote(opts[:resource])
+
       use LiveTable.ExportHelpers
 
       @impl true
       # Fetches records based on URL params
       def handle_params(params, _url, socket) do
+        default_sort = get_in(unquote(opts[:table_options]), [:sorting, :default_sort])
+
         sort_params =
-          Map.get(params, "sort_params", %{"id" => "asc"})
-          |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} end)
+          Map.get(params, "sort_params", default_sort)
+          |> Enum.map(fn
+            {k, v} when is_atom(k) and is_atom(v) -> {k, v} # for default case
+            {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} # for incoming params from url
+            end)
 
         filters =
           Map.get(params, "filters", %{})
@@ -40,21 +46,27 @@ defmodule LiveTable.LiveViewHelpers do
 
         options = %{
           "sort" => %{
-            "sortable?" => true,
+            "sortable?" => get_in(unquote(opts[:table_options]), [:sorting, :enabled]),
             "sort_params" => sort_params
           },
           "pagination" => %{
-            "paginate?" => true,
+            "paginate?" => get_in(unquote(opts[:table_options]), [:pagination, :enabled]),
             "page" => params["page"] |> validate_page_num(),
             "per_page" => params["per_page"] |> validate_per_page()
           },
           "filters" => filters
         }
 
-        {resources, overflow} = stream_resources(fields(), options)
-        has_next_page = length(overflow) > 0
+        {resources, updated_options} =
+          case stream_resources(fields(), options) do
+            {resources, overflow} ->
+              has_next_page = length(overflow) > 0
+              options = put_in(options["pagination"][:has_next_page], has_next_page)
+              {resources, options}
 
-        options = put_in(options["pagination"][:has_next_page], has_next_page)
+            resources when is_list(resources) ->
+              {resources, options}
+          end
 
         socket =
           socket
@@ -64,7 +76,7 @@ defmodule LiveTable.LiveViewHelpers do
             end,
             reset: true
           )
-          |> assign(:options, options)
+          |> assign(:options, updated_options)
 
         {:noreply, socket}
       end

@@ -1,16 +1,19 @@
 defmodule LiveTable.TableComponent do
   @moduledoc false
+  defmacro __using__(opts) do
+quote do
   use Phoenix.Component
   import LiveTable.SortHelpers
   # Renders the main table component with search, pagination, filters and export options
-  def live_table(assigns) do
+  def live_table(var!(assigns)) do
+    var!(assigns) = assign(var!(assigns), :table_options, unquote(opts)[:table_options])
     ~H"""
     <div class="flex flex-col" id=" live-table" phx-hook="Download">
       <div class="-m-1.5 overflow-x-auto">
         <div class="p-1.5 min-w-full inline-block align-middle">
           <div class="border divide-y divide-gray-200 rounded-lg ark:border-neutral-700 ark:divide-neutral-700">
-            <.form for={%{}} phx-debounce="300" phx-change="sort">
-              <div class="flex px-4 py-3">
+            <.form for={%{}} phx-debounce={get_in(@table_options, [:search, :debounce])} phx-change="sort">
+              <div class="flex px-4 py-3 empty:hidden">
                 <div
                   :if={
                     Enum.any?(@fields, fn
@@ -50,18 +53,22 @@ defmodule LiveTable.TableComponent do
                   </div>
                 </div>
                 <select
+                  :if={@options["pagination"]["paginate?"]}
                   name="per_page"
                   value={@options["pagination"]["per_page"]}
                   class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none ark:bg-neutral-900 ark:border-neutral-700 ark:text-neutral-400 ark:placeholder-neutral-500 ark:focus:ring-neutral-600"
                 >
                   {Phoenix.HTML.Form.options_for_select(
-                    ["10", "25", "50"],
+                    get_in(@table_options, [:pagination, :sizes]),
                     @options["pagination"]["per_page"]
                   )}
                 </select>
 
                 <.filters filters={@filters} applied_filters={@options["filters"]} />
-                <.exports />
+                <.exports
+                  :if={get_in(@table_options, [:exports, :enabled])}
+                  formats={get_in(@table_options, [:exports, :formats])}
+                />
               </div>
             </.form>
             <div class="overflow-x-auto">
@@ -128,7 +135,7 @@ defmodule LiveTable.TableComponent do
   end
 
   # Renders filter options based on provided filters configuration
-  def filters(assigns) do
+  def filters(var!(assigns)) do
     ~H"""
     <div class="flex justify-between">
       <%= for {key, filter} <- @filters do %>
@@ -151,7 +158,7 @@ defmodule LiveTable.TableComponent do
   end
 
   # Renders pagination controls with previous/next buttons and current page display
-  def paginate(assigns) do
+  def paginate(var!(assigns)) do
     ~H"""
     <div class="px-4 py-2">
       <nav class="flex items-center gap-2" aria-label="Pagination">
@@ -203,55 +210,70 @@ defmodule LiveTable.TableComponent do
   end
 
   # Renders CSV and PDF export buttons with loading states
-  def exports(assigns) do
+  def exports(var!(assigns)) do
     ~H"""
     <div class="flex gap-2">
-      <button
-        type="button"
-        phx-disable-with="Exporting CSV..."
-        phx-click="export-csv"
-        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ark:bg-neutral-900 ark:border-neutral-700 ark:text-white ark:hover:bg-neutral-800"
-      >
-        <svg
-          class="w-4 h-4"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-        Export CSV
-      </button>
-
-      <button
-        type="button"
-        phx-disable-with="Exporting PDF..."
-        phx-click="export-pdf"
-        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ark:bg-neutral-900 ark:border-neutral-700 ark:text-white ark:hover:bg-neutral-800"
-      >
-        <svg
-          class="w-4 h-4"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-        Export PDF
-      </button>
+      <.export_file :for={format <- @formats} type={format} />
     </div>
     """
+  end
+
+  def export_file(%{type: :csv} = var!(assigns)) do
+    ~H"""
+    <button
+      type="button"
+      phx-disable-with="Exporting CSV..."
+      phx-click="export-csv"
+      class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ark:bg-neutral-900 ark:border-neutral-700 ark:text-white ark:hover:bg-neutral-800"
+    >
+      <svg
+        class="w-4 h-4"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
+      Export CSV
+    </button>
+    """
+  end
+
+  def export_file(%{type: :pdf} = var!(assigns)) do
+    ~H"""
+    <button
+      type="button"
+      phx-disable-with="Exporting PDF..."
+      phx-click="export-pdf"
+      class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ark:bg-neutral-900 ark:border-neutral-700 ark:text-white ark:hover:bg-neutral-800"
+    >
+      <svg
+        class="w-4 h-4"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
+      Export PDF
+    </button>
+    """
+
+
+    end
+  end
+
   end
 end

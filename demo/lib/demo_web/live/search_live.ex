@@ -65,10 +65,16 @@ defmodule DemoWeb.SearchLive do
           filters={filters()}
           options={@options}
           streams={@streams}
+          table_options={table_options()}
         />
       </div>
     </div>
     """
   end
 
+  def table_options() do
+    %{
+      exports: %{enabled: false}
+    }
+  end
 end
