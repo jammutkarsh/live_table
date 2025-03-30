@@ -15,6 +15,23 @@ const Hooks = {
   ...TableHooks,
 };
 
+
+// Dark mode handling
+let darkMode = localStorage.getItem('darkMode');
+
+// Check initial dark mode preference
+if (darkMode === 'true' || (!darkMode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  document.documentElement.classList.add('dark');
+  localStorage.setItem('darkMode', 'true');
+}
+
+// Listen for the custom event
+window.addEventListener('toggle-dark-mode', () => {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+});
+
+
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");

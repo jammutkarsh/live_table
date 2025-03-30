@@ -139,7 +139,7 @@ defmodule LiveTable.Range do
     unit: "",
     css_classes: "w-64 mx-4",
     slider_classes: "w-64 h-2 mt-4",
-    label_classes: "block text-sm font-medium mb-2 ark:text-neutral-200"
+    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200"
   }
 
   @doc false

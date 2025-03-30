@@ -53,7 +53,7 @@ defmodule DemoWeb.Filters.BooleanLive do
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="py-1">
         <h1 class="text-2xl font-semibold mb-4">Boolean Filters Demo</h1>
-        <p class="text-gray-600 mb-6">
+        <p class="text-gray-600 mb-6 dark:text-white">
           Demonstrates boolean filter capabilities. Try combining multiple filters:
           <ul class="list-disc list-inside mt-2">
             <li>Active products only</li>

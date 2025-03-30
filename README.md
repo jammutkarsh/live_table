@@ -5,7 +5,7 @@
 
   **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
 
-![Demo](demo.png)
+![Demo](https://github.com/gurujada/live_table/blob/master/demo.png?raw=true)
 
 ## Features
 

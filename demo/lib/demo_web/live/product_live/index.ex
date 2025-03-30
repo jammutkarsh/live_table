@@ -99,4 +99,8 @@ defmodule DemoWeb.ProductLive.Index do
         })
     ]
   end
+
+  def table_options() do
+    %{exports: %{enabled: true}}
+  end
 end

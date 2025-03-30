@@ -48,12 +48,12 @@ defmodule DemoWeb.JoinLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 dark:bg-neutral-900">
       <div class="py-8">
-        <h1 class="text-2xl font-semibold mb-4">Table Joins Demo</h1>
-        <p class="text-gray-600 mb-6">
+        <h1 class="text-2xl font-semibold mb-4 dark:text-neutral-100">Table Joins Demo</h1>
+        <p class="text-gray-600 dark:text-neutral-400 mb-6">
           Demonstrates different types of table joins and computed fields. Features:
-          <ul class="list-disc list-inside mt-2">
+          <ul class="list-disc list-inside mt-2 dark:text-neutral-300">
             <li>One-to-many join (Products → Categories)</li>
             <li>Many-to-many join (Products ↔ Suppliers)</li>
             <li>One-to-one join (Products → Image)</li>

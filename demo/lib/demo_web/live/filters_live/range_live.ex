@@ -71,7 +71,7 @@ defmodule DemoWeb.Filters.RangeLive do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="py-1">
-        <h1 class="text-2xl font-semibold mb-4">Range Filters Demo</h1>
+        <h1 class="text-2xl font-semibold mb-4 dark:text-white">Range Filters Demo</h1>
         <p class="text-gray-600 mb-6">
           Demonstrates numeric range filter capabilities. Features:
           <ul class="list-disc list-inside mt-2">

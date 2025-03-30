@@ -5,6 +5,7 @@ const plugin = require("tailwindcss/plugin");
 const fs = require("fs");
 const path = require("path");
 module.exports = {
+  darkMode: 'class',
   content: [
     "./js/**/*.js",
     "../lib/demo_web.ex",

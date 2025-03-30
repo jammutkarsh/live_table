@@ -37,8 +37,8 @@ defmodule DemoWeb.BasicTableLive do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="py-1">
-        <h1 class="text-2xl font-semibold mb-4">Basic Table Demo</h1>
-        <p class="text-gray-600 mb-6">
+        <h1 class="text-2xl font-semibold mb-4 dark:text-white">Basic Table Demo</h1>
+        <p class="text-gray-600 mb-6 dark:text-gray-300">
           Demonstrates basic LiveTable features: sorting and pagination.
           Click on column headers to sort, use shift+click for multi-column sort.
         </p>

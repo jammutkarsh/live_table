@@ -68,7 +68,7 @@ import_config "#{config_env()}.exs"
 config :live_table,
   repo: Demo.Repo,
   pubsub: Demo.PubSub,
-  components: DemoWeb.CoreComponents,
+  # components: DemoWeb.CoreComponents,
   defaults: %{
   exports: %{
     enabled: false

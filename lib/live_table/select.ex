@@ -160,7 +160,7 @@ defmodule LiveTable.Select do
     prompt: "Select an option",
     placeholder: "Select an option",
     css_classes: "w-64 mx-4",
-    label_classes: "block text-sm font-medium mb-2 ark:text-neutral-200",
+    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
     select_classes:
       "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
   }

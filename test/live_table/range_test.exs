@@ -251,7 +251,7 @@ defmodule LiveTable.RangeTest do
     test "supports custom styling" do
       filter =
         Range.new(:price, "price-range", %{
-          label_classes: "custom-label-class dark:text-white"
+          label_classes: "custom-label-class ddark:text-white"
         })
 
       html =
@@ -261,7 +261,7 @@ defmodule LiveTable.RangeTest do
         })
 
       assert html =~ "custom-label-class"
-      assert html =~ "dark:text-white"
+      assert html =~ "ddark:text-white"
     end
 
     test "supports custom slider appearance" do

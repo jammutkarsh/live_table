@@ -39,7 +39,7 @@ defmodule DemoWeb.SearchLive do
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="py-1">
         <h1 class="text-2xl font-semibold mb-4">Search Functionality Demo</h1>
-        <p class="text-gray-600 mb-6">
+        <p class="text-gray-600 mb-6 dark:text-white">
           Demonstrates full-text search capabilities. Features:
           <ul class="list-disc list-inside mt-2">
             <li>Search across multiple fields (name, description)</li>

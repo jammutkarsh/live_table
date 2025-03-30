@@ -55,7 +55,7 @@ defmodule DemoWeb.Filters.DateRangeLive do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="py-8">
-        <h1 class="text-2xl font-semibold mb-4">Date & DateTime Range Filters Demo</h1>
+        <h1 class="text-2xl font-semibold mb-4 dark:text-white">Date & DateTime Range Filters Demo</h1>
         <p class="text-gray-600 mb-6">
           Demonstrates both date and datetime range filter capabilities. Features:
           <ul class="list-disc list-inside mt-2">
