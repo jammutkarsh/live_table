@@ -1,6 +1,6 @@
 defmodule DemoWeb.SearchLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "search", schema: Demo.Catalog.Product
+  use LiveTable.LiveResource, schema: Demo.Catalog.Product
 
   def fields do
     [

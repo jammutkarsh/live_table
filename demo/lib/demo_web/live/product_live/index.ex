@@ -2,8 +2,7 @@ defmodule DemoWeb.ProductLive.Index do
   use DemoWeb, :live_view
 
   use LiveTable.LiveResource,
-    schema: Demo.Catalog.Product,
-    resource: "products"
+    schema: Demo.Catalog.Product
 
   def mount(_params, _session, socket) do
     {:ok, assign(socket, page_title: "Products")}

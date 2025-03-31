@@ -1,6 +1,6 @@
 defmodule DemoWeb.Filters.SelectLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "select", schema: Demo.Catalog.Product
+  use LiveTable.LiveResource, schema: Demo.Catalog.Product
   alias LiveTable.Select
   alias Demo.Catalog
 

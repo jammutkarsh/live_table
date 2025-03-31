@@ -2,8 +2,7 @@ defmodule DemoWeb.PostLive.Index do
   use DemoWeb, :live_view
 
   use LiveTable.LiveResource,
-    schema: Demo.Timeline.Post,
-    resource: "posts"
+    schema: Demo.Timeline.Post
 
   @impl true
   def mount(_params, _session, socket) do

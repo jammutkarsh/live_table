@@ -1,6 +1,6 @@
 defmodule DemoWeb.JoinsLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "joinslive", schema: Demo.Events.Event
+  use LiveTable.LiveResource, schema: Demo.Events.Event
 
   def fields do
     [
