@@ -19,7 +19,7 @@ defmodule LiveTable.LiveResource do
       import Filter
 
       use Helpers,
-        resource: unquote(opts[:resource]),
+        schema: unquote(opts[:schema]),
         table_options: TableConfig.get_table_options(table_options())
 
       use TableComponent, table_options: TableConfig.get_table_options(table_options())
