@@ -1,6 +1,6 @@
 defmodule DemoWeb.Filters.DateRangeLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "datetimerange", schema: Demo.Events.Event
+  use LiveTable.LiveResource, schema: Demo.Events.Event
   alias LiveTable.Range
 
   def fields do

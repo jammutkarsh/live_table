@@ -1,6 +1,6 @@
 defmodule DemoWeb.JoinLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "joins", schema: Demo.Catalog.Product
+  use LiveTable.LiveResource, schema: Demo.Catalog.Product
 
   def fields do
     [

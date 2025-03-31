@@ -1,7 +1,7 @@
 defmodule DemoWeb.BasicTableLive do
   use DemoWeb, :live_view
 
-  use LiveTable.LiveResource, resource: "employees", schema: Demo.HR.Employee
+  use LiveTable.LiveResource, schema: Demo.HR.Employee
 
   def mount(_params, _session, socket) do
     socket = socket |> assign(:page_title, "Basic Table Demo")

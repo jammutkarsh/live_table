@@ -1,6 +1,6 @@
 defmodule DemoWeb.Filters.BooleanLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "boolean", schema: Demo.Catalog.Product
+  use LiveTable.LiveResource, schema: Demo.Catalog.Product
   alias LiveTable.Boolean
 
   def fields do

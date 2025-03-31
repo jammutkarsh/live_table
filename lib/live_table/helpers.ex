@@ -8,7 +8,7 @@ defmodule LiveTable.Helpers do
       use LiveTable.FilterHelpers
 
       use LiveTable.LiveViewHelpers,
-        resource: unquote(opts[:resource]),
+        schema: unquote(opts[:schema]),
         table_options: unquote(opts[:table_options])
 
       def parse_range_values(:number, min, max) do

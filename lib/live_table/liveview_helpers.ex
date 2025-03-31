@@ -2,14 +2,14 @@ defmodule LiveTable.LiveViewHelpers do
   @moduledoc false
   defmacro __using__(opts) do
     quote do
-            @resource_name unquote(opts[:resource])
 
       use LiveTable.ExportHelpers
 
       @impl true
       # Fetches records based on URL params
-      def handle_params(params, _url, socket) do
+      def handle_params(params, url, socket) do
         default_sort = get_in(unquote(opts[:table_options]), [:sorting, :default_sort])
+        current_path = URI.parse(url).path |> String.trim_leading("/")
 
         sort_params =
           Map.get(params, "sort_params", default_sort)
@@ -68,15 +68,19 @@ defmodule LiveTable.LiveViewHelpers do
               {resources, options}
           end
 
+          schema = unquote(opts[:schema])
+          table_name = schema.__schema__(:source)
+
         socket =
           socket
           |> stream(:resources, resources,
             dom_id: fn resource ->
-              "#{@resource_name}-#{Ecto.UUID.generate()}"
+              "#{table_name}-#{Ecto.UUID.generate()}"
             end,
             reset: true
           )
           |> assign(:options, updated_options)
+          |> assign(:current_path, current_path)
 
         {:noreply, socket}
       end
@@ -115,6 +119,8 @@ defmodule LiveTable.LiveViewHelpers do
       # Handles all LiveTable related events like sort, paginate and filter
 
       def handle_event("sort", %{"clear_filters" => "true"}, socket) do
+        current_path = socket.assigns.current_path
+
         options =
           socket.assigns.options
           |> Enum.reduce(%{}, fn
@@ -129,7 +135,7 @@ defmodule LiveTable.LiveViewHelpers do
 
         socket =
           socket
-          |> push_patch(to: ~p"/#{@resource_name}?#{options}")
+          |> push_patch(to: ~p"/#{current_path}?#{options}")
 
         {:noreply, socket}
       end
@@ -138,6 +144,7 @@ defmodule LiveTable.LiveViewHelpers do
         shift_key = Map.get(params, "shift_key", false)
         sort_params = Map.get(params, "sort", nil)
         filter_params = Map.get(params, "filters", nil)
+        current_path = socket.assigns.current_path
 
         options =
           socket.assigns.options
@@ -160,7 +167,7 @@ defmodule LiveTable.LiveViewHelpers do
 
         socket =
           socket
-          |> push_patch(to: ~p"/#{@resource_name}?#{options}")
+          |> push_patch(to: ~p"/#{current_path}?#{options}")
 
         {:noreply, socket}
       end

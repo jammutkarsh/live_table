@@ -1,6 +1,6 @@
 defmodule DemoWeb.Filters.RangeLive do
   use DemoWeb, :live_view
-  use LiveTable.LiveResource, resource: "range", schema: Demo.Weather.Record
+  use LiveTable.LiveResource, schema: Demo.Weather.Record
   alias LiveTable.Range
 
   def fields do
