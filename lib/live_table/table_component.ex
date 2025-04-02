@@ -113,10 +113,10 @@ defmodule LiveTable.TableComponent do
                       </tr>
                       <tr :for={{id, resource} <- @streams.resources} id={id}>
                         <td
-                          :for={{key, _field} <- @fields}
+                          :for={{key, field} <- @fields}
                           class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-neutral-200"
                         >
-                          {Map.get(resource, key)}
+                        {render_field(Map.get(resource, key), field)}
                         </td>
                       </tr>
                     </tbody>
@@ -268,6 +268,11 @@ defmodule LiveTable.TableComponent do
         </button>
         """
       end
+
+      defp render_field(value, %{renderer: renderer}), do: renderer.(value)
+      defp render_field(value, _field), do: value
+
+
     end
   end
 end

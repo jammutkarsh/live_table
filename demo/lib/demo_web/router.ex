@@ -31,6 +31,7 @@ defmodule DemoWeb.Router do
     live "/search", SearchLive
     live "/joins", JoinLive
     live "/joinslive", JoinsLive
+    live "/custombadge", CustomBadgeLive
 
   end
 
