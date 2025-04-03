@@ -7,12 +7,17 @@ defmodule LiveTable.TableComponent do
 
       def live_table(var!(assigns)) do
         var!(assigns) = assign(var!(assigns), :table_options, unquote(opts)[:table_options])
+
         ~H"""
         <div class="flex flex-col dark:bg-neutral-800" id="live-table" phx-hook="Download">
           <div class="-m-1.5 overflow-x-auto">
             <div class="p-1.5 min-w-full inline-block align-middle">
               <div class="border divide-y divide-gray-200 rounded-lg dark:border-neutral-700 dark:divide-neutral-700">
-                <.form for={%{}} phx-debounce={get_in(@table_options, [:search, :debounce])} phx-change="sort">
+                <.form
+                  for={%{}}
+                  phx-debounce={get_in(@table_options, [:search, :debounce])}
+                  phx-change="sort"
+                >
                   <div class="flex px-4 py-3 empty:hidden">
                     <div
                       :if={
@@ -107,7 +112,9 @@ defmodule LiveTable.TableComponent do
                               />
                             </svg>
                             <p class="text-gray-500 text-base dark:text-neutral-400">No records found</p>
-                            <p class="text-gray-400 text-sm dark:text-neutral-500">Try adjusting your search or filters</p>
+                            <p class="text-gray-400 text-sm dark:text-neutral-500">
+                              Try adjusting your search or filters
+                            </p>
                           </div>
                         </td>
                       </tr>
@@ -116,7 +123,7 @@ defmodule LiveTable.TableComponent do
                           :for={{key, field} <- @fields}
                           class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-neutral-200"
                         >
-                        {render_field(Map.get(resource, key), field)}
+                          {render_field(Map.get(resource, key), field)}
                         </td>
                       </tr>
                     </tbody>
@@ -271,8 +278,6 @@ defmodule LiveTable.TableComponent do
 
       defp render_field(value, %{renderer: renderer}), do: renderer.(value)
       defp render_field(value, _field), do: value
-
-
     end
   end
 end

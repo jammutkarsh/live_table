@@ -33,13 +33,14 @@ defmodule Demo.Release do
     load_app()
 
     for repo <- repos() do
-      {:ok, _, _} = Ecto.Migrator.with_repo(repo, fn _repo ->
-        # Get the seed file path
-        seed_script = Path.join([Application.app_dir(@app), "priv/repo/seeds.exs"])
+      {:ok, _, _} =
+        Ecto.Migrator.with_repo(repo, fn _repo ->
+          # Get the seed file path
+          seed_script = Path.join([Application.app_dir(@app), "priv/repo/seeds.exs"])
 
-        # Load and evaluate the seed script
-        Code.eval_file(seed_script)
-      end)
+          # Load and evaluate the seed script
+          Code.eval_file(seed_script)
+        end)
     end
   end
 end

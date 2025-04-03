@@ -30,23 +30,23 @@ defmodule DemoWeb.Filters.BooleanLive do
 
   def filters do
     [
-      active: Boolean.new(:active, "active", %{
-        label: "Active Products Only",
-        condition: dynamic([p], p.active == true)
-      }),
-
-      featured: Boolean.new(:featured, "featured", %{
-        label: "Featured Products",
-        condition: dynamic([p], p.featured == true)
-      }),
-
-      in_stock: Boolean.new(:in_stock, "in_stock", %{
-        label: "In Stock Only",
-        condition: dynamic([p], p.in_stock == true)
-      })
+      active:
+        Boolean.new(:active, "active", %{
+          label: "Active Products Only",
+          condition: dynamic([p], p.active == true)
+        }),
+      featured:
+        Boolean.new(:featured, "featured", %{
+          label: "Featured Products",
+          condition: dynamic([p], p.featured == true)
+        }),
+      in_stock:
+        Boolean.new(:in_stock, "in_stock", %{
+          label: "In Stock Only",
+          condition: dynamic([p], p.in_stock == true)
+        })
     ]
   end
-
 
   def render(assigns) do
     ~H"""
@@ -62,12 +62,7 @@ defmodule DemoWeb.Filters.BooleanLive do
           </ul>
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """

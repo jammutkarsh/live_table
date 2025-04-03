@@ -30,18 +30,18 @@ defmodule DemoWeb.ProductLive.Index do
         sortable: true,
         searchable: false
       },
-      supplier_name: %{
-        label: "Supplier Name",
-        assoc: {:suppliers, :name},
-        searchable: false,
-        sortable: false
-      },
-      supplier_description: %{
-        label: "Supplier Email",
-        assoc: {:suppliers, :contact_info},
-        searchable: false,
-        sortable: true
-      },
+      # supplier_name: %{
+      #   label: "Supplier Name",
+      #   assoc: {:suppliers, :name},
+      #   searchable: false,
+      #   sortable: false
+      # },
+      # supplier_description: %{
+      #   label: "Supplier Email",
+      #   assoc: {:suppliers, :contact_info},
+      #   searchable: false,
+      #   sortable: true
+      # },
       category_name: %{
         label: "Category Name",
         assoc: {:category, :name},

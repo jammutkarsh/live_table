@@ -38,32 +38,33 @@ defmodule DemoWeb.Filters.RangeLive do
 
   def filters do
     [
-      temperature: Range.new(:temperature, "temp_range", %{
-        type: :number,
-        label: "Temperature Range",
-        unit: "°C",
-        min: 0,
-        max: 40,
-        step: 0.5
-      }),
-
-      humidity: Range.new(:humidity, "humidity_range", %{
-        type: :number,
-        label: "Humidity Range",
-        unit: "%",
-        min: 0,
-        max: 100,
-        step: 1
-      }),
-
-      wind_speed: Range.new(:wind_speed, "wind_range", %{
-        type: :number,
-        label: "Wind Speed Range",
-        unit: "km/h",
-        min: 0,
-        max: 50,
-        step: 0.5
-      })
+      temperature:
+        Range.new(:temperature, "temp_range", %{
+          type: :number,
+          label: "Temperature Range",
+          unit: "°C",
+          min: 0,
+          max: 40,
+          step: 0.5
+        }),
+      humidity:
+        Range.new(:humidity, "humidity_range", %{
+          type: :number,
+          label: "Humidity Range",
+          unit: "%",
+          min: 0,
+          max: 100,
+          step: 1
+        }),
+      wind_speed:
+        Range.new(:wind_speed, "wind_range", %{
+          type: :number,
+          label: "Wind Speed Range",
+          unit: "km/h",
+          min: 0,
+          max: 50,
+          step: 0.5
+        })
     ]
   end
 
@@ -82,12 +83,7 @@ defmodule DemoWeb.Filters.RangeLive do
           </ul>
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """

@@ -2,7 +2,6 @@ defmodule LiveTable.LiveViewHelpers do
   @moduledoc false
   defmacro __using__(opts) do
     quote do
-
       use LiveTable.ExportHelpers
 
       @impl true
@@ -14,9 +13,11 @@ defmodule LiveTable.LiveViewHelpers do
         sort_params =
           Map.get(params, "sort_params", default_sort)
           |> Enum.map(fn
-            {k, v} when is_atom(k) and is_atom(v) -> {k, v} # for default case
-            {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)} # for incoming params from url
-            end)
+            # for default case
+            {k, v} when is_atom(k) and is_atom(v) -> {k, v}
+            # for incoming params from url
+            {k, v} -> {String.to_existing_atom(k), String.to_existing_atom(v)}
+          end)
 
         filters =
           Map.get(params, "filters", %{})
@@ -68,8 +69,8 @@ defmodule LiveTable.LiveViewHelpers do
               {resources, options}
           end
 
-          schema = unquote(opts[:schema])
-          table_name = schema.__schema__(:source)
+        schema = unquote(opts[:schema])
+        table_name = schema.__schema__(:source)
 
         socket =
           socket

@@ -17,9 +17,22 @@ defmodule Demo.Weather.Record do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:temperature, :humidity, :wind_speed, :precipitation,
-                    :location, :recorded_at, :weather_condition])
-    |> validate_required([:temperature, :humidity, :wind_speed, :location,
-                         :recorded_at, :weather_condition])
+    |> cast(attrs, [
+      :temperature,
+      :humidity,
+      :wind_speed,
+      :precipitation,
+      :location,
+      :recorded_at,
+      :weather_condition
+    ])
+    |> validate_required([
+      :temperature,
+      :humidity,
+      :wind_speed,
+      :location,
+      :recorded_at,
+      :weather_condition
+    ])
   end
 end

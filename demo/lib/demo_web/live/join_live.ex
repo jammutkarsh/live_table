@@ -19,8 +19,12 @@ defmodule DemoWeb.JoinLive do
         label: "Supplier Count",
         sortable: true,
         assoc: {:suppliers, :name},
-        computed: dynamic([resource: p], fragment("(SELECT COUNT(*) FROM products_suppliers WHERE product_id = ?)", p.id))
-            },
+        computed:
+          dynamic(
+            [resource: p],
+            fragment("(SELECT COUNT(*) FROM products_suppliers WHERE product_id = ?)", p.id)
+          )
+      },
       # Computed field using price and stock
       total_value: %{
         label: "Total Value",
@@ -35,14 +39,18 @@ defmodule DemoWeb.JoinLive do
       },
       # Multiple joins combined
       category_supplier_info: %{
-              label: "Category-Supplier Info",
-              sortable: false,
-              computed: dynamic(
-                [resource: p, category: c],
-                fragment("? || ' (' || (SELECT COUNT(*) FROM products_suppliers WHERE product_id = ?) || ' suppliers)'",
-                  c.name, p.id)
-              )
-            }
+        label: "Category-Supplier Info",
+        sortable: false,
+        computed:
+          dynamic(
+            [resource: p, category: c],
+            fragment(
+              "? || ' (' || (SELECT COUNT(*) FROM products_suppliers WHERE product_id = ?) || ' suppliers)'",
+              c.name,
+              p.id
+            )
+          )
+      }
     ]
   end
 
@@ -63,12 +71,7 @@ defmodule DemoWeb.JoinLive do
           </ul>
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """

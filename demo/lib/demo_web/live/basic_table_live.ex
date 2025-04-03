@@ -43,12 +43,7 @@ defmodule DemoWeb.BasicTableLive do
           Click on column headers to sort, use shift+click for multi-column sort.
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """

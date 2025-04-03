@@ -7,18 +7,16 @@ defmodule LiveTable.Join do
   # Fields are expected to be a map where values can include:
   # - %{assoc: {assoc_name, field_name}} for associated fields
   # - %{computed: dynamic_expr} for computed fields
-  def join_associations(query, fields) do
+  def join_associations(query, fields, filters) do
+    field_assocs = get_field_assocs(fields)
+    filter_assocs = get_filter_assocs(filters)
+
     associations =
-      fields
-      |> Enum.map(fn
-        {_name, %{assoc: {assoc_name, _}}} -> {:assoc, assoc_name}
-        _ -> nil
-      end)
-      |> Enum.reject(&is_nil/1)
+      (field_assocs ++ filter_assocs)
       |> Enum.uniq()
 
     Enum.reduce(associations, query, fn
-      {_association_type, assoc_name}, query ->
+      assoc_name, query ->
         join(query, :left, [resource: r], s in assoc(r, ^assoc_name), as: ^assoc_name)
     end)
   end
@@ -42,5 +40,23 @@ defmodule LiveTable.Join do
       |> Enum.into(%{})
 
     select(query, ^select_struct)
+  end
+
+  defp get_field_assocs(fields) do
+    fields
+    |> Enum.map(fn
+      {_name, %{assoc: {assoc_name, _}}} -> assoc_name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp get_filter_assocs(filters) do
+    filters
+    |> Enum.map(fn
+      {_name, %{field: {assoc_name, _}}} -> assoc_name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
   end
 end

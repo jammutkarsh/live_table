@@ -19,8 +19,15 @@ defmodule Demo.Events.Event do
   @doc false
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:title, :description, :starts_at, :registration_deadline,
-                    :status, :max_participants, :virtual])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :starts_at,
+      :registration_deadline,
+      :status,
+      :max_participants,
+      :virtual
+    ])
     |> validate_required([:title, :starts_at, :registration_deadline, :status])
   end
 end

@@ -25,7 +25,16 @@ defmodule Demo.Catalog.Product do
   @doc false
   def changeset(product, attrs) do
     product
-    |> cast(attrs, [:name, :description, :price, :stock_quantity, :category_id, :active, :featured, :in_stock])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :price,
+      :stock_quantity,
+      :category_id,
+      :active,
+      :featured,
+      :in_stock
+    ])
     |> validate_required([:name, :price, :stock_quantity, :category_id])
   end
 end

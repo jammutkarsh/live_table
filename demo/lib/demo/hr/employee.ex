@@ -8,7 +8,8 @@ defmodule Demo.HR.Employee do
     field :department, :string
     field :salary, :decimal
     field :start_date, :date
-    field :level, :string  # "junior", "mid", "senior", "lead"
+    # "junior", "mid", "senior", "lead"
+    field :level, :string
     field :active, :boolean, default: true
 
     timestamps()

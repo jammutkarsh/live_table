@@ -17,7 +17,8 @@ defmodule DemoWeb.Filters.SelectLive do
       category: %{
         label: "Category",
         sortable: true,
-        assoc: {:category, :name}  # Join with categories
+        # Join with categories
+        assoc: {:category, :name}
       },
       supplier: %{
         label: "Supplier",
@@ -33,19 +34,20 @@ defmodule DemoWeb.Filters.SelectLive do
 
   def filters do
     [
-      supplier: Select.new({:suppliers, :name}, "supplier", %{
-              label: "Major Suppliers",
-        options: [
-          %{label: "AutoParts Direct", value: [1, "Major automotive supplier"]},
-          %{label: "Tech Solutions Inc", value: [2, "Electronics manufacturer"]},
-          %{label: "Global Foods Ltd", value: [3, "International food distributor"]}
-        ]
-            }),
-
-      category: Select.new({:category, :name}, "category", %{
-        label: "Category",
-        options_source: {Catalog, :search_categories, []}
-      })
+      supplier:
+        Select.new({:suppliers, :name}, "supplier", %{
+          label: "Major Suppliers",
+          options: [
+            %{label: "AutoParts Direct", value: [1, "Major automotive supplier"]},
+            %{label: "Tech Solutions Inc", value: [2, "Electronics manufacturer"]},
+            %{label: "Global Foods Ltd", value: [3, "International food distributor"]}
+          ]
+        }),
+      category:
+        Select.new({:category, :name}, "category", %{
+          label: "Category",
+          options_source: {Catalog, :search_categories, []}
+        })
     ]
   end
 
@@ -64,12 +66,7 @@ defmodule DemoWeb.Filters.SelectLive do
           </ul>
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """

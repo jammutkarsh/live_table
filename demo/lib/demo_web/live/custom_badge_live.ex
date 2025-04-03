@@ -42,8 +42,13 @@ defmodule DemoWeb.CustomBadgeLive do
 
   def filters do
     [
-      active: Boolean.new(:level, "true", %{label: "Active", condition: dynamic([p], p.active == true)}),
-      level_filter: Boolean.new(:level, "senior", %{label: "Senior", condition: dynamic([p], p.level == "senior")})
+      active:
+        Boolean.new(:level, "true", %{label: "Active", condition: dynamic([p], p.active == true)}),
+      level_filter:
+        Boolean.new(:level, "senior", %{
+          label: "Senior",
+          condition: dynamic([p], p.level == "senior")
+        })
       # select filter here
     ]
   end
@@ -58,12 +63,7 @@ defmodule DemoWeb.CustomBadgeLive do
           Click on column headers to sort, use shift+click for multi-column sort.
         </p>
 
-        <.live_table
-          fields={fields()}
-          filters={filters()}
-          options={@options}
-          streams={@streams}
-        />
+        <.live_table fields={fields()} filters={filters()} options={@options} streams={@streams} />
       </div>
     </div>
     """
@@ -76,7 +76,6 @@ defmodule DemoWeb.CustomBadgeLive do
     </span>
     """
   end
-
 
   def active_badge(false = assigns) do
     ~H"""

@@ -32,7 +32,6 @@ defmodule DemoWeb.Router do
     live "/joins", JoinLive
     live "/joinslive", JoinsLive
     live "/custombadge", CustomBadgeLive
-
   end
 
   # Other scopes may use custom stacks.

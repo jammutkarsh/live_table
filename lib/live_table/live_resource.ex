@@ -43,7 +43,7 @@ defmodule LiveTable.LiveResource do
 
         schema
         |> from(as: :resource)
-        |> join_associations(fields)
+        |> join_associations(fields, filters)
         |> select_columns(fields)
         |> apply_filters(filters, fields)
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])

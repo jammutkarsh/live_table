@@ -7,29 +7,34 @@ defmodule DemoWeb.SearchLive do
       name: %{
         label: "Product Name",
         sortable: true,
-        searchable: true  # Enable search on product name
+        # Enable search on product name
+        searchable: true
       },
       description: %{
         label: "Description",
         sortable: false,
-        searchable: true  # Enable search on description
+        # Enable search on description
+        searchable: true
       },
       supplier_name: %{
         label: "Supplier",
         sortable: true,
-        searchable: true,  # Enable search on supplier name
+        # Enable search on supplier name
+        searchable: true,
         assoc: {:suppliers, :name}
       },
       category_name: %{
         label: "Category",
         sortable: true,
-        searchable: true,  # Enable search on category name
+        # Enable search on category name
+        searchable: true,
         assoc: {:category, :name}
       },
       price: %{
         label: "Price",
         sortable: true,
-        searchable: false  # Numeric field, not searchable
+        # Numeric field, not searchable
+        searchable: false
       }
     ]
   end

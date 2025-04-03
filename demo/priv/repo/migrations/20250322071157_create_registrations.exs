@@ -5,7 +5,8 @@ defmodule Demo.Repo.Migrations.CreateRegistrations do
     create table(:registrations) do
       add :attendee_name, :string
       add :attendee_email, :string
-      add :status, :string  # "confirmed", "cancelled", "waitlisted"
+      # "confirmed", "cancelled", "waitlisted"
+      add :status, :string
       add :event_id, references(:events, on_delete: :delete_all)
 
       timestamps()
