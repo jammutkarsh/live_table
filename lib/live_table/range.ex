@@ -109,37 +109,67 @@ defmodule LiveTable.Range do
 
   defstruct [:field, :key, :options]
 
+  @today Date.utc_today()
+  @now DateTime.utc_now()
   @type_defaults %{
     number: %{
       min: 0,
-      max: 500,
+      max: 100,
       step: 1,
       default_min: 0,
-      default_max: 500
+      default_max: 100,
+      current_min: nil,
+      current_max: nil,
+      pips_mode: "positions",
+      pips_values: [0, 25, 50, 75, 100],
+      pips_density: 4,
+      pips_stepped: true
     },
     date: %{
-      min: ~D[2024-01-01],
-      max: ~D[2024-12-31],
+      min: Date.add(@today, -1),
+      max: Date.add(@today, 1),
       step: 1,
-      default_min: ~D[2024-01-01],
-      default_max: ~D[2024-12-31]
+      default_min: Date.add(@today, -1),
+      default_max: Date.add(@today, 1),
+      current_min: nil,
+      current_max: nil,
+      pips_mode: "count",
+      # weekly markers
+      pips_density: 3,
+      pips_stepped: true,
+      pips_values: [Date.add(@today, -7), Date.add(@today, 0), Date.add(@today, 7)]
     },
     datetime: %{
-      min: ~N[2024-01-01 00:00:00],
-      max: ~N[2024-12-31 23:59:59],
+      min: DateTime.add(@now, -24 * 3600),
+      max: DateTime.add(@now, 24 * 3600),
+      default_min: DateTime.add(@now, -24 * 3600),
+      default_max: DateTime.add(@now, 24 * 3600),
+      current_min: nil,
+      current_max: nil,
       step: 3600,
-      default_min: ~N[2024-01-01 00:00:00],
-      default_max: ~N[2024-12-31 23:59:59]
+      pips_mode: "count",
+      # hourly markers
+      pips_density: 2,
+      pips_stepped: true,
+      pips_values: [DateTime.add(@now, -3600), DateTime.add(@now, 0), DateTime.add(@now, 3600)]
     }
   }
 
   @default_options %{
     type: :number,
     label: "Range",
+    pips: false,
     unit: "",
     css_classes: "w-64 mx-4",
     slider_classes: "w-64 h-2 mt-4",
-    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200"
+    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
+    event_type: "change",
+    slider_options: %{
+      connect: true,
+      tooltips: true,
+      padding: 0,
+      behaviour: "drag"
+    }
   }
 
   @doc false
@@ -149,7 +179,7 @@ defmodule LiveTable.Range do
 
     complete_options =
       @default_options
-      |> Map.merge(type_defaults || %{})
+      |> Map.merge(type_defaults)
       |> Map.merge(options)
       |> Map.put(:type, type)
 
@@ -158,8 +188,7 @@ defmodule LiveTable.Range do
 
   @doc false
   def apply(acc, %__MODULE__{field: {table, field}, options: %{type: :number} = options}) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
 
     dynamic(
       [{^table, t}],
@@ -170,15 +199,13 @@ defmodule LiveTable.Range do
   @doc false
   def apply(acc, %__MODULE__{field: field, options: %{type: :number} = options})
       when is_atom(field) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
     dynamic([p], ^acc and fragment("? BETWEEN ? AND ?", field(p, ^field), ^min_value, ^max_value))
   end
 
   @doc false
   def apply(acc, %__MODULE__{field: {table, field}, options: %{type: :date} = options}) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
 
     dynamic(
       [{^table, t}],
@@ -194,8 +221,7 @@ defmodule LiveTable.Range do
 
   @doc false
   def apply(acc, %__MODULE__{field: field, options: %{type: :date} = options}) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
 
     dynamic(
       [p],
@@ -211,8 +237,7 @@ defmodule LiveTable.Range do
 
   @doc false
   def apply(acc, %__MODULE__{field: {table, field}, options: %{type: :datetime} = options}) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
 
     dynamic(
       [{^table, t}],
@@ -222,13 +247,15 @@ defmodule LiveTable.Range do
 
   @doc false
   def apply(acc, %__MODULE__{field: field, options: %{type: :datetime} = options}) do
-    min_value = Map.get(options, :min, options.default_min)
-    max_value = Map.get(options, :max, options.default_max)
+    {min_value, max_value} = get_min_max(options)
     dynamic([p], ^acc and fragment("? BETWEEN ? AND ?", field(p, ^field), ^min_value, ^max_value))
   end
 
   defp format_value(:number, value), do: value
+  defp format_value(:date, nil), do: nil
   defp format_value(:date, value), do: Date.to_iso8601(value)
+
+  defp format_value(:datetime, nil), do: nil
 
   defp format_value(:datetime, value) do
     value
@@ -238,6 +265,9 @@ defmodule LiveTable.Range do
 
   @doc false
   def render(assigns) do
+    {current_min, current_max} = get_current_min_max(assigns.applied_filters, assigns.key)
+    assigns = Map.put(assigns, :current_min, current_min) |> Map.put(:current_max, current_max)
+
     ~H"""
     <div class={@filter.options.css_classes}>
       <label class={@filter.options.label_classes}>
@@ -250,29 +280,39 @@ defmodule LiveTable.Range do
         phx-update="ignore"
         data-key={@key}
         data-type={@filter.options.type}
-        data-min={format_value(@filter.options.type, @filter.options.default_min)}
-        data-max={format_value(@filter.options.type, @filter.options.default_max)}
+        data-min={format_value(@filter.options.type, @filter.options.min)}
+        data-max={format_value(@filter.options.type, @filter.options.max)}
+        data-default-min={format_value(@filter.options.type, @filter.options.default_min)}
+        data-default-max={format_value(@filter.options.type, @filter.options.default_max)}
+        data-current-min={format_value(@filter.options.type, @current_min)}
+        data-current-max={format_value(@filter.options.type, @current_max)}
+        data-event-type={@filter.options.event_type}
+        data-pips={Jason.encode!(@filter.options.pips)}
+        data-pips-mode={@filter.options.pips_mode}
+        data-pips-values={Jason.encode!(@filter.options.pips_values)}
+        data-pips-density={@filter.options.pips_density}
+        data-pips-stepped={if @filter.options.pips_stepped, do: "true", else: "false"}
         data-step={@filter.options.step}
-        data-start={
-          min = get_in(@filter.options, [:min]) || @filter.options.default_min
-          max = get_in(@filter.options, [:max]) || @filter.options.default_max
-
-          Jason.encode!([
-            if(is_nil(min),
-              do: format_value(@filter.options.type, @filter.options.default_min),
-              else: format_value(@filter.options.type, min)
-            ),
-            if(is_nil(max),
-              do: format_value(@filter.options.type, @filter.options.default_max),
-              else: format_value(@filter.options.type, max)
-            )
-          ])
-        }
+        data-tooltips={if @filter.options.slider_options.tooltips, do: "true", else: "false"}
+        data-connect={if @filter.options.slider_options.connect, do: "true", else: "false"}
         class={@filter.options.slider_classes}
       >
-        <div class="slider-target"></div>
+        <div id={"slider[#{@key}]"} class="slider-target"></div>
       </div>
     </div>
     """
+  end
+
+  defp get_current_min_max(applied_filters, key) do
+    case Map.get(applied_filters, key) do
+      nil -> {nil, nil}
+      %{options: %{current_min: min, current_max: max}} -> {min, max}
+    end
+  end
+
+  defp get_min_max(options) do
+    min = Map.get(options, :current_min, options.default_min)
+    max = Map.get(options, :current_max, options.default_max)
+    {min, max}
   end
 end

@@ -44,27 +44,35 @@ defmodule DemoWeb.Filters.RangeLive do
           label: "Temperature Range",
           unit: "°C",
           min: 0,
-          max: 40,
-          step: 0.5
-        }),
-      humidity:
-        Range.new(:humidity, "humidity_range", %{
-          type: :number,
-          label: "Humidity Range",
-          unit: "%",
-          min: 0,
-          max: 100,
-          step: 1
-        }),
-      wind_speed:
-        Range.new(:wind_speed, "wind_range", %{
-          type: :number,
-          label: "Wind Speed Range",
-          unit: "km/h",
-          min: 0,
           max: 50,
-          step: 0.5
-        })
+          default_min: 10,
+          default_max: 40,
+          step: 1,
+          pips: true,
+          pips_mode: "count",
+          pips_density: 4,
+          pips_values: 2,
+          pips_stepped: true
+        }),
+
+      # humidity:
+      #   Range.new(:humidity, "humidity_range", %{
+      #     type: :number,
+      #     label: "Humidity Range",
+      #     unit: "%",
+      #     min: 0,
+      #     max: 100,
+      #     step: 1
+      #   }),
+      # wind_speed:
+      #   Range.new(:wind_speed, "wind_range", %{
+      #     type: :number,
+      #     label: "Wind Speed Range",
+      #     unit: "km/h",
+      #     min: 0,
+      #     max: 50,
+      #     step: 0.5
+      #   })
     ]
   end
 
@@ -88,4 +96,8 @@ defmodule DemoWeb.Filters.RangeLive do
     </div>
     """
   end
+
+  # def table_options do
+  #   %{pagination: %{enabled: false}}
+  # end
 end

@@ -29,9 +29,17 @@ defmodule LiveTable.LiveViewHelpers do
             {key, %{"min" => min, "max" => max}}, acc ->
               filter = get_filter(key)
               {min_val, max_val} = parse_range_values(filter.options.type, min, max)
-              filter = %{filter | options: %{filter.options | min: min_val, max: max_val}}
-              key = key |> String.to_atom()
-              Map.put(acc, key, filter)
+
+              updated_filter =
+                filter
+                |> Map.update!(:options, fn options ->
+                  options
+                  |> Map.put(:current_min, min_val)
+                  |> Map.put(:current_max, max_val)
+                end)
+
+              key = String.to_atom(key)
+              Map.put(acc, key, updated_filter)
 
             {key, %{"id" => id}}, acc ->
               filter = %LiveTable.Select{} = get_filter(key)
@@ -168,7 +176,7 @@ defmodule LiveTable.LiveViewHelpers do
 
         socket =
           socket
-          |> push_patch(to: ~p"/#{current_path}?#{options}")
+          |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
 
         {:noreply, socket}
       end

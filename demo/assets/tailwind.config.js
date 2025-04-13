@@ -12,7 +12,10 @@ module.exports = {
     "../lib/demo_web/**/*.*ex",
     // "../deps/live_table/priv/static/*.js",  // Use this in production
     // "../deps/live_table/**/*.*ex",  // Use this in production
-    "../../**/*.*ex" // Use this if you've cloned the repo - to use styles from the parent folder.
+    "../../**/*.*ex", // Use this if you've cloned the repo - to use styles from the parent folder.
+    "../../priv/static/live-table.js",
+    "../../priv/static/live-table.css"
+
   ],
   theme: {
     extend: {

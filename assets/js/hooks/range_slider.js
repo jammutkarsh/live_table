@@ -8,24 +8,39 @@ export const RangeSlider = {
     if (!sliderTarget) return;
 
     const type = container.dataset.type;
-    const key =
-      container.dataset.key !== undefined ? container.dataset.key : null;
+    const key = container.dataset.key !== undefined ? container.dataset.key : null;
 
     // Parse values based on type
-    let min, max, start;
+    let min, max, defaultMin, defaultMax, currentMin, currentMax;
+
     if (type === "number") {
-      min = parseFloat(container.dataset.min || "0");
-      max = parseFloat(container.dataset.max || "100");
-      start = container.dataset.start
-        ? JSON.parse(container.dataset.start)
-        : [min, max];
+      min = parseFloat(container.dataset.min);
+      max = parseFloat(container.dataset.max);
+      defaultMin = parseFloat(container.dataset.defaultMin);
+      defaultMax = parseFloat(container.dataset.defaultMax);
+      currentMin = container.dataset.currentMin ?
+        parseFloat(container.dataset.currentMin) : defaultMin;
+      currentMax = container.dataset.currentMax ?
+        parseFloat(container.dataset.currentMax) : defaultMax;
     } else {
-      // For dates, work with timestamps
-      min = new Date(container.dataset.min).getTime();
-      max = new Date(container.dataset.max).getTime();
-      start = container.dataset.start
-        ? JSON.parse(container.dataset.start).map((d) => new Date(d).getTime())
-        : [min, max];
+      // For dates and datetimes, parse without timezone
+      const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        if (type === "datetime") {
+          return new Date(dateStr.replace(/\.\d{3}Z$/, "")).getTime();
+        } else {
+          return new Date(dateStr.split("T")[0]).getTime();
+        }
+      };
+
+      min = parseDate(container.dataset.min);
+      max = parseDate(container.dataset.max);
+      defaultMin = parseDate(container.dataset.defaultMin);
+      defaultMax = parseDate(container.dataset.defaultMax);
+      currentMin = container.dataset.currentMin ?
+        parseDate(container.dataset.currentMin) : defaultMin;
+      currentMax = container.dataset.currentMax ?
+        parseDate(container.dataset.currentMax) : defaultMax;
     }
 
     const formatDate = (timestamp, isDateTime = false) => {
@@ -37,27 +52,23 @@ export const RangeSlider = {
     };
 
     if (!this.slider) {
+      // padding = JSON.parse(container.dataset.padding);
+      // const finalValue = Array.isArray(padding) && padding.length === 2
+      //   ? padding     // already an array of 2 numbers
+      //   : [padding, padding];
+
       const config = {
-        start,
+        start: [currentMin, currentMax],
         range: { min, max },
-        connect: true,
-        tooltips: true,
+        connect: JSON.parse(container.dataset.connect),
+        tooltips: JSON.parse(container.dataset.tooltips),
+        // behaviour: container.dataset.behaviour,
+        // padding: finalValue,
       };
 
       // Configure based on type
       if (type === "number") {
         config.step = parseInt(container.dataset.step);
-        config.pips = {
-          mode: "values",
-          values: [
-            min,
-            (min + max) / 4,
-            (min + max) / 2,
-            (3 * (min + max)) / 4,
-            max,
-          ],
-          density: 20,
-        };
       } else {
         // For dates, step in days or seconds
         config.step =
@@ -71,23 +82,35 @@ export const RangeSlider = {
         };
       }
 
+      if (container.dataset.pips === "true") {
+        config.pips = {
+          mode: container.dataset.pipsMode,
+          values: JSON.parse(container.dataset.pipsValues), // Parse the JSON array
+          density: parseInt(container.dataset.pipsDensity), // Use correct dataset name
+          stepped: container.dataset.pipsStepped
+        };
+
+      }
+
       this.slider = noUiSlider.create(sliderTarget, config);
 
-      this.slider.on("change", (values) => {
+      this.slider.on(container.dataset.event_type, (values) => {
         let [min, max] = values;
 
-        if (type !== "number") {
-          // Convert to ISO strings for server
-          min = new Date(parseFloat(min)).toISOString();
-          max = new Date(parseFloat(max)).toISOString();
-
-          // Remove milliseconds and adjust format for date-only
-          if (type === "date") {
-            min = min.split("T")[0];
-            max = max.split("T")[0];
-          }
+        if (type === "number") {
+          [min, max] = values.map(v => parseFloat(v));
         } else {
-          [min, max] = values.map((v) => parseFloat(v));
+          if (type === "datetime") {
+            min = new Date(parseFloat(min))
+              .toISOString()
+              .replace(/\.\d{3}Z$/, "");
+            max = new Date(parseFloat(max))
+              .toISOString()
+              .replace(/\.\d{3}Z$/, "");
+          } else if (type === "date") {
+            min = new Date(parseFloat(min)).toISOString().split("T")[0];
+            max = new Date(parseFloat(max)).toISOString().split("T")[0];
+          }
         }
 
         this.pushEvent("sort", {
@@ -98,6 +121,31 @@ export const RangeSlider = {
       });
     }
   },
+
+  updated() {
+    if (this.slider) {
+      const container = this.el;
+      const type = container.dataset.type;
+      const currentMin = container.dataset.currentMin;
+      const currentMax = container.dataset.currentMax;
+
+      // Only reset to defaults if current values are missing
+      if (!currentMin || !currentMax) {
+        let defaultMin, defaultMax;
+
+        if (type === "number") {
+          defaultMin = parseFloat(container.dataset.defaultMin);
+          defaultMax = parseFloat(container.dataset.defaultMax);
+        } else {
+          defaultMin = new Date(container.dataset.defaultMin).getTime();
+          defaultMax = new Date(container.dataset.defaultMax).getTime();
+        }
+
+        this.slider.set([defaultMin, defaultMax], false);
+      }
+    }
+  },
+
 
   destroyed() {
     if (this.slider) {
