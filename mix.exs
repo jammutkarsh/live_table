@@ -63,7 +63,7 @@ defmodule LiveTable.MixProject do
       main: "readme",
       name: "LiveTable",
       source_url: @source_url,
-      extras: ["README.md", "exports.md", "table_config.md"],
+      extras: ["README.md", "fields.md", "filters.md", "table_config.md", "exports.md"],
       source_ref: "v#{@version}"
     ]
   end

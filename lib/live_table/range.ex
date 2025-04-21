@@ -106,6 +106,7 @@ defmodule LiveTable.Range do
 
   import Ecto.Query
   use Phoenix.Component
+  import LiveTable.TableConfig, only: [deep_merge: 2]
 
   defstruct [:field, :key, :options]
 
@@ -165,7 +166,6 @@ defmodule LiveTable.Range do
     label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
     event_type: "change",
     slider_options: %{
-      connect: true,
       tooltips: true,
       padding: 0,
       behaviour: "drag"
@@ -179,8 +179,8 @@ defmodule LiveTable.Range do
 
     complete_options =
       @default_options
-      |> Map.merge(type_defaults)
-      |> Map.merge(options)
+      |> deep_merge(type_defaults)
+      |> deep_merge(options)
       |> Map.put(:type, type)
 
     %__MODULE__{field: field, key: key, options: complete_options}
@@ -293,8 +293,8 @@ defmodule LiveTable.Range do
         data-pips-density={@filter.options.pips_density}
         data-pips-stepped={if @filter.options.pips_stepped, do: "true", else: "false"}
         data-step={@filter.options.step}
-        data-tooltips={if @filter.options.slider_options.tooltips, do: "true", else: "false"}
-        data-connect={if @filter.options.slider_options.connect, do: "true", else: "false"}
+        data-tooltips={Jason.encode!(@filter.options.slider_options.tooltips)}
+        data-padding={Jason.encode!(@filter.options.slider_options.padding)}
         class={@filter.options.slider_classes}
       >
         <div id={"slider[#{@key}]"} class="slider-target"></div>

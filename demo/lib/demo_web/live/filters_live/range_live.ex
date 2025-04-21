@@ -52,8 +52,12 @@ defmodule DemoWeb.Filters.RangeLive do
           pips_mode: "count",
           pips_density: 4,
           pips_values: 2,
-          pips_stepped: true
-        }),
+          pips_stepped: true,
+          event_type: "change",
+          slider_options: %{
+            tooltips: true
+          }
+        })
 
       # humidity:
       #   Range.new(:humidity, "humidity_range", %{

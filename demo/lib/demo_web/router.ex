@@ -21,7 +21,7 @@ defmodule DemoWeb.Router do
     oban_dashboard("/oban")
     get "/", PageController, :home
     live "/posts", PostLive.Index, :index
-    live "/products/search", ProductLive.Index, :index
+    live "/products", ProductLive.Index, :index
     live "/employees", BasicTableLive
     live "/boolean", Filters.BooleanLive
     live "/range", Filters.RangeLive

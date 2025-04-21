@@ -1,15 +1,20 @@
 # Table Configuration
+LiveTable offers configuration options for each table.
 
-LiveTable provides flexible configuration options that can be set at three different levels:
-1. Default LiveTable options
-2. Application-wide defaults
-3. Individual table options
+They change the basic behaviour of the table - default sort order, default sort by, turning pagination on and off, specifiying options for select in pagination etc, all these can be changed under table configuration.
+
+
+These configuration options are defined in 3 levels, **each subsequent level taking precedence over the latter**.
+
+1. [**Default LiveTable options**](#1-livetable-default-options)
+2. [**Application-wide defaults**](#2-application-wide-defaults)
+3. [**Individual table options**](#3-individual-table-options)
 
 ## Configuration Levels
 
 ### 1. LiveTable Default Options
 
-These are the built-in defaults that come with LiveTable:
+These are the built-in options defined by LiveTable:
 
 ```elixir
 %{
@@ -31,9 +36,9 @@ These are the built-in defaults that come with LiveTable:
 }
 ```
 
-### 2. Application-wide Defaults
+### 2. Application-Wide Defaults
 
-You can override LiveTable's defaults for your entire application by setting options in your `config.exs`:
+LiveTable's defaults can be overridden for the entire application in `config.exs`:
 
 ```elixir
 config :live_table,
@@ -48,20 +53,21 @@ config :live_table,
     }
   }
 ```
+Only the options to be changed can be specified. LiveTable is smart enough to keep the other options as is, overriding the changes.
 
 ### 3. Individual Table Options
-
-For specific tables, you can define options by implementing the `table_options/0` function in your LiveView:
+For case specific changes, options can be changed by implementing the `table_options/0` function in the corresponding LiveView:
 
 ```elixir
 defmodule MyAppWeb.UserLive.Index do
   use MyAppWeb, :live_view
   use LiveTable.LiveResource, schema: User, resource: "users"
+  # ... fields and filters
 
   def table_options do
     %{
       pagination: %{
-        enabled: true,
+        enabled: true,      # Turns pagination on and off
         sizes: [5, 10, 25]  # Custom sizes for this table only
       },
       exports: %{
@@ -71,6 +77,7 @@ defmodule MyAppWeb.UserLive.Index do
   end
 end
 ```
+Only the options to be overridden need to be specified.
 
 ## Configuration Options
 
@@ -99,6 +106,7 @@ end
   }
 }
 ```
+A list of key value pairs like `[id: asc, inserted_at: desc]` can be given to sort by multiple sort orders by default.
 
 ### Export Options
 - `enabled` (boolean): Enables/disables export functionality
@@ -123,13 +131,6 @@ end
   }
 }
 ```
-
-## Configuration Precedence
-
-Options are merged in the following order (later options override earlier ones):
-1. LiveTable defaults
-2. Application defaults (from `config.exs`)
-3. Individual table options (from `table_options/0`)
 
 ## Examples
 
@@ -188,8 +189,20 @@ defmodule MyAppWeb.ProductLive.Index do
 end
 ```
 
-## Best Practices
+> **Note** Setting the `per_page` limit beyond 50 is generally discouraged. A degradation in perforance and latency is observed. For this reason, LiveTable does not allow greater than 50 records per page.
 
-1. **Application Defaults**: Use application-wide defaults for consistent behavior across your app
-2. **Table-Specific Options**: Override only the options that need to be different for specific tables
-3. **Performance Considerations**: Adjust page sizes based on your data volume and performance requirements. Anything above the 50 page mark will start to see drops in performance and increase in latency.
+
+## Custom Components
+In several places, LiveTable makes use of components like checkbox inputs and icons. These components were borrowed from the `CoreComponents` of Phoenix LiveView. They can be previewed [here](https://github.com/gurujada/live_table/blob/master/lib/live_table/components.ex)
+
+However, they can be customized as well.
+
+In the `confix.exs` file where LiveTable is configured, a `components` key can be passed, pointing to a module containing the custom components.
+
+### Examples
+
+```elixir
+# config/config.exs
+config :live_table,
+  components: MyApp.CustomComponents
+```

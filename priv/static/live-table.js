@@ -1925,13 +1925,17 @@ var RangeSlider = {
       return date.toLocaleDateString();
     };
     if (!this.slider) {
+      padding = JSON.parse(container.dataset.padding);
+      const finalPadding = Array.isArray(padding) && padding.length === 2 ? padding : [padding, padding];
+      console.log(finalPadding);
+      const tooltips = container.dataset.tooltips === "true" ? true : false;
       const config = {
         start: [currentMin, currentMax],
         range: { min, max },
-        connect: JSON.parse(container.dataset.connect),
-        tooltips: JSON.parse(container.dataset.tooltips)
-        // behaviour: container.dataset.behaviour,
-        // padding: finalValue,
+        connect: true,
+        tooltips,
+        behaviour: container.dataset.behaviour,
+        padding: finalPadding
       };
       if (type === "number") {
         config.step = parseInt(container.dataset.step);
@@ -1953,7 +1957,7 @@ var RangeSlider = {
         };
       }
       this.slider = nouislider_default.create(sliderTarget, config);
-      this.slider.on(container.dataset.event_type, (values) => {
+      this.slider.on(container.dataset.eventType, (values) => {
         let [min2, max2] = values;
         if (type === "number") {
           [min2, max2] = values.map((v) => parseFloat(v));

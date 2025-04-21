@@ -52,18 +52,20 @@ export const RangeSlider = {
     };
 
     if (!this.slider) {
-      // padding = JSON.parse(container.dataset.padding);
-      // const finalValue = Array.isArray(padding) && padding.length === 2
-      //   ? padding     // already an array of 2 numbers
-      //   : [padding, padding];
+      padding = JSON.parse(container.dataset.padding);
+      const finalPadding = Array.isArray(padding) && padding.length === 2
+        ? padding     // already an array of 2 numbers
+        : [padding, padding];
+
+      const tooltips = container.dataset.tooltips === 'true' ? true : false;
 
       const config = {
         start: [currentMin, currentMax],
         range: { min, max },
-        connect: JSON.parse(container.dataset.connect),
-        tooltips: JSON.parse(container.dataset.tooltips),
-        // behaviour: container.dataset.behaviour,
-        // padding: finalValue,
+        connect: true,
+        tooltips: tooltips,
+        behaviour: container.dataset.behaviour,
+        padding: finalPadding,
       };
 
       // Configure based on type
@@ -94,7 +96,7 @@ export const RangeSlider = {
 
       this.slider = noUiSlider.create(sliderTarget, config);
 
-      this.slider.on(container.dataset.event_type, (values) => {
+      this.slider.on(container.dataset.eventType, (values) => {
         let [min, max] = values;
 
         if (type === "number") {
