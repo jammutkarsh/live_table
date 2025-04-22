@@ -161,8 +161,8 @@ defmodule LiveTable.Range do
     label: "Range",
     pips: false,
     unit: "",
-    css_classes: "w-64 mx-4",
-    slider_classes: "w-64 h-2 mt-4",
+    css_classes: "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
+    slider_classes: "w-full h-2 mt-6 mb-2",
     label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
     event_type: "change",
     slider_options: %{

@@ -1,4 +1,4 @@
-import noUiSlider, { cssClasses } from "nouislider";
+import noUiSlider, { cssClasses as noUiCssClasses } from "nouislider";
 import "nouislider/dist/nouislider.css";
 
 export const RangeSlider = {
@@ -52,12 +52,35 @@ export const RangeSlider = {
     };
 
     if (!this.slider) {
-      padding = JSON.parse(container.dataset.padding);
+      const padding = JSON.parse(container.dataset.padding);
       const finalPadding = Array.isArray(padding) && padding.length === 2
         ? padding     // already an array of 2 numbers
         : [padding, padding];
 
       const tooltips = container.dataset.tooltips === 'true' ? true : false;
+
+      // Define original Tailwind classes (with all positioning intact)
+      const tailwindCssClasses = {
+        target: "target relative h-2 rounded-full bg-gray-200 dark:bg-neutral-600",
+        base: "base w-full h-full relative z-1",
+        origin: "origin absolute top-0 end-0 w-full h-full origin-[0_0] rounded-full",
+        handle: "handle size-5 -mt-1.5 bg-white border-2 border-blue-600 rounded-full cursor-pointer shadow-md hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 dark:bg-neutral-700 dark:border-blue-500 dark:hover:border-blue-400",
+        connects: "connects relative z-0 w-full h-full rounded-full overflow-hidden",
+        connect: "connect absolute top-0 end-0 z-1 w-full h-full bg-blue-500 origin-[0_0] dark:bg-blue-600",
+        touchArea: "touch-area absolute -top-2 -bottom-2 -start-2 -end-2"
+      };
+
+      // Start with a complete copy of ALL default nouislider classes
+      const mergedCssClasses = { ...noUiCssClasses };
+      
+      // Then append our Tailwind classes to the existing defaults for keys we want to customize
+      for (const key in tailwindCssClasses) {
+        if (Object.prototype.hasOwnProperty.call(tailwindCssClasses, key) && 
+            Object.prototype.hasOwnProperty.call(mergedCssClasses, key)) {
+          // Append the Tailwind class to the existing default class
+          mergedCssClasses[key] = `${mergedCssClasses[key]} ${tailwindCssClasses[key]}`;
+        }
+      }
 
       const config = {
         start: [currentMin, currentMax],
@@ -66,6 +89,7 @@ export const RangeSlider = {
         tooltips: tooltips,
         behaviour: container.dataset.behaviour,
         padding: finalPadding,
+        cssClasses: mergedCssClasses
       };
 
       // Configure based on type

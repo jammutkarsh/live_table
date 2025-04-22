@@ -3,6 +3,7 @@ defmodule LiveTable.LiveViewHelpers do
   defmacro __using__(opts) do
     quote do
       use LiveTable.ExportHelpers
+      use LiveTable.FilterToggleHelpers
 
       @impl true
       # Fetches records based on URL params
@@ -80,6 +81,7 @@ defmodule LiveTable.LiveViewHelpers do
         schema = unquote(opts[:schema])
         table_name = schema.__schema__(:source)
 
+        # Update LiveSelect components with selected values from URL params
         socket =
           socket
           |> stream(:resources, resources,
@@ -90,6 +92,40 @@ defmodule LiveTable.LiveViewHelpers do
           )
           |> assign(:options, updated_options)
           |> assign(:current_path, current_path)
+
+        # Update LiveSelect components with selected values from URL params
+        for {key, filter} <- filters do
+          case filter do
+            %LiveTable.Select{options: %{selected: selected}} when selected != [] ->
+              # Get the options for this filter
+              options =
+                case filter.options do
+                  %{options: options} when is_list(options) and options != [] ->
+                    options
+                  %{options_source: {module, function, args}} ->
+                    apply(module, function, ["" | args])
+                  _ ->
+                    []
+                end
+
+              # Find the selected options based on the selected IDs
+              selected_options =
+                Enum.map(selected, fn id ->
+                  Enum.find(options, fn
+                    %{value: [option_id, _]} -> option_id == id
+                    _ -> false
+                  end)
+                end)
+                |> Enum.reject(&is_nil/1)
+
+              # Update the LiveSelect component with the selected options
+              if selected_options != [] do
+                send_update(LiveSelect.Component, id: filter.key, value: selected_options)
+              end
+            _ ->
+              :ok
+          end
+        end
 
         {:noreply, socket}
       end
@@ -144,7 +180,7 @@ defmodule LiveTable.LiveViewHelpers do
 
         socket =
           socket
-          |> push_patch(to: ~p"/#{current_path}?#{options}")
+          |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
 
         {:noreply, socket}
       end

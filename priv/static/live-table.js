@@ -1925,17 +1925,32 @@ var RangeSlider = {
       return date.toLocaleDateString();
     };
     if (!this.slider) {
-      padding = JSON.parse(container.dataset.padding);
+      const padding = JSON.parse(container.dataset.padding);
       const finalPadding = Array.isArray(padding) && padding.length === 2 ? padding : [padding, padding];
-      console.log(finalPadding);
       const tooltips = container.dataset.tooltips === "true" ? true : false;
+      const tailwindCssClasses = {
+        target: "target relative h-2 rounded-full bg-gray-200 dark:bg-neutral-600",
+        base: "base w-full h-full relative z-1",
+        origin: "origin absolute top-0 end-0 w-full h-full origin-[0_0] rounded-full",
+        handle: "handle size-5 -mt-1.5 bg-white border-2 border-blue-600 rounded-full cursor-pointer shadow-md hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 dark:bg-neutral-700 dark:border-blue-500 dark:hover:border-blue-400",
+        connects: "connects relative z-0 w-full h-full rounded-full overflow-hidden",
+        connect: "connect absolute top-0 end-0 z-1 w-full h-full bg-blue-500 origin-[0_0] dark:bg-blue-600",
+        touchArea: "touch-area absolute -top-2 -bottom-2 -start-2 -end-2"
+      };
+      const mergedCssClasses = __spreadValues({}, cssClasses);
+      for (const key2 in tailwindCssClasses) {
+        if (Object.prototype.hasOwnProperty.call(tailwindCssClasses, key2) && Object.prototype.hasOwnProperty.call(mergedCssClasses, key2)) {
+          mergedCssClasses[key2] = `${mergedCssClasses[key2]} ${tailwindCssClasses[key2]}`;
+        }
+      }
       const config = {
         start: [currentMin, currentMax],
         range: { min, max },
         connect: true,
         tooltips,
         behaviour: container.dataset.behaviour,
-        padding: finalPadding
+        padding: finalPadding,
+        cssClasses: mergedCssClasses
       };
       if (type === "number") {
         config.step = parseInt(container.dataset.step);
@@ -2038,6 +2053,28 @@ var Download = {
   }
 };
 
+// js/hooks/filter_toggle.js
+var FilterToggle = {
+  mounted() {
+    this.filtersContainer = document.getElementById("filters-container");
+    this.toggleText = document.getElementById("filter-toggle-text");
+    this.handleEvent("toggle_filters", () => {
+      this.toggleFilters();
+    });
+  },
+  // Method to toggle the filters visibility
+  toggleFilters() {
+    const isHidden = this.filtersContainer.classList.contains("hidden");
+    if (isHidden) {
+      this.filtersContainer.classList.remove("hidden");
+      this.toggleText.innerText = "Hide Filters";
+    } else {
+      this.filtersContainer.classList.add("hidden");
+      this.toggleText.innerText = "Show Filters";
+    }
+  }
+};
+
 // ../deps/live_select/priv/static/live_select.min.js
 function h(e, t) {
   let i;
@@ -2110,7 +2147,8 @@ var live_select_min_default = { LiveSelect: { textInput() {
 var TableHooks = __spreadValues({
   RangeSlider,
   SortableColumn,
-  Download
+  Download,
+  FilterToggle
 }, live_select_min_default);
 var hooks_default = TableHooks;
 export {

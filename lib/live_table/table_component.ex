@@ -18,62 +18,95 @@ defmodule LiveTable.TableComponent do
                   phx-debounce={get_in(@table_options, [:search, :debounce])}
                   phx-change="sort"
                 >
-                  <div class="flex px-4 py-3 empty:hidden">
-                    <div
-                      :if={
-                        Enum.any?(@fields, fn
-                          {_, %{searchable: true}} -> true
-                          _ -> false
-                        end)
-                      }
-                      class="relative flex max-w-md"
-                    >
-                      <label class="sr-only">Search</label>
-                      <input
-                        type="text"
-                        name="search"
-                        autocomplete="off"
-                        id="table-with-pagination-search"
-                        class="block w-full px-3 py-2 text-sm border-gray-200 rounded-lg shadow-sm ps-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600 dark:focus:border-neutral-600"
-                        placeholder="Search for items"
-                        value={@options["filters"]["search"]}
-                      />
+                  <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 empty:hidden">
+                    <!-- Group 1: Search & Page Size -->
+                    <div class="flex items-center gap-3 flex-grow">
+                      <div
+                        :if={
+                          Enum.any?(@fields, fn
+                            {_, %{searchable: true}} -> true
+                            _ -> false
+                          end)
+                        }
+                        class="relative flex max-w-md"
+                      >
+                        <label class="sr-only">Search</label>
+                        <input
+                          type="text"
+                          name="search"
+                          autocomplete="off"
+                          id="table-with-pagination-search"
+                          class="block w-full px-3 py-2 text-sm border-gray-200 rounded-lg shadow-sm ps-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600 dark:focus:border-neutral-600"
+                          placeholder="Search for items"
+                          value={@options["filters"]["search"]}
+                        />
 
-                      <div class="absolute inset-y-0 flex items-center pointer-events-none start-0 ps-3">
-                        <svg
-                          class="text-gray-400 size-4 dark:text-neutral-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
+                        <div class="absolute inset-y-0 flex items-center pointer-events-none start-0 ps-3">
+                          <svg
+                            class="text-gray-400 size-4 dark:text-neutral-500"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                          </svg>
+                        </div>
+                      </div>
+                      <select
+                        :if={@options["pagination"]["paginate?"]}
+                        name="per_page"
+                        value={@options["pagination"]["per_page"]}
+                        class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600"
+                      >
+                        {Phoenix.HTML.Form.options_for_select(
+                          get_in(@table_options, [:pagination, :sizes]),
+                          @options["pagination"]["per_page"]
+                        )}
+                      </select>
+                    </div>
+
+                    <!-- Toggle Filters Button (visible on all screen sizes) -->
+                    <button
+                      type="button"
+                      phx-click="toggle_filters"
+                      class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
-                        >
-                          <circle cx="11" cy="11" r="8"></circle>
-                          <path d="m21 21-4.3-4.3"></path>
-                        </svg>
-                      </div>
-                    </div>
-                    <select
-                      :if={@options["pagination"]["paginate?"]}
-                      name="per_page"
-                      value={@options["pagination"]["per_page"]}
-                      class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600"
-                    >
-                      {Phoenix.HTML.Form.options_for_select(
-                        get_in(@table_options, [:pagination, :sizes]),
-                        @options["pagination"]["per_page"]
-                      )}
-                    </select>
+                          stroke-width="2"
+                          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                        />
+                      </svg>
+                      <span phx-update="ignore" id="filter-toggle-text">Show Filters</span>
+                    </button>
 
-                    <.filters filters={@filters} applied_filters={@options["filters"]} />
-                    <.exports
-                      :if={get_in(@table_options, [:exports, :enabled])}
-                      formats={get_in(@table_options, [:exports, :formats])}
-                    />
+                    <!-- Group 2: Filters (hidden by default on all screen sizes) -->
+                    <div id="filters-container" class="hidden w-full mt-4" phx-hook="FilterToggle">
+                      <.filters filters={@filters} applied_filters={@options["filters"]} />
+                    </div>
+
+                    <!-- Group 3: Exports (pushed to the right on larger screens) -->
+                    <div class="flex items-center gap-2 md:ml-auto">
+                      <.exports
+                        :if={get_in(@table_options, [:exports, :enabled])}
+                        formats={get_in(@table_options, [:exports, :formats])}
+                      />
+                    </div>
                   </div>
                 </.form>
                 <div class="overflow-x-auto">
@@ -143,22 +176,42 @@ defmodule LiveTable.TableComponent do
 
       def filters(var!(assigns)) do
         ~H"""
-        <div class="flex justify-between">
-          <%= for {key, filter} <- @filters do %>
-            {filter.__struct__.render(%{
-              key: key,
-              filter: filter,
-              applied_filters: @applied_filters
-            })}
-          <% end %>
-          <.link
-            :if={@applied_filters != %{"search" => ""}}
-            phx-click="sort"
-            phx-value-clear_filters="true"
-            class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
-          >
-            Clear Filters
-          </.link>
+        <div class="w-full bg-gray-50 p-4 rounded-lg dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <%= for {key, filter} <- @filters do %>
+              <div class="flex-shrink-0">
+                {filter.__struct__.render(%{
+                  key: key,
+                  filter: filter,
+                  applied_filters: @applied_filters
+                })}
+              </div>
+            <% end %>
+          </div>
+          <div class="flex justify-end mt-4 border-t border-gray-200 pt-3 dark:border-neutral-700">
+            <.link
+              :if={@applied_filters != %{"search" => ""}}
+              phx-click="sort"
+              phx-value-clear_filters="true"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-600"
+            >
+              <svg
+                class="w-4 h-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Clear Filters
+            </.link>
+          </div>
         </div>
         """
       end

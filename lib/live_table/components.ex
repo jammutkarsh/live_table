@@ -34,8 +34,8 @@ defmodule LiveTable.Components do
       end)
 
     ~H"""
-    <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-gray-500 ms-3 dark:text-neutral-400">
+    <div class="p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700">
+      <label class="flex items-center gap-3 text-sm font-medium text-gray-700 dark:text-neutral-300">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -43,10 +43,10 @@ defmodule LiveTable.Components do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-500 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+          class="w-5 h-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-500 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
           {@rest}
         />
-        {@label}
+        <span>{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>

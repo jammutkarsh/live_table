@@ -159,10 +159,10 @@ defmodule LiveTable.Select do
     loading_text: "Loading options...",
     prompt: "Select an option",
     placeholder: "Select an option",
-    css_classes: "w-64 mx-4",
-    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
+    css_classes: "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
+    label_classes: "block text-sm font-medium mb-2 text-gray-700 dark:text-neutral-300",
     select_classes:
-      "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
+      "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200"
   }
 
   @doc false
@@ -194,6 +194,8 @@ defmodule LiveTable.Select do
         id={"#{@key}"}
         placeholder={@filter.options.placeholder || @filter.options.prompt}
         dropdown_extra_class="max-h-60 overflow-y-scroll"
+        text_input_class={@filter.options.select_classes}
+        mode={:tags}
       >
         <:option :let={option}>
           {render_option_template(@filter.options.option_template, option)}
