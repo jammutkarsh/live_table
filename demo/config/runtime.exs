@@ -34,12 +34,7 @@ if config_env() == :prod do
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6,
-    timeout: 60_000,
-    # Default is 50 ms
-    queue_target: 1000,
-    # Default is 1000 ms
-    queue_interval: 2000
+    socket_options: maybe_ipv6
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -57,8 +52,6 @@ if config_env() == :prod do
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :demo, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
-
-  config :live_table, :start_repo, false
 
   config :demo, DemoWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

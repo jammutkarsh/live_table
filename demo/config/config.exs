@@ -20,7 +20,7 @@ config :demo, DemoWeb.Endpoint,
     layout: false
   ],
   pubsub_server: Demo.PubSub,
-  live_view: [signing_salt: "SNBZflUI"]
+  live_view: [signing_salt: "rjBRhqpB"]
 
 # Configures the mailer
 #
@@ -33,7 +33,7 @@ config :demo, Demo.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.17.11",
+  version: "0.25.1",
   demo: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
@@ -43,15 +43,19 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.4.3",
+  version: "4.1.4",
   demo: [
     args: ~w(
-      --config=tailwind.config.js
-      --input=css/app.css
-      --output=../priv/static/assets/app.css
+       --input=assets/css/app.css
+       --output=priv/static/assets/app.css
     ),
-    cd: Path.expand("../assets", __DIR__)
+    cd: Path.expand("..", __DIR__)
   ]
+
+config :live_table,
+  repo: Demo.Repo,
+  pubsub: Demo.PubSub
+
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -64,21 +68,3 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
-
-config :live_table,
-  repo: Demo.Repo,
-  pubsub: Demo.PubSub,
-  # components: DemoWeb.CoreComponents,
-  defaults: %{
-  exports: %{
-    enabled: false
-  }
-}
-
-
-config :live_table, Oban,
-  repo: Demo.Repo,
-  engine: Oban.Engines.Basic,
-  notifier: Oban.Notifiers.Postgres,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [exports: 10]

@@ -17,8 +17,7 @@ defmodule Demo.Application do
       # Start a worker by calling: Demo.Worker.start_link(arg)
       # {Demo.Worker, arg},
       # Start to serve requests, typically the last entry
-      DemoWeb.Endpoint,
-      {Oban, Application.fetch_env!(:live_table, Oban)}
+      DemoWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

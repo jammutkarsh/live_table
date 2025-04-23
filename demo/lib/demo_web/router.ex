@@ -2,6 +2,7 @@ defmodule DemoWeb.Router do
   use DemoWeb, :router
   import Oban.Web.Router
 
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -18,6 +19,7 @@ defmodule DemoWeb.Router do
   scope "/", DemoWeb do
     pipe_through :browser
 
+    get "/", PageController, :home
     oban_dashboard("/oban")
     get "/", PageController, :home
     live "/posts", PostLive.Index, :index

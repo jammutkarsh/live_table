@@ -8,11 +8,7 @@ config :demo, Demo.Repo,
   database: "demo_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 20,
-  log: false,
-  timeout: :infinity,
-  ownership_timeout: :infinity,
-  pool_timeout: :infinity
+  pool_size: 10
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -20,14 +16,14 @@ config :demo, Demo.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-# Binding to loopback ipv4 address prevents access from other machines.
 config :demo, DemoWeb.Endpoint,
+  # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "JNRzlgKA5OmCBk60lP7mqLguDJUl7+OujNaHBZ0ls5KDJhQuYBZhoo9smX+rw7ro",
+  secret_key_base: "23LZUfQb32XoyIvqGuFcXmqJ2A8LyiFE/VDeEhApEOUgrIqMmjA6GFQYF2xu8yR7",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:demo, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:demo, ~w(--watch)]}
@@ -62,8 +58,7 @@ config :demo, DemoWeb.Endpoint,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/demo_web/(controllers|live|components)/.*(ex|heex)$",
-      ~r"../../lib/*.*(ex)$"
+      ~r"lib/demo_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 

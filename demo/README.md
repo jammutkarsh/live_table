@@ -1,18 +1,18 @@
-# 1 Million Rows Demo
-An impressive showcase of LiveTable's performance and scalability, featuring a table that handles **1 Million rows** with remarkable efficiency.
+# Demo
 
-Experience the live demo [here](https://live-table.fly.dev)
+To start your Phoenix server:
 
-## About
-This demo application demonstrates LiveTable's capabilities by managing a massive dataset while maintaining smooth performance and responsiveness.
+  * Run `mix setup` to install and setup dependencies
+  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-## Setup
-1. Clone the demo repository
-2. Execute the seeds file to populate the database
-   - Leverages Elixir's powerful concurrency model
-   - Spawns 1000 parallel processes
-   - Each process inserts 1000 rows simultaneously
-3. Configure asset pipeline
-4. Launch Phoenix server
+Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Experience the raw power of handling 1 Million rows in real-time with LiveTable!
+Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+
+## Learn more
+
+  * Official website: https://www.phoenixframework.org/
+  * Guides: https://hexdocs.pm/phoenix/overview.html
+  * Docs: https://hexdocs.pm/phoenix
+  * Forum: https://elixirforum.com/c/phoenix-forum
+  * Source: https://github.com/phoenixframework/phoenix
