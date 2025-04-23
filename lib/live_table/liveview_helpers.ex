@@ -102,8 +102,10 @@ defmodule LiveTable.LiveViewHelpers do
                 case filter.options do
                   %{options: options} when is_list(options) and options != [] ->
                     options
+
                   %{options_source: {module, function, args}} ->
                     apply(module, function, ["" | args])
+
                   _ ->
                     []
                 end
@@ -122,6 +124,7 @@ defmodule LiveTable.LiveViewHelpers do
               if selected_options != [] do
                 send_update(LiveSelect.Component, id: filter.key, value: selected_options)
               end
+
             _ ->
               :ok
           end

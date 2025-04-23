@@ -159,7 +159,8 @@ defmodule LiveTable.Select do
     loading_text: "Loading options...",
     prompt: "Select an option",
     placeholder: "Select an option",
-    css_classes: "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
+    css_classes:
+      "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
     label_classes: "block text-sm font-medium mb-2 text-gray-700 dark:text-neutral-300",
     select_classes:
       "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200"
