@@ -71,8 +71,8 @@ defmodule LiveTable.TableComponent do
                         )}
                       </select>
                     </div>
-
-                    <!-- Toggle Filters Button (visible on all screen sizes) -->
+                    
+        <!-- Toggle Filters Button (visible on all screen sizes) -->
                     <button
                       type="button"
                       phx-click="toggle_filters"
@@ -94,13 +94,13 @@ defmodule LiveTable.TableComponent do
                       </svg>
                       <span phx-update="ignore" id="filter-toggle-text">Show Filters</span>
                     </button>
-
-                    <!-- Group 2: Filters (hidden by default on all screen sizes) -->
+                    
+        <!-- Group 2: Filters (hidden by default on all screen sizes) -->
                     <div id="filters-container" class="hidden w-full mt-4" phx-hook="FilterToggle">
                       <.filters filters={@filters} applied_filters={@options["filters"]} />
                     </div>
-
-                    <!-- Group 3: Exports (pushed to the right on larger screens) -->
+                    
+        <!-- Group 3: Exports (pushed to the right on larger screens) -->
                     <div class="flex items-center gap-2 md:ml-auto">
                       <.exports
                         :if={get_in(@table_options, [:exports, :enabled])}

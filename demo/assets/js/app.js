@@ -22,7 +22,8 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
-import { TableHooks } from "../../deps/live_table/priv/static/live-table.js"
+import { TableHooks } from "@live_table/priv/static/live-table"
+import { TableHooks } from "../../../deps/live_table/priv/static/live-table"
 
 let darkMode = localStorage.getItem('darkMode');
 

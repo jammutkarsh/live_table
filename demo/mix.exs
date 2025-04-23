@@ -58,12 +58,7 @@ defmodule Demo.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:live_table,
-       if Mix.env() == :dev do
-         [path: "../"]
-       else
-         [github: "gurujada/live_table", branch: "master"]
-       end},
+      {:live_table, github: "gurujada/live_table", branch: "master"},
       {:faker, "~> 0.17"}
     ]
   end
