@@ -5,7 +5,7 @@
    @source "../css";
    @source "../js";
    @source "../../lib/demo_web";
-   @import "../../../deps/live_table/priv/static/live-table.css";
+   @import "../../deps/live_table/priv/static/live-table.css";
 
 
    
