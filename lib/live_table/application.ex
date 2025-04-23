@@ -4,7 +4,7 @@ defmodule LiveTable.TestApplication do
 
   def start(_type, _args) do
     children =
-      if Mix.env() == :test do
+      if Application.get_env(:live_table, :env) == :test do
         [LiveTable.Repo]
       else
         []
