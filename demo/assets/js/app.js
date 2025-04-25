@@ -18,11 +18,21 @@
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
+import { Socket } from "phoenix"
+import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
-import TableHooks from "../../deps/live_table/priv/static/live-table.js"
+// import TableHooks from "../../deps/live_table/priv/static/live-table.js"
+
+
+// Use this in production
+// import TableHooks from "../../deps/live_table/priv/static/live-table.js";
+
+import TableHooks from "../../../priv/static/live-table.js"; // If you've cloned the repo, use this - to pull assets from parent directory.
+
+const Hooks = {
+  ...TableHooks,
+};
 
 let darkMode = localStorage.getItem('darkMode');
 
@@ -42,12 +52,12 @@ window.addEventListener('toggle-dark-mode', () => {
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken},
-  hooks: TableHooks
+  params: { _csrf_token: csrfToken },
+  hooks: Hooks
 })
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 

@@ -54,7 +54,21 @@ config :tailwind,
 
 config :live_table,
   repo: Demo.Repo,
-  pubsub: Demo.PubSub
+  pubsub: Demo.PubSub,
+  # components: DemoWeb.CoreComponents,
+  defaults: %{
+  exports: %{
+    enabled: false
+  }
+}
+
+config :live_table, Oban,
+  repo: Demo.Repo,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [exports: 10]
+
 
 # Configures Elixir's Logger
 config :logger, :console,

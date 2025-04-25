@@ -15,6 +15,6 @@ defmodule Demo.Timeline.Post do
   def changeset(post, attrs) do
     post
     |> cast(attrs, [:body, :likes_count, :repost_count, :photo_locations])
-    |> validate_required([:body, :likes_count, :repost_count])
+    |> validate_required([:body, :likes_count, :repost_count, :photo_locations])
   end
 end

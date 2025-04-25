@@ -53,6 +53,8 @@ if config_env() == :prod do
 
   config :demo, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  config :live_table, :start_repo, false
+
   config :demo, DemoWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
