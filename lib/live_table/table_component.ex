@@ -12,7 +12,7 @@ defmodule LiveTable.TableComponent do
         <div class="flex flex-col dark:bg-neutral-800" id="live-table" phx-hook="Download">
           <div class="-m-1.5 overflow-x-auto">
             <div class="p-1.5 min-w-full inline-block align-middle">
-              <div class="border divide-y divide-gray-200 rounded-lg dark:border-neutral-700 dark:divide-neutral-700">
+              <div class="border border-gray-300 divide-y divide-gray-300 rounded-lg dark:border-neutral-700 dark:divide-neutral-700">
                 <.form
                   for={%{}}
                   phx-debounce={get_in(@table_options, [:search, :debounce])}
@@ -36,7 +36,7 @@ defmodule LiveTable.TableComponent do
                           name="search"
                           autocomplete="off"
                           id="table-with-pagination-search"
-                          class="block w-full px-3 py-2 text-sm border-gray-200 rounded-lg shadow-sm ps-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600 dark:focus:border-neutral-600"
+                          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm ps-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600 dark:focus:border-neutral-600"
                           placeholder="Search for items"
                           value={@options["filters"]["search"]}
                         />
@@ -63,7 +63,7 @@ defmodule LiveTable.TableComponent do
                         :if={@options["pagination"]["paginate?"]}
                         name="per_page"
                         value={@options["pagination"]["per_page"]}
-                        class="block px-3 py-2 text-sm border-gray-200 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600"
+                        class="block px-3 py-2 text-sm border border-gray-300 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600"
                       >
                         {Phoenix.HTML.Form.options_for_select(
                           get_in(@table_options, [:pagination, :sizes]),
@@ -71,12 +71,12 @@ defmodule LiveTable.TableComponent do
                         )}
                       </select>
                     </div>
-                    
+
         <!-- Toggle Filters Button (visible on all screen sizes) -->
                     <button
                       type="button"
                       phx-click="toggle_filters"
-                      class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                      class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
                     >
                       <svg
                         class="w-4 h-4"
@@ -94,12 +94,12 @@ defmodule LiveTable.TableComponent do
                       </svg>
                       <span phx-update="ignore" id="filter-toggle-text">Show Filters</span>
                     </button>
-                    
+
         <!-- Group 2: Filters (hidden by default on all screen sizes) -->
                     <div id="filters-container" class="hidden w-full mt-4" phx-hook="FilterToggle">
                       <.filters filters={@filters} applied_filters={@options["filters"]} />
                     </div>
-                    
+
         <!-- Group 3: Exports (pushed to the right on larger screens) -->
                     <div class="flex items-center gap-2 md:ml-auto">
                       <.exports
@@ -110,7 +110,7 @@ defmodule LiveTable.TableComponent do
                   </div>
                 </.form>
                 <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                  <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
                     <thead class="bg-gray-50 dark:bg-neutral-700">
                       <tr>
                         <th
@@ -127,7 +127,7 @@ defmodule LiveTable.TableComponent do
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                    <tbody class="divide-y divide-gray-300 dark:divide-neutral-700">
                       <tr class="only:block hidden">
                         <td colspan={length(@fields)} class="px-4 py-8 text-center sm:px-6">
                           <div class="flex flex-col items-center justify-center space-y-2">
@@ -176,7 +176,7 @@ defmodule LiveTable.TableComponent do
 
       def filters(var!(assigns)) do
         ~H"""
-        <div class="w-full bg-gray-50 p-4 rounded-lg dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
+        <div class="w-full bg-gray-50 p-4 rounded-lg dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <%= for {key, filter} <- @filters do %>
               <div class="flex-shrink-0">
@@ -188,12 +188,12 @@ defmodule LiveTable.TableComponent do
               </div>
             <% end %>
           </div>
-          <div class="flex justify-end mt-4 border-t border-gray-200 pt-3 dark:border-neutral-700">
+          <div class="flex justify-end mt-4 border-t border-gray-300 pt-3 dark:border-neutral-700">
             <.link
               :if={@applied_filters != %{"search" => ""}}
               phx-click="sort"
               phx-value-clear_filters="true"
-              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-600"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-600"
             >
               <svg
                 class="w-4 h-4"
@@ -226,7 +226,7 @@ defmodule LiveTable.TableComponent do
               class={[
                 "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
                 if String.to_integer(@current_page) == 1 do
-                  "text-gray-400 border-gray-200 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
+                  "text-gray-400 border-gray-300 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
                 else
                   "text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800"
                 end
@@ -250,7 +250,7 @@ defmodule LiveTable.TableComponent do
               class={[
                 "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
                 if !@has_next_page do
-                  "text-gray-400 border-gray-200 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
+                  "text-gray-400 border-gray-300 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
                 else
                   "text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800"
                 end
@@ -281,7 +281,7 @@ defmodule LiveTable.TableComponent do
           type="button"
           phx-disable-with="Exporting CSV..."
           phx-click="export-csv"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
         >
           <svg
             class="w-4 h-4"
@@ -308,7 +308,7 @@ defmodule LiveTable.TableComponent do
           type="button"
           phx-disable-with="Exporting PDF..."
           phx-click="export-pdf"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
         >
           <svg
             class="w-4 h-4"
