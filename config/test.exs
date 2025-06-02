@@ -12,3 +12,5 @@ config :logger, level: :warning
 config :live_table, sql_sandbox: true
 
 config :live_table, :repo, LiveTable.Repo
+
+config :live_table, Oban, testing: :manual

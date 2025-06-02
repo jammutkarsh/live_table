@@ -4,14 +4,19 @@ export const FilterToggle = {
     this.filtersContainer = document.getElementById("filters-container");
     this.toggleText = document.getElementById("filter-toggle-text");
     
-    // Set up the event handler for the toggle button event from the server
-    this.handleEvent("toggle_filters", () => {
-      this.toggleFilters();
-    });
+    // Only set up the event handler if we have the toggle button (3+ filters)
+    if (this.toggleText) {
+      this.handleEvent("toggle_filters", () => {
+        this.toggleFilters();
+      });
+    }
   },
   
   // Method to toggle the filters visibility
   toggleFilters() {
+    // Only proceed if we have the necessary elements
+    if (!this.filtersContainer || !this.toggleText) return;
+    
     // Toggle the visibility of the filters container
     const isHidden = this.filtersContainer.classList.contains("hidden");
     

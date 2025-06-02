@@ -2,7 +2,7 @@ defmodule LiveTable.LiveViewHelpers do
   @moduledoc false
   defmacro __using__(opts) do
     quote do
-      use LiveTable.ExportHelpers
+      use LiveTable.ExportHelpers, schema: unquote(opts[:schema])
       use LiveTable.FilterToggleHelpers
 
       @impl true
@@ -49,6 +49,24 @@ defmodule LiveTable.LiveViewHelpers do
               key = key |> String.to_existing_atom()
               Map.put(acc, key, filter)
 
+            {key, custom_data}, acc when is_map(custom_data) ->
+              filter = get_filter(key)
+
+              case filter do
+                %LiveTable.Transformer{} ->
+                  updated_filter = %{
+                    filter
+                    | options: Map.put(filter.options, :applied_data, custom_data)
+                  }
+
+                  key = String.to_existing_atom(key)
+                  Map.put(acc, key, updated_filter)
+
+                _ ->
+                  key = String.to_existing_atom(key)
+                  Map.put(acc, key, filter)
+              end
+
             {k, _}, acc ->
               key = k |> String.to_existing_atom()
               Map.put(acc, key, get_filter(k))
@@ -67,8 +85,10 @@ defmodule LiveTable.LiveViewHelpers do
           "filters" => filters
         }
 
+        data_provider = socket.assigns[:data_provider] || unquote(opts[:data_provider])
+
         {resources, updated_options} =
-          case stream_resources(fields(), options) do
+          case stream_resources(fields(), options, data_provider) do
             {resources, overflow} ->
               has_next_page = length(overflow) > 0
               options = put_in(options["pagination"][:has_next_page], has_next_page)
@@ -78,18 +98,10 @@ defmodule LiveTable.LiveViewHelpers do
               {resources, options}
           end
 
-        schema = unquote(opts[:schema])
-        table_name = schema.__schema__(:source)
-
         # Update LiveSelect components with selected values from URL params
         socket =
           socket
-          |> stream(:resources, resources,
-            dom_id: fn resource ->
-              "#{table_name}-#{Ecto.UUID.generate()}"
-            end,
-            reset: true
-          )
+          |> assign_to_socket(resources, unquote(opts[:table_options]))
           |> assign(:options, updated_options)
           |> assign(:current_path, current_path)
 
@@ -131,6 +143,20 @@ defmodule LiveTable.LiveViewHelpers do
         end
 
         {:noreply, socket}
+      end
+
+      defp assign_to_socket(socket, resources, %{use_streams: true}) do
+        stream(socket, :resources, resources,
+          dom_id: fn resource ->
+            # "#{resource}-
+            "resource-#{Ecto.UUID.generate()}"
+          end,
+          reset: true
+        )
+      end
+
+      defp assign_to_socket(socket, resources, %{use_streams: false}) do
+        assign(socket, :resources, resources)
       end
 
       defp validate_page_num(nil), do: "1"
@@ -188,10 +214,66 @@ defmodule LiveTable.LiveViewHelpers do
         {:noreply, socket}
       end
 
+      # def handle_event("sort", %{"sort_field" => sort_value}, socket) when sort_value != "" do
+      #   current_path = socket.assigns.current_path
+
+      #   # Parse sort_value like "name_asc" into {name, asc}
+      #   [field_str, direction_str] = String.split(sort_value, "_")
+      #   field = String.to_existing_atom(field_str)
+      #   direction = String.to_existing_atom(direction_str)
+
+      #   sort_params = Jason.encode!(%{field => direction})
+
+      #   options =
+      #     socket.assigns.options
+      #     |> Enum.reduce(%{}, fn
+      #       {"filters", %{"search" => search_term} = v}, acc ->
+      #         filters = encode_filters(v)
+      #         Map.put(acc, "filters", filters) |> Map.put("search", search_term)
+
+      #       {_, v}, acc when is_map(v) ->
+      #         Map.merge(acc, v)
+      #     end)
+      #     |> update_sort_params(sort_params, false)
+      #     |> Map.take(~w(page per_page search sort_params filters))
+      #     |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
+
+      #   socket =
+      #     socket
+      #     |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
+
+      #   {:noreply, socket}
+      # end
+
+      # def handle_event("sort", %{"sort_field" => ""}, socket) do
+      #   current_path = socket.assigns.current_path
+
+      #   options =
+      #     socket.assigns.options
+      #     |> Enum.reduce(%{}, fn
+      #       {"filters", %{"search" => search_term} = v}, acc ->
+      #         filters = encode_filters(v)
+      #         Map.put(acc, "filters", filters) |> Map.put("search", search_term)
+
+      #       {_, v}, acc when is_map(v) ->
+      #         Map.merge(acc, v)
+      #     end)
+      #     |> Map.delete("sort_params")
+      #     |> Map.take(~w(page per_page search filters))
+      #     |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
+
+      #   socket =
+      #     socket
+      #     |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
+
+      #   {:noreply, socket}
+      # end
+
       def handle_event("sort", params, socket) do
+        params |> dbg
         shift_key = Map.get(params, "shift_key", false)
         sort_params = Map.get(params, "sort", nil)
-        filter_params = Map.get(params, "filters", nil)
+        filter_params = Map.get(params, "filters", nil) |> dbg
         current_path = socket.assigns.current_path
 
         options =
@@ -212,6 +294,7 @@ defmodule LiveTable.LiveViewHelpers do
           |> update_filter_params(filter_params)
           |> Map.take(~w(page per_page search sort_params filters))
           |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
+          |> remove_unused_keys()
 
         socket =
           socket
@@ -243,6 +326,20 @@ defmodule LiveTable.LiveViewHelpers do
 
         {:noreply, socket}
       end
+
+      def remove_unused_keys(map) when is_map(map) do
+        map
+        |> Map.reject(fn {key, _value} ->
+          key_string = to_string(key)
+          String.starts_with?(key_string, "_unused")
+        end)
+        |> Enum.map(fn {key, value} ->
+          {key, remove_unused_keys(value)}
+        end)
+        |> Enum.into(%{})
+      end
+
+      def remove_unused_keys(value), do: value
     end
   end
 end

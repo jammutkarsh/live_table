@@ -97,7 +97,7 @@ defmodule LiveTable.Boolean do
       type="checkbox"
       name={"filters[#{@key}]"}
       label={@filter.options.label}
-      checked={Map.has_key?(@applied_filters, @key)}
+      checked={Map.has_key?(@applied_filters, @key) || Map.get(@filter.options, :default)}
     />
     """
   end

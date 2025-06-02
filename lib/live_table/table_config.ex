@@ -15,8 +15,12 @@ defmodule LiveTable.TableConfig do
       formats: [:csv, :pdf]
     },
     search: %{
-      debounce: 300
-    }
+      debounce: 300,
+      enabled: true,
+      placeholder: "Search..."
+    },
+    mode: :table,
+    use_streams: true
   }
 
   def deep_merge(left, right) do

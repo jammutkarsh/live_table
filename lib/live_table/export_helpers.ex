@@ -1,6 +1,6 @@
 defmodule LiveTable.ExportHelpers do
   @moduledoc false
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
     quote do
       def handle_event("export-csv", _params, socket) do
         {export_topic, updated_socket} = maybe_subscribe(socket)
@@ -14,7 +14,14 @@ defmodule LiveTable.ExportHelpers do
 
         options = socket.assigns.options |> put_in(["pagination", "paginate?"], false)
 
-        query_string = list_resources(fields(), options) |> inspect()
+        query_string =
+          list_resources(
+            fields(),
+            options,
+            unquote(opts[:schema]),
+            Map.get(socket.assigns, :data_provider)
+          )
+          |> inspect()
 
         {:ok, _job} =
           %{
@@ -40,7 +47,13 @@ defmodule LiveTable.ExportHelpers do
           end)
           |> Enum.map(&Enum.reverse/1)
 
-        query_string = list_resources(fields(), options) |> inspect()
+        query_string =
+          list_resources(
+            fields(),
+            options,
+            unquote(opts[:schema]),
+            Map.get(socket.assigns, :data_provider)
+          ) |> inspect()
 
         {:ok, _job} =
           %{

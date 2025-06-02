@@ -93,7 +93,7 @@ defmodule LiveTable do
 
   ```elixir
   # config/config.exs
-  config :live_table, Oban,
+  config :your_app, Oban,
     repo: YourApp.Repo,
     engine: Oban.Engines.Basic,
     notifier: Oban.Notifiers.Postgres,

@@ -1,146 +1,258 @@
-# Live Table
+# LiveTable
 
-  LiveTable is a powerful Phoenix LiveView component library that provides dynamic, interactive tables with built-in support for sorting, filtering, pagination, and data export capabilities.
-  Makes use of [`Oban`](https://hex.pm/packages/oban), [`NimbleCSV`](https://hex.pm/packages/nimble_csv) and [`Typst`](https://typst.app/universe) to handle exports.
+A powerful Phoenix LiveView component library for building dynamic, interactive data tables with real-time updates. Perfect for admin panels, dashboards, and any application requiring advanced data presentation.
 
-  **You can find a table with 1 Million rows [here](https://live-table.fly.dev)**
+## ✨ Features
 
-![Demo](https://github.com/gurujada/live_table/blob/master/demo.png?raw=true)
+- **🔍 Advanced Filtering** - Text search, range filters, select dropdowns, boolean toggles
+- **📊 Smart Sorting** - Multi-column sorting with shift-click support
+- **📄 Flexible Pagination** - Configurable page sizes with efficient querying
+- **📤 Export Capabilities** - CSV and PDF exports with background processing
+- **⚡ Real-time Updates** - Built for Phoenix LiveView with instant feedback
+- **🎨 Multiple View Modes** - Table and card layouts with custom components
+- **🔗 Custom Queries** - Support for complex joins and computed fields
+- **🚀 Performance Optimized** - Streams-based rendering for large datasets
 
-## Features
+![LiveTable Demo](demo.png)
 
-  - **Advanced Filtering System**
-    - Text search across multiple fields
-    - Range filters for numbers, dates, and datetimes
-    - Boolean filters with custom conditions
-    - Select filters with static and dynamic options
-    - Multi-column filtering support
+**[Live Demo with 1M+ records →](https://live-table.fly.dev)**
 
-  - **Smart Sorting**
-    - Multi-column sorting
-    - Sortable associated fields
-    - Customizable sort directions
-    - Shift-click support for multi-column sorting
+## 🚀 Quick Start
 
-  - **Flexible Pagination**
-    - Configurable page sizes
-    - Dynamic page navigation
-    - Efficient database querying
+### 1. Installation
 
-  - **Export Capabilities**
-    - CSV export with background processing
-    - PDF export using Typst
-    - Custom file naming and formatting
-    - Progress tracking for large exports
+Add to your `mix.exs`:
 
-  - **Real-time Updates**
-    - LiveView integration
-    - Instant filter feedback
-    - Background job status updates
+```elixir
+def deps do
+  [
+    {:live_table, "~> 0.2.0"},
+    {:oban, "~> 2.19"}  # Required for exports
+  ]
+end
+```
 
-## Installation
+### 2. Basic Configuration
 
-  Add `live_table` to your list of dependencies in `mix.exs`:
+In your `config/config.exs`:
 
-  ```elixir
-  def deps do
-    [
-      {:live_table, "~> 0.3.0"}
-    ]
-  ```
+```elixir
+config :live_table,
+  repo: YourApp.Repo,
+  pubsub: YourApp.PubSub
 
-## Configuration
+# Configure Oban for exports
+config :your_app, Oban,
+  repo: YourApp.Repo,
+  queues: [exports: 10]
+```
 
-  Configure LiveTable in your `config/config.exs`:
+### 3. Setup Assets
 
-  ```elixir
-  config :live_table,
-    repo: YourApp.Repo,
-    pubsub: YourApp.PubSub,
-    components: YourApp.Components  # Optional, defaults to LiveTable.Components
-  ```
-
-### JavaScript Setup
-
-  Add the following to `assets/js/app.js`:
-
-  ```js
-  import { TableHooks } from "../../deps/live_table/priv/static/live-table.js"
-  let liveSocket = new LiveSocket("/live", Socket, {
-    params: {_csrf_token: csrfToken},
-    hooks: TableHooks
-  })
-  ```
-
-### CSS Setup
-
-Add the following to `assets/tailwind.config.js`:
+Add to `assets/js/app.js`:
 
 ```javascript
-content: [
-  // Other paths
-  "../deps/live_table/priv/static/*.js",
-  "../deps/live_table/**/*.*ex"
-]
+import { TableHooks } from "../../deps/live_table/priv/static/live-table.js"
+
+let liveSocket = new LiveSocket("/live", Socket, {
+  params: {_csrf_token: csrfToken},
+  hooks: TableHooks
+})
 ```
-And add the following to `assets/css/app.css`:
+
+Add to `assets/tailwind.config.js`:
+
+```javascript
+module.exports = {
+  content: [
+    // ... your existing paths
+    "../deps/live_table/priv/static/*.js",
+    "../deps/live_table/**/*.*ex"
+  ]
+}
+```
+
+Add to `assets/css/app.css`:
+
 ```css
 @import "../../deps/live_table/priv/static/live-table.css";
 ```
 
-## Basic Usage
+### 4. Create Your First Table
 
-  LiveTable's functionality can be imported with the `use` command.
-  LiveTable needs a schema, which will be called the base-schema. Query is built with the base-schema as the foundation. Base-schema will be used to search for all associated fields.
+```elixir
+# lib/your_app_web/live/product_live/index.ex
+defmodule YourAppWeb.ProductLive.Index do
+  use YourAppWeb, :live_view
+  use LiveTable.LiveResource, schema: YourApp.Product
 
-  Define your fields and filters as required.
-  ```elixir
-  # In liveview
-  defmodule MyAppWeb.UserLive.Index do
-    use MyAppWeb, :live_view
-    use LiveTable.LiveResource, resource: "users", schema: User # Add this line
+  def fields do
+    [
+      id: %{label: "ID", sortable: true},
+      name: %{label: "Product Name", sortable: true, searchable: true},
+      price: %{label: "Price", sortable: true},
+      stock_quantity: %{label: "Stock", sortable: true}
+    ]
+  end
 
-    # Define fields
-    def fields do
-      [
-        id: %{label: "ID", sortable: true},
-        name: %{label: "Name", sortable: true, searchable: true},
-        email: %{label: "Email", sortable: true, searchable: true},
-      ]
-    end
+  def filters do
+    [
+      in_stock: Boolean.new(:stock_quantity, "in_stock", %{
+        label: "In Stock Only",
+        condition: dynamic([p], p.stock_quantity > 0)
+      }),
+      
+      price_range: Range.new(:price, "price_range", %{
+        type: :number,
+        label: "Price Range",
+        min: 0,
+        max: 1000
+      })
+    ]
+  end
+end
+```
 
-    # Define filters
-    def filters do
-      [
-        active: Boolean.new(:active, "active", %{
-          label: "Active Users",
-          condition: dynamic([q], q.active == true)
-        })
-      ]
-    end
-  ```
+### 5. Add to Your Template
 
-  ```elixir
-    # in corresponding view:
-    <.live_table
-      fields={fields()}
-      filters={filters()}
-      options={@options}
-      streams={@streams}
-    />
-  ```
+```elixir
+# lib/your_app_web/live/product_live/index.html.heex
+<.live_table
+  fields={fields()}
+  filters={filters()}
+  options={@options}
+  streams={@streams}
+/>
+```
 
-## Defining fields and filters
-### Fields
-Fields are to be defined under the `fields()` function in the same liveview where LiveResource is called.
+That's it! You now have a fully functional data table with sorting, filtering, pagination, and search.
 
-It should return a keyword list where each key represents a field and maps to configuration options for that field.
+## 🏗 Usage Patterns
 
-**A detailed guide on defining all types of fields is available [here](fields.html)**
+### Simple Tables (Single Schema)
 
-### Filters
-  Similar to fields, filters should be defined under the `filters()` function in the same liveview.
+For basic tables querying a single schema, use the `schema:` parameter. The field keys must match the schema field names exactly:
 
-  It should return a keyword list where each key is used to reference the filter, and points to a corresponding struct.
+```elixir
+defmodule YourAppWeb.UserLive.Index do
+  use YourAppWeb, :live_view
+  use LiveTable.LiveResource, schema: YourApp.User
 
-  **A detailed guide on defining all types of fields is available [here](filters.html)**
+  def fields do
+    [
+      id: %{label: "ID", sortable: true},        # Must match User.id field
+      email: %{label: "Email", sortable: true, searchable: true},   # Must match User.email field
+      name: %{label: "Name", sortable: true, searchable: true}      # Must match User.name field
+    ]
+  end
+end
+```
+
+### Complex Tables (Custom Queries)
+
+For tables with joins, computed fields, or complex logic, you must define a custom data provider. The field keys must match the keys in your query's `select` clause:
+
+```elixir
+defmodule YourAppWeb.OrderReportLive.Index do
+  use YourAppWeb, :live_view
+  use LiveTable.LiveResource
+
+  def mount(_params, _session, socket) do
+    # Assign your custom data provider
+    socket = assign(socket, :data_provider, {YourApp.Orders, :list_with_details, []})
+    {:ok, socket}
+  end
+
+  def fields do
+    [
+      order_id: %{label: "Order #", sortable: true},        # Must match select key
+      customer_name: %{label: "Customer", sortable: true, searchable: true},  # Must match select key
+      total_amount: %{label: "Total", sortable: true},      # Must match select key
+      # For sorting by joined fields, specify the alias used in your query
+      product_name: %{
+        label: "Product", 
+        sortable: true, 
+        assoc: {:order_items, :name}    # Must match query alias and field
+      }
+    ]
+  end
+
+  def filters do
+    [
+      status: Select.new({:orders, :status}, "status", %{
+        label: "Order Status",
+        options: [
+          %{label: "Pending", value: ["pending"]},
+          %{label: "Completed", value: ["completed"]}
+        ]
+      })
+    ]
+  end
+end
+```
+
+```elixir
+# In your context
+defmodule YourApp.Orders do
+  def list_with_details do
+    from o in Order,
+      join: c in Customer, on: o.customer_id == c.id,
+      join: oi in OrderItem, on: oi.order_id == o.id, as: :order_items,
+      select: %{
+        order_id: o.id,               # Field key must match this
+        customer_name: c.name,        # Field key must match this  
+        total_amount: o.total_amount, # Field key must match this
+        product_name: oi.product_name # Field key must match this
+      }
+  end
+end
+```
+
+## 📚 Documentation
+
+- **[Installation & Setup](docs/installation.md)** - Complete setup guide
+- **[Quick Start Guide](docs/quick-start.md)** - Get up and running in 5 minutes
+- **[Configuration](docs/configuration.md)** - Customize table behavior
+- **[API Reference](docs/api/fields.md)** - Complete API documentation
+- **[Examples](docs/examples/simple-table.md)** - Real-world usage examples
+- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+
+## 🎯 Use Cases
+
+LiveTable is perfect for:
+
+- **Admin Dashboards** - Manage users, orders, products with advanced filtering
+- **E-commerce Catalogs** - Product listings with search, filters, and sorting
+- **Data Analytics** - Present large datasets with exports and real-time updates
+- **CRM Systems** - Customer and lead management with custom views
+- **Inventory Management** - Track stock with complex filtering and reporting
+
+## 🛠 Requirements
+
+- **Elixir** 1.14+
+- **Phoenix LiveView** 1.0+
+- **Ecto** 3.10+
+- **Tailwind CSS** (for styling)
+- **Typst** (for PDF exports, optional)
+
+## 📄 License
+
+MIT License. See LICENSE for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/gurujada/live_table/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/gurujada/live_table/discussions)
+- **Documentation**: [API Docs](https://hexdocs.pm/live_table)
+
+---
+
+Built with ❤️ for the Phoenix LiveView community.

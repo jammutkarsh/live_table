@@ -7,7 +7,7 @@ defmodule LiveTable.Sorting do
 
   # Applies sorting if enabled based on fields and sort params
   def maybe_sort(query, fields, sort_params, true) do
-    query |> sort(fields, sort_params)
+    sort(query, fields, sort_params)
   end
 
   # Builds ORDER BY expressions based on sort params and field definitions

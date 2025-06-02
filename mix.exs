@@ -63,8 +63,102 @@ defmodule LiveTable.MixProject do
       main: "readme",
       name: "LiveTable",
       source_url: @source_url,
-      extras: ["README.md", "fields.md", "filters.md", "table_config.md", "exports.md"],
-      source_ref: "v#{@version}"
+      homepage_url: @source_url,
+      source_ref: "v#{@version}",
+     
+      extras: [
+        "README.md",
+        "docs/overview.md",
+        "docs/installation.md", 
+        "docs/quick-start.md",
+        "docs/configuration.md",
+        "docs/api/fields.md",
+        "docs/api/filters.md",
+        "docs/api/transformers.md",
+        "docs/api/exports.md",
+        "docs/api/table-options.md",
+        "docs/examples/simple-table.md",
+        "docs/examples/complex-queries.md",
+        "docs/troubleshooting.md"
+      ],
+      groups_for_extras: [
+        "Getting Started": [
+          "docs/overview.md",
+          "docs/installation.md",
+          "docs/quick-start.md"
+        ],
+        "Configuration": [
+          "docs/configuration.md"
+        ],
+        "API Reference": [
+          "docs/api/fields.md",
+          "docs/api/filters.md",
+          "docs/api/transformers.md",
+          "docs/api/exports.md",
+          "docs/api/table-options.md"
+        ],
+        "Examples": [
+          "docs/examples/simple-table.md",
+          "docs/examples/complex-queries.md"
+        ],
+        "Support": [
+          "docs/troubleshooting.md"
+        ]
+      ],
+      groups_for_modules: [
+        "Core Components": [
+          LiveTable.LiveResource,
+          LiveTable.Component
+        ],
+        "Filter Types": [
+          LiveTable.Filter.Boolean,
+          LiveTable.Filter.Range,
+          LiveTable.Filter.Select
+        ],
+        "Export System": [
+          LiveTable.Export.CSV,
+          LiveTable.Export.PDF
+        ]
+      ],
+      before_closing_head_tag: &docs_before_closing_head_tag/1,
+      before_closing_body_tag: &docs_before_closing_body_tag/1
     ]
   end
+
+  defp docs_before_closing_head_tag(:html) do
+    """
+    <meta name="description" content="LiveTable - A powerful Phoenix LiveView component library for building dynamic, interactive data tables with real-time updates.">
+    <meta name="keywords" content="phoenix, liveview, elixir, table, datatable, pagination, filtering, sorting">
+    <style>
+      .logo { max-height: 60px; }
+      .sidebar-search { margin-bottom: 1rem; }
+    </style>
+    """
+  end
+
+  defp docs_before_closing_head_tag(_), do: ""
+
+  defp docs_before_closing_body_tag(:html) do
+    """
+    <script>
+      // Add copy-to-clipboard functionality for code blocks
+      document.addEventListener('DOMContentLoaded', function() {
+        const codeBlocks = document.querySelectorAll('pre code');
+        codeBlocks.forEach(function(block) {
+          const button = document.createElement('button');
+          button.className = 'copy-button';
+          button.textContent = 'Copy';
+          button.onclick = function() {
+            navigator.clipboard.writeText(block.textContent);
+            button.textContent = 'Copied!';
+            setTimeout(() => button.textContent = 'Copy', 2000);
+          };
+          block.parentNode.insertBefore(button, block);
+        });
+      });
+    </script>
+    """
+  end
+
+  defp docs_before_closing_body_tag(_), do: ""
 end

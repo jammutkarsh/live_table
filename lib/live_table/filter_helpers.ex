@@ -4,7 +4,7 @@ defmodule LiveTable.FilterHelpers do
     quote do
       def get_filter(key) when is_binary(key) do
         key
-        |> String.to_existing_atom()
+        |> String.to_atom()
         |> get_filter()
       end
 
@@ -37,6 +37,15 @@ defmodule LiveTable.FilterHelpers do
                   Map.put(acc, key, %{id: [id]})
 
                 true ->
+                  acc
+              end
+
+            {key, custom_data}, acc when is_map(custom_data) ->
+              case get_filter(key) do
+                %LiveTable.Transformer{} ->
+                  Map.put(acc, key, custom_data)
+
+                _ ->
                   acc
               end
 
@@ -75,6 +84,11 @@ defmodule LiveTable.FilterHelpers do
           {k, %LiveTable.Select{options: %{selected: selected}}}, acc ->
             k = k |> to_string
             acc |> Map.merge(%{k => %{id: selected}})
+
+          {k, %LiveTable.Transformer{options: %{applied_data: applied_data}}}, acc
+          when applied_data != %{} ->
+            k = k |> to_string
+            acc |> Map.merge(%{k => applied_data})
 
           _, acc ->
             acc
