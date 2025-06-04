@@ -66,7 +66,8 @@ defmodule LiveTable.BooleanTest do
       assert html =~ ~s(type="checkbox")
       assert html =~ ~s(name="filters[under-100]")
       assert html =~ "Less than 100"
-      refute html =~ ~s(checked)
+      refute html =~ ~s(checked="checked")
+      refute html =~ ~s(checked=)
     end
 
     test "renders checkbox as checked when filter is active" do

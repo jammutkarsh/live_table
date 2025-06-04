@@ -161,10 +161,9 @@ defmodule LiveTable.Range do
     label: "Range",
     pips: false,
     unit: "",
-    css_classes:
-      "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
-    slider_classes: "w-full h-2 mt-6 mb-2",
-    label_classes: "block text-sm font-medium mb-2 dark:text-neutral-200",
+    css_classes: "",
+    slider_classes: "w-full h-2 mt-6 mb-8",
+    label_classes: "block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100",
     event_type: "change",
     slider_options: %{
       tooltips: true,
@@ -271,34 +270,38 @@ defmodule LiveTable.Range do
 
     ~H"""
     <div class={@filter.options.css_classes}>
-      <label class={@filter.options.label_classes}>
+      <label :if={@filter.options.label} class={@filter.options.label_classes}>
         {@filter.options.label}
-        {if @filter.options.unit != "", do: " (#{@filter.options.unit})"}
+        <span :if={@filter.options.unit != ""} class="text-gray-500 dark:text-gray-400">
+          ({@filter.options.unit})
+        </span>
       </label>
-      <div
-        id={"range_filter[#{@key}]"}
-        phx-hook="RangeSlider"
-        phx-update="ignore"
-        data-key={@key}
-        data-type={@filter.options.type}
-        data-min={format_value(@filter.options.type, @filter.options.min)}
-        data-max={format_value(@filter.options.type, @filter.options.max)}
-        data-default-min={format_value(@filter.options.type, @filter.options.default_min)}
-        data-default-max={format_value(@filter.options.type, @filter.options.default_max)}
-        data-current-min={format_value(@filter.options.type, @current_min)}
-        data-current-max={format_value(@filter.options.type, @current_max)}
-        data-event-type={@filter.options.event_type}
-        data-pips={Jason.encode!(@filter.options.pips)}
-        data-pips-mode={@filter.options.pips_mode}
-        data-pips-values={Jason.encode!(@filter.options.pips_values)}
-        data-pips-density={@filter.options.pips_density}
-        data-pips-stepped={if @filter.options.pips_stepped, do: "true", else: "false"}
-        data-step={@filter.options.step}
-        data-tooltips={Jason.encode!(@filter.options.slider_options.tooltips)}
-        data-padding={Jason.encode!(@filter.options.slider_options.padding)}
-        class={@filter.options.slider_classes}
-      >
-        <div id={"slider[#{@key}]"} class="slider-target"></div>
+      <div class="mt-3">
+        <div
+          id={"range_filter[#{@key}]"}
+          phx-hook="RangeSlider"
+          phx-update="ignore"
+          data-key={@key}
+          data-type={@filter.options.type}
+          data-min={format_value(@filter.options.type, @filter.options.min)}
+          data-max={format_value(@filter.options.type, @filter.options.max)}
+          data-default-min={format_value(@filter.options.type, @filter.options.default_min)}
+          data-default-max={format_value(@filter.options.type, @filter.options.default_max)}
+          data-current-min={format_value(@filter.options.type, @current_min)}
+          data-current-max={format_value(@filter.options.type, @current_max)}
+          data-event-type={@filter.options.event_type}
+          data-pips={Jason.encode!(@filter.options.pips)}
+          data-pips-mode={@filter.options.pips_mode}
+          data-pips-values={Jason.encode!(@filter.options.pips_values)}
+          data-pips-density={@filter.options.pips_density}
+          data-pips-stepped={if @filter.options.pips_stepped, do: "true", else: "false"}
+          data-step={@filter.options.step}
+          data-tooltips={Jason.encode!(@filter.options.slider_options.tooltips)}
+          data-padding={Jason.encode!(@filter.options.slider_options.padding)}
+          class={@filter.options.slider_classes}
+        >
+          <div id={"slider[#{@key}]"} class="slider-target"></div>
+        </div>
       </div>
     </div>
     """
@@ -312,8 +315,8 @@ defmodule LiveTable.Range do
   end
 
   defp get_min_max(options) do
-    min = Map.get(options, :current_min, options.default_min)
-    max = Map.get(options, :current_max, options.default_max)
+    min = Map.get(options, :current_min) || Map.get(options, :default_min)
+    max = Map.get(options, :current_max) || Map.get(options, :default_max)
     {min, max}
   end
 end

@@ -91,14 +91,17 @@ defmodule LiveTable.Boolean do
     assigns = Map.put(assigns, :components_module, components_module)
 
     ~H"""
-    <.dynamic_component
-      module={@components_module}
-      function={:input}
-      type="checkbox"
-      name={"filters[#{@key}]"}
-      label={@filter.options.label}
-      checked={Map.has_key?(@applied_filters, @key) || Map.get(@filter.options, :default)}
-    />
+    <div class="relative">
+      <.dynamic_component
+        module={@components_module}
+        function={:input}
+        type="checkbox"
+        name={"filters[#{@key}]"}
+        label={@filter.options.label}
+        checked={Map.has_key?(@applied_filters, @key) || Map.get(@filter.options, :default)}
+        class={Map.get(@filter.options, :class, "")}
+      />
+    </div>
     """
   end
 end

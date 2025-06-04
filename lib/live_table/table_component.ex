@@ -3,16 +3,17 @@ defmodule LiveTable.TableComponent do
   defmacro __using__(opts) do
     quote do
       use Phoenix.Component
-      import LiveTable.SortHelpers
+      import LiveTable.SortHelpers, except: [sort_link: 1]
+      alias Phoenix.LiveView.JS
 
       def live_table(var!(assigns)) do
         var!(assigns) = assign(var!(assigns), :table_options, unquote(opts)[:table_options])
 
         ~H"""
-        <div class="flex flex-col dark:bg-neutral-800" id="live-table" phx-hook="Download">
+        <div class="w-full" id="live-table" phx-hook="Download">
           <.render_header {assigns} />
           <.render_content {assigns} />
-          <.footer_section options={@options} />
+          <.render_footer {assigns} />
         </div>
         """
       end
@@ -35,16 +36,30 @@ defmodule LiveTable.TableComponent do
 
       defp header_section(%{table_options: %{mode: :table}} = var!(assigns)) do
         ~H"""
-        <div class="-m-1.5 overflow-x-auto">
-          <div class="p-1.5 min-w-full inline-block align-middle">
-            <div class="border border-gray-300 divide-y divide-gray-300 rounded-lg dark:border-neutral-700 dark:divide-neutral-700">
-              <.common_controls
-                fields={@fields}
-                filters={@filters}
-                options={@options}
-                table_options={@table_options}
-              />
+        <div class="px-4 sm:px-6 lg:px-8">
+          <!-- Header with title -->
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 :if={@table_options[:title]} class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {@table_options[:title]}
+              </h1>
+              <p :if={@table_options[:description]} class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {@table_options[:description]}
+              </p>
             </div>
+            <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+              <.exports formats={get_in(@table_options, [:exports, :formats])} />
+            </div>
+          </div>
+          
+          <!-- Controls section -->
+          <div class="mt-4">
+            <.common_controls
+              fields={@fields}
+              filters={@filters}
+              options={@options}
+              table_options={@table_options}
+            />
           </div>
         </div>
         """
@@ -52,16 +67,27 @@ defmodule LiveTable.TableComponent do
 
       defp header_section(%{table_options: %{mode: :card}} = var!(assigns)) do
         ~H"""
-        <div class="-m-1.5 overflow-x-auto">
-          <div class="p-1.5 min-w-full inline-block align-middle">
-            <div class="border border-gray-300 divide-y divide-gray-300 rounded-lg dark:border-neutral-700 dark:divide-neutral-700">
-              <.common_controls
-                fields={@fields}
-                filters={@filters}
-                options={@options}
-                table_options={@table_options}
-              />
+        <div class="px-4 sm:px-6 lg:px-8">
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 :if={@table_options[:title]} class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {@table_options[:title]}
+              </h1>
+              <p :if={@table_options[:description]} class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {@table_options[:description]}
+              </p>
             </div>
+            <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+              <.exports formats={get_in(@table_options, [:exports, :formats])} />
+            </div>
+          </div>
+          <div class="mt-4">
+            <.common_controls
+              fields={@fields}
+              filters={@filters}
+              options={@options}
+              table_options={@table_options}
+            />
           </div>
         </div>
         """
@@ -70,97 +96,75 @@ defmodule LiveTable.TableComponent do
       defp common_controls(var!(assigns)) do
         ~H"""
         <.form for={%{}} phx-debounce={get_in(@table_options, [:search, :debounce])} phx-change="sort">
-          <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 empty:hidden">
-            <div class="flex items-center gap-3 flex-grow">
-              <div
-                :if={
-                  Enum.any?(@fields, fn
-                    {_, %{searchable: true}} -> true
-                    _ -> false
-                  end) && @table_options.search.enabled
-                }
-                class="relative flex max-w-md"
-              >
-                <label class="sr-only">Search</label>
-                <input
-                  type="text"
-                  name="search"
-                  autocomplete="off"
-                  id="table-with-pagination-search"
-                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm ps-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600 dark:focus:border-neutral-600"
-                  placeholder={@table_options[:search][:placeholder]}
-                  value={@options["filters"]["search"]}
-                />
-
-                <div class="absolute inset-y-0 flex items-center pointer-events-none start-0 ps-3">
-                  <svg
-                    class="text-gray-400 size-4 dark:text-neutral-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                  </svg>
+          <div class="space-y-4">
+            <!-- Search and controls bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div class="flex-1 flex items-center gap-3">
+                <!-- Search -->
+                <div
+                  :if={
+                    Enum.any?(@fields, fn
+                      {_, %{searchable: true}} -> true
+                      _ -> false
+                    end) && @table_options.search.enabled
+                  }
+                  class="flex-1 max-w-lg"
+                >
+                  <label for="table-search" class="sr-only">Search</label>
+                  <div class="relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      name="search"
+                      autocomplete="off"
+                      id="table-search"
+                      class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 dark:focus:ring-indigo-500"
+                      placeholder={@table_options[:search][:placeholder]}
+                      value={@options["filters"]["search"]}
+                    />
+                  </div>
                 </div>
+
+                <!-- Per page -->
+                <select
+                  :if={@options["pagination"]["paginate?"]}
+                  name="per_page"
+                  value={@options["pagination"]["per_page"]}
+                  class="block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-indigo-500"
+                >
+                  {Phoenix.HTML.Form.options_for_select(
+                    get_in(@table_options, [:pagination, :sizes]),
+                    @options["pagination"]["per_page"]
+                  )}
+                </select>
               </div>
 
-              <select
-                :if={@options["pagination"]["paginate?"]}
-                name="per_page"
-                value={@options["pagination"]["per_page"]}
-                class="block px-3 py-2 text-sm border border-gray-300 rounded-lg pe-9 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-neutral-600"
+              <!-- Filter toggle -->
+              <button
+                :if={length(@filters) > 3}
+                type="button"
+                phx-click="toggle_filters"
+                class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
               >
-                {Phoenix.HTML.Form.options_for_select(
-                  get_in(@table_options, [:pagination, :sizes]),
-                  @options["pagination"]["per_page"]
-                )}
-              </select>
+                <svg class="-ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
+                </svg>
+                <span phx-update="ignore" id="filter-toggle-text">Filters</span>
+              </button>
             </div>
 
-            <button
-              :if={length(@filters) > 3}
-              type="button"
-              phx-click="toggle_filters"
-              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+            <!-- Filters section -->
+            <div
+              id="filters-container"
+              class={["", length(@filters) > 3 && "hidden"]}
+              phx-hook="FilterToggle"
             >
-              <svg
-                class="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                />
-              </svg>
-              <span phx-update="ignore" id="filter-toggle-text">Show Filters</span>
-            </button>
-
-            <div class="flex items-center gap-2 md:ml-auto">
-              <.exports
-                :if={get_in(@table_options, [:exports, :enabled])}
-                formats={get_in(@table_options, [:exports, :formats])}
-              />
+              <.filters filters={@filters} applied_filters={@options["filters"]} />
             </div>
-          </div>
-
-          <div
-            id="filters-container"
-            class={["w-full", length(@filters) > 3 && "hidden"]}
-            phx-hook="FilterToggle"
-          >
-            <.filters filters={@filters} applied_filters={@options["filters"]} />
           </div>
         </.form>
         """
@@ -179,58 +183,52 @@ defmodule LiveTable.TableComponent do
 
       defp content_section(%{table_options: %{mode: :table}} = var!(assigns)) do
         ~H"""
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
-            <thead class="bg-gray-50 dark:bg-neutral-700">
-              <tr>
-                <th
-                  :for={{key, field} <- @fields}
-                  scope="col"
-                  class="px-6 py-3 text-xs font-medium text-gray-500 uppercase text-start dark:text-neutral-500"
-                >
-                  <.sort_link
-                    key={key}
-                    label={field.label}
-                    sort_params={@options["sort"]["sort_params"]}
-                    sortable={field.sortable}
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300 dark:divide-neutral-700">
-              <tr class="only:block hidden">
-                <td colspan={length(@fields)} class="px-4 py-8 text-center sm:px-6">
-                  <div class="flex flex-col items-center justify-center space-y-2">
-                    <svg
-                      class="w-12 h-12 text-gray-400 dark:text-neutral-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 13h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <p class="text-gray-500 text-base dark:text-neutral-400">No records found</p>
-                    <p class="text-gray-400 text-sm dark:text-neutral-500">
-                      Try adjusting your search or filters
-                    </p>
-                  </div>
-                </td>
-              </tr>
-              <.render_row streams={@streams} fields={@fields} table_options={@table_options} />
-            </tbody>
-          </table>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th
+                        :for={{key, field} <- @fields}
+                        scope="col"
+                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                      >
+                        <.sort_link
+                          key={key}
+                          label={field.label}
+                          sort_params={@options["sort"]["sort_params"]}
+                          sortable={field.sortable}
+                        />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+                    <tr class="only:block hidden">
+                      <td colspan={length(@fields)} class="py-10 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">No data</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          Get started by creating a new record.
+                        </p>
+                      </td>
+                    </tr>
+                    <.render_row streams={@streams} fields={@fields} table_options={@table_options} />
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
         """
       end
 
       defp content_section(%{table_options: %{mode: :card, use_streams: false}} = var!(assigns)) do
         ~H"""
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div :for={record <- @streams}>
             {@table_options.card_component.(%{record: record})}
           </div>
@@ -240,7 +238,7 @@ defmodule LiveTable.TableComponent do
 
       defp content_section(%{table_options: %{mode: :card, use_streams: true}} = var!(assigns)) do
         ~H"""
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div :for={{id, record} <- @streams.resources} id={id}>
             {@table_options.card_component.(%{record: record})}
           </div>
@@ -250,10 +248,10 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: false}} = var!(assigns)) do
         ~H"""
-        <tr :for={resource <- @streams}>
+        <tr :for={resource <- @streams} class="hover:bg-gray-50 dark:hover:bg-gray-800">
           <td
             :for={{key, field} <- @fields}
-            class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-neutral-200"
+            class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
           >
             {render_cell(Map.get(resource, key), field, resource)}
           </td>
@@ -263,10 +261,10 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: true}} = var!(assigns)) do
         ~H"""
-        <tr :for={{id, resource} <- @streams.resources} id={id}>
+        <tr :for={{id, resource} <- @streams.resources} id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800">
           <td
             :for={{key, field} <- @fields}
-            class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-neutral-200"
+            class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
           >
             {render_cell(Map.get(resource, key), field, resource)}
           </td>
@@ -297,16 +295,16 @@ defmodule LiveTable.TableComponent do
 
       defp render_footer(var!(assigns)) do
         ~H"""
-        <.footer_section options={@options} />
+        <.footer_section {assigns} />
         """
       end
 
       def filters(var!(assigns)) do
         ~H"""
-        <div class="w-full bg-gray-50 p-4 rounded-lg dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <%= for {key, filter} <- @filters do %>
-              <div class="flex-shrink-0">
+              <div>
                 {filter.__struct__.render(%{
                   key: key,
                   filter: filter,
@@ -315,28 +313,16 @@ defmodule LiveTable.TableComponent do
               </div>
             <% end %>
           </div>
-          <div class="flex justify-end mt-4 border-t border-gray-300 pt-3 dark:border-neutral-700">
+          <div :if={@applied_filters != %{"search" => ""}} class="mt-4 flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
             <.link
-              :if={@applied_filters != %{"search" => ""}}
               phx-click="sort"
               phx-value-clear_filters="true"
-              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-600"
+              class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
             >
-              <svg
-                class="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg class="-ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
               </svg>
-              Clear Filters
+              Clear filters
             </.link>
           </div>
         </div>
@@ -345,126 +331,172 @@ defmodule LiveTable.TableComponent do
 
       def paginate(var!(assigns)) do
         ~H"""
-        <div class="px-4 py-2">
-          <nav class="flex items-center gap-2" aria-label="Pagination">
+        <nav class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-700" aria-label="Pagination">
+          <div class="hidden sm:block">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Page <span class="font-medium">{@current_page}</span>
+            </p>
+          </div>
+          <div class="flex flex-1 justify-between sm:justify-end">
             <.link
               phx-click="sort"
               phx-value-page={String.to_integer(@current_page) - 1}
               class={[
-                "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
+                "relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset",
                 if String.to_integer(@current_page) == 1 do
-                  "text-gray-400 border-gray-300 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
+                  "bg-gray-100 text-gray-400 ring-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600 dark:ring-gray-700"
                 else
-                  "text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                  "bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
                 end
               ]}
               aria-disabled={String.to_integer(@current_page) == 1}
-              aria-label="Previous page"
             >
-              <span class="sr-only">Previous</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
+              Previous
             </.link>
-
-            <span class="text-sm text-gray-600 dark:text-neutral-300">
-              Page {@current_page}
-            </span>
-
             <.link
               phx-click="sort"
               phx-value-page={String.to_integer(@current_page) + 1}
               class={[
-                "px-3 py-1.5 text-sm border rounded-md transition flex items-center gap-1",
+                "relative ml-3 inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset",
                 if !@has_next_page do
-                  "text-gray-400 border-gray-300 pointer-events-none dark:text-neutral-500 dark:border-neutral-700"
+                  "bg-gray-100 text-gray-400 ring-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600 dark:ring-gray-700"
                 else
-                  "text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                  "bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
                 end
               ]}
-              aria-label="Next page"
+              aria-disabled={!@has_next_page}
             >
-              <span class="sr-only">Next</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              Next
             </.link>
-          </nav>
-        </div>
+          </div>
+        </nav>
         """
       end
 
       def exports(var!(assigns)) do
         ~H"""
-        <div class="flex gap-2">
-          <.export_file :for={format <- @formats} type={format} />
+        <div class="relative inline-block text-left">
+          <div>
+            <button
+              type="button"
+              class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
+              id="export-menu-button"
+              aria-expanded="false"
+              aria-haspopup="true"
+              phx-click={JS.toggle(to: "#export-dropdown", in: "transition ease-out duration-100 transform opacity-0 scale-95", out: "transition ease-in duration-75 transform opacity-100 scale-100")}
+            >
+              Export
+              <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            id="export-dropdown"
+            class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 hidden"
+            role="menu"
+            aria-orientation="vertical"
+            aria-labelledby="export-menu-button"
+            tabindex="-1"
+          >
+            <div class="py-1" role="none">
+              <.link
+                :for={format <- @formats}
+                href="#"
+                phx-click={if format == :csv, do: "export_csv", else: "export_pdf"}
+                class="text-gray-700 dark:text-gray-300 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                role="menuitem"
+                tabindex="-1"
+              >
+                Export as {String.upcase(to_string(format))}
+              </.link>
+            </div>
+          </div>
         </div>
         """
       end
 
-      def export_file(%{type: :csv} = var!(assigns)) do
+      def sort_link(var!(assigns)) do
         ~H"""
-        <button
-          type="button"
-          phx-disable-with="Exporting CSV..."
-          phx-click="export-csv"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
-        >
-          <svg
-            class="w-4 h-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          Export CSV
-        </button>
+        <div :if={@sortable} class="group inline-flex cursor-pointer" phx-click="sort" phx-value-sort_by={@key}>
+          {@label}
+          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+            <svg
+              :if={@key not in Keyword.keys(@sort_params)}
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              :if={@key in Keyword.keys(@sort_params) && Keyword.get(@sort_params, @key) == "asc"}
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 01-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v12.59A.75.75 0 0110 18z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              :if={@key in Keyword.keys(@sort_params) && Keyword.get(@sort_params, @key) == "desc"}
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 2a.75.75 0 01.75.75v12.59l1.95-2.1a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 111.1-1.02l1.95 2.1V2.75A.75.75 0 0110 2z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </span>
+        </div>
+        <span :if={!@sortable}>
+          {@label}
+        </span>
         """
       end
 
-      def export_file(%{type: :pdf} = var!(assigns)) do
-        ~H"""
-        <button
-          type="button"
-          phx-disable-with="Exporting PDF..."
-          phx-click="export-pdf"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
-        >
-          <svg
-            class="w-4 h-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          Export PDF
-        </button>
-        """
+      defp render_cell(value, field, _record) when is_nil(value) and not is_nil(field.empty_text) do
+        field.empty_text
+      end
+
+      defp render_cell(value, %{renderer: renderer}, record) when is_function(renderer, 1) do
+        renderer.(value)
       end
 
       defp render_cell(value, %{renderer: renderer}, record) when is_function(renderer, 2) do
         renderer.(value, record)
       end
 
-      defp render_cell(value, %{renderer: renderer}, _record) when is_function(renderer, 1) do
-        renderer.(value)
+      defp render_cell(value, %{component: component}, record) when is_function(component, 1) do
+        component.(%{value: value, record: record})
       end
 
-      defp render_cell(value, _field, _record), do: value
+      defp render_cell(value, %{component: component}, record) when is_function(component, 2) do
+        component.(value, record)
+      end
+
+      defp render_cell(true, _field, _record), do: "Yes"
+      defp render_cell(false, _field, _record), do: "No"
+      defp render_cell(value, _field, _record), do: Phoenix.HTML.Safe.to_iodata(value)
+
+      defoverridable live_table: 1,
+                     render_header: 1,
+                     render_content: 1,
+                     render_footer: 1
     end
   end
 end

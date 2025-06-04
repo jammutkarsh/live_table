@@ -1,5 +1,7 @@
 import Config
 
+config :live_table, :env, :test
+
 config :live_table, LiveTable.Repo,
   username: "postgres",
   password: "postgres",

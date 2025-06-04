@@ -159,11 +159,10 @@ defmodule LiveTable.Select do
     loading_text: "Loading options...",
     prompt: "Select an option",
     placeholder: "Select an option",
-    css_classes:
-      "w-full p-3 bg-white rounded-md border border-gray-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700",
-    label_classes: "block text-sm font-medium mb-2 text-gray-700 dark:text-neutral-300",
+    css_classes: "",
+    label_classes: "block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100 mb-2",
     select_classes:
-      "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200"
+      "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-indigo-500"
   }
 
   @doc false
@@ -187,16 +186,22 @@ defmodule LiveTable.Select do
   def render(assigns) do
     ~H"""
     <div id={"select_filter[#{@key}]"} class={@filter.options.css_classes}>
-      <label class={@filter.options.label_classes}>
+      <label :if={@filter.options.label} class={@filter.options.label_classes}>
         {@filter.options.label}
       </label>
       <.live_select
         field={Phoenix.Component.to_form(%{})["filters[#{@key}]"]}
         id={"#{@key}"}
         placeholder={@filter.options.placeholder || @filter.options.prompt}
-        dropdown_extra_class="max-h-60 overflow-y-scroll"
+        dropdown_extra_class="max-h-60 overflow-y-scroll z-50 bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black ring-opacity-5 rounded-md"
         text_input_class={@filter.options.select_classes}
+        text_input_selected_class="bg-gray-50 dark:bg-gray-700"
+        dropdown_class="absolute mt-1 w-full rounded-md bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700"
+        option_class="relative px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+        selected_option_class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+        active_option_class="bg-gray-100 dark:bg-gray-800"
         mode={:tags}
+        tag_class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
       >
         <:option :let={option}>
           {render_option_template(@filter.options.option_template, option)}
@@ -210,10 +215,12 @@ defmodule LiveTable.Select do
     assigns = %{label: label, id: id, description: description}
 
     ~H"""
-    <span class="text-sm">{@label}</span>
-    <br />
-    <span class="text-xs text-gray-600">{@id} in</span>
-    <span class="text-xs text-gray-600">{@description}</span>
+    <div class="flex flex-col">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{@label}</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        ID: {@id} • {@description}
+      </span>
+    </div>
     """
   end
 
