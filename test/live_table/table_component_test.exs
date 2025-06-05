@@ -4,36 +4,40 @@ defmodule LiveTable.TableComponentTest do
   import Phoenix.Component
 
   defmodule TestTableComponent do
-    use LiveTable.TableComponent, table_options: %{
-      mode: :table,
-      use_streams: false,
-      search: %{enabled: true, placeholder: "Search...", debounce: 300},
-      pagination: %{sizes: [10, 25, 50]},
-      exports: %{enabled: true, formats: [:csv, :pdf]}
-    }
+    use LiveTable.TableComponent,
+      table_options: %{
+        mode: :table,
+        use_streams: false,
+        search: %{enabled: true, placeholder: "Search...", debounce: 300},
+        pagination: %{sizes: [10, 25, 50]},
+        exports: %{enabled: true, formats: [:csv, :pdf]}
+      }
   end
 
   defmodule CardTableComponent do
-    use LiveTable.TableComponent, table_options: %{
-      mode: :card,
-      use_streams: false,
-      card_component: fn %{record: record} ->
-        assigns = %{record: record}
-        ~H"""
-        <div class="card">
-          <h3>{@record.name}</h3>
-          <p>{@record.description}</p>
-        </div>
-        """
-      end
-    }
+    use LiveTable.TableComponent,
+      table_options: %{
+        mode: :card,
+        use_streams: false,
+        card_component: fn %{record: record} ->
+          assigns = %{record: record}
+
+          ~H"""
+          <div class="card">
+            <h3>{@record.name}</h3>
+            <p>{@record.description}</p>
+          </div>
+          """
+        end
+      }
   end
 
   defmodule StreamTableComponent do
-    use LiveTable.TableComponent, table_options: %{
-      mode: :table,
-      use_streams: true
-    }
+    use LiveTable.TableComponent,
+      table_options: %{
+        mode: :table,
+        use_streams: true
+      }
   end
 
   describe "live_table/1 - basic rendering" do
@@ -56,7 +60,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "live-table"
       assert html =~ "John Doe"
       assert html =~ "jane@example.com"
@@ -78,7 +82,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&CardTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "grid"
       assert html =~ "Product 1"
       assert html =~ "Description 2"
@@ -99,7 +103,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "No data"
       assert html =~ "Get started by creating a new record"
     end
@@ -122,7 +126,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ ~s(value="test search")
       assert html =~ "phx-debounce=\"300\""
     end
@@ -143,17 +147,18 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       refute html =~ "table-search"
     end
 
     test "respects search.enabled = false in table_options" do
       defmodule NoSearchTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          search: %{enabled: false}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            search: %{enabled: false}
+          }
       end
 
       assigns = %{
@@ -170,7 +175,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&NoSearchTable.live_table/1, assigns)
-      
+
       refute html =~ "table-search"
     end
   end
@@ -193,12 +198,12 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       # Sortable columns should have sort functionality
       assert html =~ "phx-click=\"sort\""
       # In the new UI, sortable columns use phx-click="sort" instead of hooks
       assert html =~ "phx-click=\"sort\""
-      assert html =~ "phx-value-sort_by"
+      assert html =~ "phx-value-sort"
       assert html =~ "Name"
       assert html =~ "Age"
     end
@@ -213,8 +218,8 @@ defmodule LiveTable.TableComponentTest do
           "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
           "pagination" => %{
-            "paginate?" => true, 
-            "per_page" => 10, 
+            "paginate?" => true,
+            "per_page" => 10,
             "page" => "2",
             has_next_page: true
           }
@@ -223,11 +228,13 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "Page"
       assert html =~ "2"
-      assert html =~ "phx-value-page=\"1\""  # Previous page
-      assert html =~ "phx-value-page=\"3\""  # Next page
+      # Previous page
+      assert html =~ "phx-value-page=\"1\""
+      # Next page
+      assert html =~ "phx-value-page=\"3\""
       assert html =~ "per_page"
     end
 
@@ -248,7 +255,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "cursor-not-allowed"
       assert html =~ "aria-disabled"
     end
@@ -270,7 +277,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       # Check that next button is disabled
       assert html =~ "phx-value-page=\"6\""
       assert html =~ "cursor-not-allowed"
@@ -289,7 +296,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "name=\"per_page\""
       assert html =~ "value=\"25\""
     end
@@ -315,19 +322,21 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "filters-container"
       assert html =~ "Clear filters"
     end
 
     test "shows filter toggle button when more than 3 filters" do
-      filters = for i <- 1..4 do
-        {:"filter_#{i}", %LiveTable.Boolean{
-          field: :"field_#{i}", 
-          key: "filter_#{i}",
-          options: %{label: "Filter #{i}"}
-        }}
-      end
+      filters =
+        for i <- 1..4 do
+          {:"filter_#{i}",
+           %LiveTable.Boolean{
+             field: :"field_#{i}",
+             key: "filter_#{i}",
+             options: %{label: "Filter #{i}"}
+           }}
+        end
 
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
@@ -341,20 +350,23 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "toggle_filters"
       assert html =~ "Filters"
-      assert html =~ "hidden"  # Filters should be hidden by default
+      # Filters should be hidden by default
+      assert html =~ "hidden"
     end
 
     test "does not show filter toggle with 3 or fewer filters" do
-      filters = for i <- 1..3 do
-        {:"filter_#{i}", %LiveTable.Boolean{
-          field: :"field_#{i}", 
-          key: "filter_#{i}",
-          options: %{label: "Filter #{i}"}
-        }}
-      end
+      filters =
+        for i <- 1..3 do
+          {:"filter_#{i}",
+           %LiveTable.Boolean{
+             field: :"field_#{i}",
+             key: "filter_#{i}",
+             options: %{label: "Filter #{i}"}
+           }}
+        end
 
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
@@ -368,7 +380,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       refute html =~ "toggle_filters"
       refute html =~ "toggle_filters"
     end
@@ -376,11 +388,14 @@ defmodule LiveTable.TableComponentTest do
     test "hides clear filters link when no filters applied" do
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
-        filters: [{:active, %LiveTable.Boolean{
-          field: :active, 
-          key: "active",
-          options: %{label: "Active"}
-        }}],
+        filters: [
+          {:active,
+           %LiveTable.Boolean{
+             field: :active,
+             key: "active",
+             options: %{label: "Active"}
+           }}
+        ],
         options: %{
           "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
@@ -390,7 +405,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       refute html =~ "Clear Filters"
     end
   end
@@ -409,20 +424,21 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "Export as CSV"
       assert html =~ "Export as PDF"
-      assert html =~ "phx-click=\"export_csv\""
-      assert html =~ "phx-click=\"export_pdf\""
+      assert html =~ "phx-click=\"export-csv\""
+      assert html =~ "phx-click=\"export-pdf\""
     end
 
     test "respects configured export formats" do
       defmodule CSVOnlyTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          exports: %{enabled: true, formats: [:csv]}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            exports: %{enabled: true, formats: [:csv]}
+          }
       end
 
       assigns = %{
@@ -437,18 +453,19 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&CSVOnlyTable.live_table/1, assigns)
-      
+
       assert html =~ "Export as CSV"
       refute html =~ "Export as PDF"
     end
 
     test "hides exports when disabled" do
       defmodule NoExportTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          exports: %{enabled: false}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            exports: %{enabled: false}
+          }
       end
 
       assigns = %{
@@ -463,7 +480,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&NoExportTable.live_table/1, assigns)
-      
+
       refute html =~ "Export as CSV"
       refute html =~ "Export as PDF"
     end
@@ -489,11 +506,12 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "Test"
       assert html =~ "42"
       # Check that there are 4 td elements (2 fields × 2 records) + 1 for empty state
-      assert length(String.split(html, "<td")) == 6  # 4 td elements + 1 empty state td + 1 initial split
+      # 4 td elements + 1 empty state td + 1 initial split
+      assert length(String.split(html, "<td")) == 6
     end
 
     test "uses custom renderer function with single argument" do
@@ -514,7 +532,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "$99.99"
     end
 
@@ -522,13 +540,14 @@ defmodule LiveTable.TableComponentTest do
       assigns = %{
         fields: [
           {:name, %{label: "Name", sortable: false}},
-          {:status, %{
-            label: "Status", 
-            sortable: false,
-            component: fn value, record -> 
-              "#{record.name}: #{value}"
-            end
-          }}
+          {:status,
+           %{
+             label: "Status",
+             sortable: false,
+             component: fn value, record ->
+               "#{record.name}: #{value}"
+             end
+           }}
         ],
         filters: [],
         options: %{
@@ -542,7 +561,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "Task: completed"
     end
   end
@@ -566,7 +585,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&StreamTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "Stream Item 1"
       assert html =~ "Stream Item 2"
       assert html =~ "id=\"resource-1\""
@@ -582,7 +601,7 @@ defmodule LiveTable.TableComponentTest do
         fields: [{:name, %{label: "Name", sortable: false}}],
         filters: [],
         options: %{
-          "filters" => %{"search" => ""}, 
+          "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
           "pagination" => %{"paginate?" => false}
         },
@@ -608,18 +627,19 @@ defmodule LiveTable.TableComponentTest do
       end
 
       defmodule CustomHeaderTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          custom_header: {CustomHeader, :header}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            custom_header: {CustomHeader, :header}
+          }
       end
 
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
         filters: [],
         options: %{
-          "filters" => %{"search" => ""}, 
+          "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
           "pagination" => %{"paginate?" => false}
         },
@@ -627,7 +647,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&CustomHeaderTable.live_table/1, assigns)
-      
+
       assert html =~ "custom-header"
       assert html =~ "Custom Header Content"
     end
@@ -644,18 +664,19 @@ defmodule LiveTable.TableComponentTest do
       end
 
       defmodule CustomContentTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          custom_content: {CustomContent, :content}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            custom_content: {CustomContent, :content}
+          }
       end
 
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
         filters: [],
         options: %{
-          "filters" => %{"search" => ""}, 
+          "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
           "pagination" => %{"paginate?" => false}
         },
@@ -663,7 +684,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&CustomContentTable.live_table/1, assigns)
-      
+
       assert html =~ "custom-content"
       assert html =~ "Custom Table Content"
     end
@@ -680,18 +701,19 @@ defmodule LiveTable.TableComponentTest do
       end
 
       defmodule CustomFooterTable do
-        use LiveTable.TableComponent, table_options: %{
-          mode: :table,
-          use_streams: false,
-          custom_footer: {CustomFooter, :footer}
-        }
+        use LiveTable.TableComponent,
+          table_options: %{
+            mode: :table,
+            use_streams: false,
+            custom_footer: {CustomFooter, :footer}
+          }
       end
 
       assigns = %{
         fields: [{:name, %{label: "Name", sortable: false}}],
         filters: [],
         options: %{
-          "filters" => %{"search" => ""}, 
+          "filters" => %{"search" => ""},
           "sort" => %{"sort_params" => []},
           "pagination" => %{"paginate?" => false}
         },
@@ -699,7 +721,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&CustomFooterTable.live_table/1, assigns)
-      
+
       assert html =~ "custom-footer"
       assert html =~ "Custom Footer"
     end
@@ -719,7 +741,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       # Check for dark mode classes in the new UI
       assert html =~ "dark:bg-gray-800"
       assert html =~ "dark:text-gray-100"
@@ -742,9 +764,9 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "live-table"
-      # With no fields, we still get thead/tr but no th elements  
+      # With no fields, we still get thead/tr but no th elements
       assert html =~ "<thead"
       assert html =~ "<tr>"
       # Empty tr in thead doesn't contain th elements
@@ -764,13 +786,15 @@ defmodule LiveTable.TableComponentTest do
           "pagination" => %{"paginate?" => false}
         },
         streams: [
-          %{name: "John"},  # Missing email and phone
-          %{email: "jane@example.com", phone: "123-456-7890"}  # Missing name
+          # Missing email and phone
+          %{name: "John"},
+          # Missing name
+          %{email: "jane@example.com", phone: "123-456-7890"}
         ]
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       assert html =~ "John"
       assert html =~ "jane@example.com"
       assert html =~ "123-456-7890"
@@ -793,9 +817,11 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
-      assert html =~ "whitespace-nowrap"  # Should prevent text wrapping
-      assert html =~ "overflow-x-auto"    # Should allow horizontal scroll
+
+      # Should prevent text wrapping
+      assert html =~ "whitespace-nowrap"
+      # Should allow horizontal scroll
+      assert html =~ "overflow-x-auto"
     end
 
     test "handles special characters in data" do
@@ -816,13 +842,14 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       # Phoenix automatically escapes HTML - check that the dangerous content is present but escaped
       # Phoenix automatically escapes HTML - check that the dangerous content is NOT present as raw HTML
       refute html =~ "<script>alert"
       # Check for the double-escaped version (since it goes through Phoenix.HTML.Safe.to_iodata)
       assert html =~ "&amp;lt;script&amp;gt;"
-      assert html =~ "a &amp;amp;&amp;amp; b"  # Check for properly escaped && (double escaped)
+      # Check for properly escaped && (double escaped)
+      assert html =~ "a &amp;amp;&amp;amp; b"
     end
 
     test "handles empty string vs nil in search" do
@@ -838,7 +865,7 @@ defmodule LiveTable.TableComponentTest do
       }
 
       html = render_component(&TestTableComponent.live_table/1, assigns)
-      
+
       # Should handle nil search value gracefully - no value attribute is rendered for nil
       assert html =~ "table-search"
       refute html =~ "value="
@@ -853,8 +880,10 @@ defmodule LiveTable.TableComponentTest do
           "sort" => %{"sort_params" => []},
           "pagination" => %{
             "paginate?" => true,
-            "page" => "1",  # Valid page to avoid crash
-            "per_page" => 10  # Valid per_page
+            # Valid page to avoid crash
+            "page" => "1",
+            # Valid per_page
+            "per_page" => 10
           }
         },
         streams: []

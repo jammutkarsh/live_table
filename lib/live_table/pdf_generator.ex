@@ -95,7 +95,7 @@ defmodule LiveTable.PdfGenerator do
           |> Stream.run()
 
           {:ok, path}
-        end
+        end, [timeout: :infinity]
       ]
     )
   end

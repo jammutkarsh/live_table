@@ -69,7 +69,7 @@ defmodule LiveTable.CsvGenerator do
         end)
         |> Stream.each(&File.write!(path, &1, [:append]))
         |> Stream.run()
-      end
-    ])
+      end,
+      [timeout: :infinity]])
   end
 end

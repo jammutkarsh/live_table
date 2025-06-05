@@ -122,7 +122,7 @@ defmodule LiveTable.Select do
     })
     ```
 
-    If its part of a joined schema, you can pass it as a tuple, with the table name and field name as shown-
+    If its part of a joined schema, you can pass it as a tuple, with the table name(aliased in the query) and field name as shown-
     ```elixir
     # Creating a select filter with options loaded from database
     Select.new({:suppliers, :name}, "supplier_name", %{
@@ -185,7 +185,7 @@ defmodule LiveTable.Select do
   @doc false
   def render(assigns) do
     ~H"""
-    <div id={"select_filter[#{@key}]"} class={@filter.options.css_classes}>
+    <div phx-change="change" id={"select_filter[#{@key}]"} class={@filter.options.css_classes}>
       <label :if={@filter.options.label} class={@filter.options.label_classes}>
         {@filter.options.label}
       </label>
@@ -193,7 +193,6 @@ defmodule LiveTable.Select do
         field={Phoenix.Component.to_form(%{})["filters[#{@key}]"]}
         id={"#{@key}"}
         placeholder={@filter.options.placeholder || @filter.options.prompt}
-        dropdown_extra_class="max-h-60 overflow-y-scroll z-50 bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black ring-opacity-5 rounded-md"
         text_input_class={@filter.options.select_classes}
         text_input_selected_class="bg-gray-50 dark:bg-gray-700"
         dropdown_class="absolute mt-1 w-full rounded-md bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700"

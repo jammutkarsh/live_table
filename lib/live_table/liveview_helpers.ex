@@ -214,66 +214,10 @@ defmodule LiveTable.LiveViewHelpers do
         {:noreply, socket}
       end
 
-      # def handle_event("sort", %{"sort_field" => sort_value}, socket) when sort_value != "" do
-      #   current_path = socket.assigns.current_path
-
-      #   # Parse sort_value like "name_asc" into {name, asc}
-      #   [field_str, direction_str] = String.split(sort_value, "_")
-      #   field = String.to_existing_atom(field_str)
-      #   direction = String.to_existing_atom(direction_str)
-
-      #   sort_params = Jason.encode!(%{field => direction})
-
-      #   options =
-      #     socket.assigns.options
-      #     |> Enum.reduce(%{}, fn
-      #       {"filters", %{"search" => search_term} = v}, acc ->
-      #         filters = encode_filters(v)
-      #         Map.put(acc, "filters", filters) |> Map.put("search", search_term)
-
-      #       {_, v}, acc when is_map(v) ->
-      #         Map.merge(acc, v)
-      #     end)
-      #     |> update_sort_params(sort_params, false)
-      #     |> Map.take(~w(page per_page search sort_params filters))
-      #     |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-
-      #   socket =
-      #     socket
-      #     |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
-
-      #   {:noreply, socket}
-      # end
-
-      # def handle_event("sort", %{"sort_field" => ""}, socket) do
-      #   current_path = socket.assigns.current_path
-
-      #   options =
-      #     socket.assigns.options
-      #     |> Enum.reduce(%{}, fn
-      #       {"filters", %{"search" => search_term} = v}, acc ->
-      #         filters = encode_filters(v)
-      #         Map.put(acc, "filters", filters) |> Map.put("search", search_term)
-
-      #       {_, v}, acc when is_map(v) ->
-      #         Map.merge(acc, v)
-      #     end)
-      #     |> Map.delete("sort_params")
-      #     |> Map.take(~w(page per_page search filters))
-      #     |> Map.reject(fn {_, v} -> v == "" || is_nil(v) end)
-
-      #   socket =
-      #     socket
-      #     |> push_patch(to: "/#{current_path}?#{Plug.Conn.Query.encode(options)}")
-
-      #   {:noreply, socket}
-      # end
-
       def handle_event("sort", params, socket) do
-        params |> dbg
         shift_key = Map.get(params, "shift_key", false)
         sort_params = Map.get(params, "sort", nil)
-        filter_params = Map.get(params, "filters", nil) |> dbg
+        filter_params = Map.get(params, "filters", nil)
         current_path = socket.assigns.current_path
 
         options =
@@ -303,12 +247,15 @@ defmodule LiveTable.LiveViewHelpers do
         {:noreply, socket}
       end
 
-      # Handles live select filter changes by:
-      # - Fetching new options based on text input
-      # - Updating the LiveSelect component
-      # TODO: Filter state should update based on URL params
-      # TODO: Add multi-tag support
-      # TODO: Move away from live_select
+      def handle_event("change", params, socket) do
+        params |> dbg()
+        {:noreply, socket}
+      end
+
+      def handle_event("submit", params, socket) do
+        params |> dbg()
+        {:noreply, socket}
+      end
 
       def handle_event("live_select_change", %{"text" => text, "id" => id}, socket) do
         options =

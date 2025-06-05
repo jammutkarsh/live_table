@@ -30,7 +30,7 @@ defmodule LiveTable.FilterHelpers do
             {k, "false"}, acc ->
               Map.delete(acc, k)
 
-            {key, "[" <> rest}, acc ->
+            {key, ["[" <> rest]}, acc ->
               case get_filter(key) do
                 %LiveTable.Select{} ->
                   id = ("[" <> rest) |> Jason.decode!() |> List.first()

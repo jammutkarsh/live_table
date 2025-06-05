@@ -14,7 +14,11 @@ defmodule LiveTable.Join do
     |> Enum.uniq()
     |> Enum.reduce(query, fn
       assoc_name, query ->
-        join(query, :left, [resource: r], s in assoc(r, ^assoc_name), as: ^assoc_name)
+        if has_named_binding?(query, assoc_name) do
+          query
+        else
+          join(query, :left, [r], s in assoc(r, ^assoc_name), as: ^assoc_name)
+        end
     end)
   end
 

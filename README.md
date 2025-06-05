@@ -13,7 +13,7 @@ A powerful Phoenix LiveView component library for building dynamic, interactive 
 - **🔗 Custom Queries** - Support for complex joins and computed fields
 - **🚀 Performance Optimized** - Streams-based rendering for large datasets
 
-![LiveTable Demo](demo.png)
+![LiveTable Demo](demo.gif)
 
 **[Live Demo with 1M+ records →](https://live-table.fly.dev)**
 

@@ -4,42 +4,28 @@ defmodule LiveTable.SortHelpers do
 
   # Renders a sortable column header with sort direction indicator
   def sort_link(%{sortable: true} = assigns) do
-    components_module = Application.get_env(:live_table, :components, LiveTable.Components)
-    assigns = Map.put(assigns, :components_module, components_module)
-
     ~H"""
-    <.link
-      id={@key}
-      phx-click="sort"
-      phx-value-sort={
+    <div :if={@sortable} class="group inline-flex cursor-pointer whitespace-nowrap" phx-click="sort" id={@key} phx-hook="SortableColumn" phx-value-sort={
         Jason.encode!(%{
           @key => (@sort_params[@key] || :asc) |> to_string() |> next_sort_order()
         })
-      }
-      phx-hook="SortableColumn"
-    >
+      }>
       {@label}
-      <.dynamic_component
-        :if={Keyword.has_key?(@sort_params, @key)}
-        module={@components_module}
-        function={:icon}
-        name={
-          if Keyword.get(@sort_params, @key) == :asc do
-            "hero-arrow-up-solid"
-          else
-            "hero-arrow-down-solid"
-          end
-        }
-        class="w-4 h-4 text-gray-900"
-      />
-    </.link>
+      <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+        <svg class="size-3.5 ms-1 -me-0.5 text-gray-400 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path class={[Keyword.get(@sort_params, @key) == :desc &&"text-blue-600 dark:text-blue-500"]} d="m7 15 5 5 5-5"></path>
+                    <path class={[Keyword.get(@sort_params, @key) == :asc && "text-blue-600 dark:text-blue-500"]} d="m7 9 5-5 5 5"></path>
+                  </svg>
+      </span>
+    </div>
     """
   end
+
 
   # Renders a non-sortable column header
   def sort_link(assigns) do
     ~H"""
-    {@label}
+    <span> {@label}</span>
     """
   end
 

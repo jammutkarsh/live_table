@@ -3,7 +3,7 @@ defmodule LiveTable.TableComponent do
   defmacro __using__(opts) do
     quote do
       use Phoenix.Component
-      import LiveTable.SortHelpers, except: [sort_link: 1]
+      import LiveTable.SortHelpers
       alias Phoenix.LiveView.JS
 
       def live_table(var!(assigns)) do
@@ -38,20 +38,13 @@ defmodule LiveTable.TableComponent do
         ~H"""
         <div class="px-4 sm:px-6 lg:px-8">
           <!-- Header with title -->
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 :if={@table_options[:title]} class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                {@table_options[:title]}
-              </h1>
-              <p :if={@table_options[:description]} class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                {@table_options[:description]}
-              </p>
-            </div>
+          <div class="flex sm:items-center justify-end">
+
             <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
               <.exports formats={get_in(@table_options, [:exports, :formats])} />
             </div>
           </div>
-          
+
           <!-- Controls section -->
           <div class="mt-4">
             <.common_controls
@@ -68,15 +61,8 @@ defmodule LiveTable.TableComponent do
       defp header_section(%{table_options: %{mode: :card}} = var!(assigns)) do
         ~H"""
         <div class="px-4 sm:px-6 lg:px-8">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 :if={@table_options[:title]} class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                {@table_options[:title]}
-              </h1>
-              <p :if={@table_options[:description]} class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                {@table_options[:description]}
-              </p>
-            </div>
+          <div class="flex sm:items-center justify-end">
+
             <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
               <.exports formats={get_in(@table_options, [:exports, :formats])} />
             </div>
@@ -98,8 +84,8 @@ defmodule LiveTable.TableComponent do
         <.form for={%{}} phx-debounce={get_in(@table_options, [:search, :debounce])} phx-change="sort">
           <div class="space-y-4">
             <!-- Search and controls bar -->
-            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div class="flex-1 flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+              <div class="flex items-center gap-3">
                 <!-- Search -->
                 <div
                   :if={
@@ -108,7 +94,7 @@ defmodule LiveTable.TableComponent do
                       _ -> false
                     end) && @table_options.search.enabled
                   }
-                  class="flex-1 max-w-lg"
+                  class="w-64"
                 >
                   <label for="table-search" class="sr-only">Search</label>
                   <div class="relative rounded-md shadow-sm">
@@ -122,7 +108,7 @@ defmodule LiveTable.TableComponent do
                       name="search"
                       autocomplete="off"
                       id="table-search"
-                      class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 dark:focus:ring-indigo-500"
+                      class="w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 dark:focus:ring-indigo-500"
                       placeholder={@table_options[:search][:placeholder]}
                       value={@options["filters"]["search"]}
                     />
@@ -134,7 +120,7 @@ defmodule LiveTable.TableComponent do
                   :if={@options["pagination"]["paginate?"]}
                   name="per_page"
                   value={@options["pagination"]["per_page"]}
-                  class="block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-indigo-500"
+                  class="w-20 rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-indigo-500"
                 >
                   {Phoenix.HTML.Form.options_for_select(
                     get_in(@table_options, [:pagination, :sizes]),
@@ -186,14 +172,14 @@ defmodule LiveTable.TableComponent do
         <div class="mt-8 flow-root">
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <div class="overflow-hidden shadow sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                   <thead class="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       <th
                         :for={{key, field} <- @fields}
                         scope="col"
-                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                        class="px-3 py-3.5 text-start text-sm font-semibold text-gray-900 dark:text-gray-100"
                       >
                         <.sort_link
                           key={key}
@@ -248,7 +234,7 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: false}} = var!(assigns)) do
         ~H"""
-        <tr :for={resource <- @streams} class="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <tr :for={resource <- @streams} class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200">
           <td
             :for={{key, field} <- @fields}
             class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
@@ -261,7 +247,7 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: true}} = var!(assigns)) do
         ~H"""
-        <tr :for={{id, resource} <- @streams.resources} id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <tr :for={{id, resource} <- @streams.resources} id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200">
           <td
             :for={{key, field} <- @fields}
             class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
@@ -301,7 +287,7 @@ defmodule LiveTable.TableComponent do
 
       def filters(var!(assigns)) do
         ~H"""
-        <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <div :if={@filters != []} class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <%= for {key, filter} <- @filters do %>
               <div>
@@ -331,7 +317,7 @@ defmodule LiveTable.TableComponent do
 
       def paginate(var!(assigns)) do
         ~H"""
-        <nav class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-700" aria-label="Pagination">
+        <nav class="flex items-center justify-between px-4 py-3 sm:px-6" aria-label="Pagination">
           <div class="hidden sm:block">
             <p class="text-sm text-gray-700 dark:text-gray-300">
               Page <span class="font-medium">{@current_page}</span>
@@ -379,7 +365,7 @@ defmodule LiveTable.TableComponent do
           <div>
             <button
               type="button"
-              class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
+              class="inline-flex cursor-pointer w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
               id="export-menu-button"
               aria-expanded="false"
               aria-haspopup="true"
@@ -404,7 +390,7 @@ defmodule LiveTable.TableComponent do
               <.link
                 :for={format <- @formats}
                 href="#"
-                phx-click={if format == :csv, do: "export_csv", else: "export_pdf"}
+                phx-click={if format == :csv, do: "export-csv", else: "export-pdf"}
                 class="text-gray-700 dark:text-gray-300 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                 role="menuitem"
                 tabindex="-1"
@@ -417,57 +403,7 @@ defmodule LiveTable.TableComponent do
         """
       end
 
-      def sort_link(var!(assigns)) do
-        ~H"""
-        <div :if={@sortable} class="group inline-flex cursor-pointer" phx-click="sort" phx-value-sort_by={@key}>
-          {@label}
-          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-            <svg
-              :if={@key not in Keyword.keys(@sort_params)}
-              class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <svg
-              :if={@key in Keyword.keys(@sort_params) && Keyword.get(@sort_params, @key) == "asc"}
-              class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 18a.75.75 0 01-.75-.75V4.66L7.3 6.76a.75.75 0 01-1.1-1.02l3.25-3.5a.75.75 0 011.1 0l3.25 3.5a.75.75 0 01-1.1 1.02l-1.95-2.1v12.59A.75.75 0 0110 18z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <svg
-              :if={@key in Keyword.keys(@sort_params) && Keyword.get(@sort_params, @key) == "desc"}
-              class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 2a.75.75 0 01.75.75v12.59l1.95-2.1a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 111.1-1.02l1.95 2.1V2.75A.75.75 0 0110 2z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </span>
-        </div>
-        <span :if={!@sortable}>
-          {@label}
-        </span>
-        """
-      end
+
 
       defp render_cell(value, field, _record) when is_nil(value) and not is_nil(field.empty_text) do
         field.empty_text
