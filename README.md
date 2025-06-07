@@ -15,7 +15,12 @@ A powerful Phoenix LiveView component library for building dynamic, interactive 
 
 ![LiveTable Demo](demo.gif)
 
-**[Live Demo with 1M+ records →](https://live-table.fly.dev)**
+**[Live Demo with 1M+ records →](https://livetable.gurujada.com)**
+
+**[Advanced Demo with custom queries, & transformer usage →](https://josaa.gurujada.com)**
+
+**[Advanced Demo Git Url →](https://github.com/ChivukulaVirinchi/college-app)**
+
 
 ## 🚀 Quick Start
 
@@ -52,33 +57,25 @@ config :your_app, Oban,
 Add to `assets/js/app.js`:
 
 ```javascript
-import { TableHooks } from "../../deps/live_table/priv/static/live-table.js"
+import hooks_default from "../../deps/live_table/priv/static/live-table.js"; 
 
-let liveSocket = new LiveSocket("/live", Socket, {
-  params: {_csrf_token: csrfToken},
-  hooks: TableHooks
-})
-```
-
-Add to `assets/tailwind.config.js`:
-
-```javascript
-module.exports = {
-  content: [
-    // ... your existing paths
-    "../deps/live_table/priv/static/*.js",
-    "../deps/live_table/**/*.*ex"
-  ]
-}
+const liveSocket = new LiveSocket("/live", Socket, {
+  longPollFallbackMs: 2500,
+  params: { _csrf_token: csrfToken },
+  hooks: hooks_default,
+});
 ```
 
 Add to `assets/css/app.css`:
 
 ```css
+@source "../../deps/live_table/lib";
+
 @import "../../deps/live_table/priv/static/live-table.css";
 ```
 
 ### 4. Create Your First Table
+LiveTable requires field & filter definitions to build a table. Additional configuration options can be defined per table under `table_options`.
 
 ```elixir
 # lib/your_app_web/live/product_live/index.ex
@@ -226,14 +223,6 @@ LiveTable is perfect for:
 - **Data Analytics** - Present large datasets with exports and real-time updates
 - **CRM Systems** - Customer and lead management with custom views
 - **Inventory Management** - Track stock with complex filtering and reporting
-
-## 🛠 Requirements
-
-- **Elixir** 1.14+
-- **Phoenix LiveView** 1.0+
-- **Ecto** 3.10+
-- **Tailwind CSS** (for styling)
-- **Typst** (for PDF exports, optional)
 
 ## 📄 License
 
