@@ -1,7 +1,7 @@
 defmodule LiveTable.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0"
   @source_url "https://github.com/gurujada/live_table"
 
   def project do
@@ -65,11 +65,10 @@ defmodule LiveTable.MixProject do
       source_url: @source_url,
       homepage_url: @source_url,
       source_ref: "v#{@version}",
-     
       extras: [
         "README.md",
         "docs/overview.md",
-        "docs/installation.md", 
+        "docs/installation.md",
         "docs/quick-start.md",
         "docs/configuration.md",
         "docs/api/fields.md",
@@ -87,7 +86,7 @@ defmodule LiveTable.MixProject do
           "docs/installation.md",
           "docs/quick-start.md"
         ],
-        "Configuration": [
+        Configuration: [
           "docs/configuration.md"
         ],
         "API Reference": [
@@ -97,11 +96,11 @@ defmodule LiveTable.MixProject do
           "docs/api/exports.md",
           "docs/api/table-options.md"
         ],
-        "Examples": [
+        Examples: [
           "docs/examples/simple-table.md",
           "docs/examples/complex-queries.md"
         ],
-        "Support": [
+        Support: [
           "docs/troubleshooting.md"
         ]
       ],

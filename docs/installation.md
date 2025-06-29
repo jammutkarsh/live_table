@@ -18,7 +18,7 @@ Add LiveTable to your `mix.exs` dependencies:
 ```elixir
 def deps do
   [
-    {:live_table, "~> 0.2.0"},
+    {:live_table, "~> 0.3.0"},
     {:oban, "~> 2.19"}           # Required for background exports
   ]
 end

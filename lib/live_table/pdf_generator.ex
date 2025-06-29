@@ -1,13 +1,12 @@
 defmodule LiveTable.PdfGenerator do
   @moduledoc false
-
   # A module for generating PDF files from Ecto queries using Typst.
   # This module provides functionality to convert Ecto queries into formatted PDF files,
   # with support for custom headers and efficient streaming of large datasets. It uses
   # Typst as an intermediate format for PDF generation.
 
   @repo Application.compile_env(:live_table, :repo)
-
+  import Ecto.Query, only: [limit: 2]
   # Generates a PDF file from an Ecto query with specified headers.
   def generate_pdf(query, header_data) do
     timestamp =
@@ -16,8 +15,8 @@ defmodule LiveTable.PdfGenerator do
       |> String.replace([" ", ":", "."], "-")
       |> String.replace(~r/[^a-zA-Z0-9\-]/, "")
 
-    temp_path = Path.join(System.tmp_dir!(), "export-#{timestamp}.tp")
-    query = get_query(query)
+    temp_path = Path.join(System.tmp_dir!(), "export-#{timestamp}.typ")
+    query = get_query(query) |> limit(10_000)
 
     case generate_typst_file(query, temp_path, header_data) do
       {:ok, path} -> compile_typst_to_pdf(path)
@@ -29,23 +28,44 @@ defmodule LiveTable.PdfGenerator do
     typst_template = """
     #set page(
       paper: "a4",
-      margin: (x: 0.5cm, y: 0.5cm),
+      margin: (x: 0.8cm, y: 0.8cm),
+      flipped: true,
     )
 
     #set text(
-      font: "Libertinus Serif",
+      font: "Fira Sans",
       size: 8pt,
       weight: "regular"
     )
 
+    #show table.cell: it => {
+      set text(size: 8pt)
+      set par(leading: 0.5em)
+      it
+    }
+
     #table(
       columns: (auto, ) * #{length(header_labels)},
-      inset: (x: 4pt, y: 3pt),
-      align: left,
-      stroke: (thickness: 0.4pt, paint: rgb(80, 80, 80)),
+      inset: (x: 8pt, y: 6pt),
+      align: (col, row) => {
+        if row == 0 { center + horizon }
+        else { left + horizon }
+      },
+      stroke: (x, y) => {
+        if y == 0 {
+          (bottom: 1.5pt + rgb(45, 45, 45), rest: 0.75pt + rgb(160, 160, 160))
+        } else {
+          0.5pt + rgb(210, 210, 210)
+        }
+      },
       fill: (col, row) => {
-        if row == 0 { rgb(245, 245, 245) }
-        else { white }
+        if row == 0 {
+          gradient.linear(rgb(235, 245, 255), rgb(220, 235, 250))
+        } else if calc.odd(row) {
+          rgb(248, 250, 252)
+        } else {
+          white
+        }
       },
 
       #{generate_table_header(header_labels)},
@@ -95,13 +115,14 @@ defmodule LiveTable.PdfGenerator do
           |> Stream.run()
 
           {:ok, path}
-        end, [timeout: :infinity]
+        end,
+        [timeout: :infinity]
       ]
     )
   end
 
   defp compile_typst_to_pdf(tp_path) do
-    pdf_path = String.replace(tp_path, ".tp", ".pdf")
+    pdf_path = String.replace(tp_path, ".typ", ".pdf")
 
     case System.cmd("typst", ["compile", tp_path, pdf_path]) do
       {_, 0} ->

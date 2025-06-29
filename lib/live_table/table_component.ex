@@ -39,13 +39,15 @@ defmodule LiveTable.TableComponent do
         <div class="px-4 sm:px-6 lg:px-8">
           <!-- Header with title -->
           <div class="flex sm:items-center justify-end">
-
-            <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div
+              :if={get_in(@table_options, [:exports, :enabled])}
+              class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none"
+            >
               <.exports formats={get_in(@table_options, [:exports, :formats])} />
             </div>
           </div>
-
-          <!-- Controls section -->
+          
+        <!-- Controls section -->
           <div class="mt-4">
             <.common_controls
               fields={@fields}
@@ -62,8 +64,10 @@ defmodule LiveTable.TableComponent do
         ~H"""
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="flex sm:items-center justify-end">
-
-            <div :if={get_in(@table_options, [:exports, :enabled])} class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div
+              :if={get_in(@table_options, [:exports, :enabled])}
+              class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none"
+            >
               <.exports formats={get_in(@table_options, [:exports, :formats])} />
             </div>
           </div>
@@ -99,8 +103,17 @@ defmodule LiveTable.TableComponent do
                   <label for="table-search" class="sr-only">Search</label>
                   <div class="relative rounded-md shadow-sm">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                      <svg
+                        class="h-5 w-5 text-gray-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                          clip-rule="evenodd"
+                        />
                       </svg>
                     </div>
                     <input
@@ -114,8 +127,8 @@ defmodule LiveTable.TableComponent do
                     />
                   </div>
                 </div>
-
-                <!-- Per page -->
+                
+        <!-- Per page -->
                 <select
                   :if={@options["pagination"]["paginate?"]}
                   name="per_page"
@@ -128,8 +141,8 @@ defmodule LiveTable.TableComponent do
                   )}
                 </select>
               </div>
-
-              <!-- Filter toggle -->
+              
+        <!-- Filter toggle -->
               <button
                 :if={length(@filters) > 3}
                 type="button"
@@ -137,13 +150,17 @@ defmodule LiveTable.TableComponent do
                 class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
               >
                 <svg class="-ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
                 <span phx-update="ignore" id="filter-toggle-text">Filters</span>
               </button>
             </div>
-
-            <!-- Filters section -->
+            
+        <!-- Filters section -->
             <div
               id="filters-container"
               class={["", length(@filters) > 3 && "hidden"]}
@@ -193,10 +210,23 @@ defmodule LiveTable.TableComponent do
                   <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                     <tr class="only:block hidden">
                       <td colspan={length(@fields)} class="py-10 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        <svg
+                          class="mx-auto h-12 w-12 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                          />
                         </svg>
-                        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">No data</h3>
+                        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          No data
+                        </h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           Get started by creating a new record.
                         </p>
@@ -234,7 +264,10 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: false}} = var!(assigns)) do
         ~H"""
-        <tr :for={resource <- @streams} class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200">
+        <tr
+          :for={resource <- @streams}
+          class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200"
+        >
           <td
             :for={{key, field} <- @fields}
             class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
@@ -247,7 +280,11 @@ defmodule LiveTable.TableComponent do
 
       defp render_row(%{table_options: %{use_streams: true}} = var!(assigns)) do
         ~H"""
-        <tr :for={{id, resource} <- @streams.resources} id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200">
+        <tr
+          :for={{id, resource} <- @streams.resources}
+          id={id}
+          class="hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-neutral-200"
+        >
           <td
             :for={{key, field} <- @fields}
             class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100"
@@ -299,14 +336,21 @@ defmodule LiveTable.TableComponent do
               </div>
             <% end %>
           </div>
-          <div :if={@applied_filters != %{"search" => ""}} class="mt-4 flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div
+            :if={@applied_filters != %{"search" => ""}}
+            class="mt-4 flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700"
+          >
             <.link
               phx-click="sort"
               phx-value-clear_filters="true"
               class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
             >
               <svg class="-ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
+                <path
+                  fill-rule="evenodd"
+                  d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
+                  clip-rule="evenodd"
+                />
               </svg>
               Clear filters
             </.link>
@@ -369,11 +413,26 @@ defmodule LiveTable.TableComponent do
               id="export-menu-button"
               aria-expanded="false"
               aria-haspopup="true"
-              phx-click={JS.toggle(to: "#export-dropdown", in: "transition ease-out duration-100 transform opacity-0 scale-95", out: "transition ease-in duration-75 transform opacity-100 scale-100")}
+              phx-click={
+                JS.toggle(
+                  to: "#export-dropdown",
+                  in: "transition ease-out duration-100 transform opacity-0 scale-95",
+                  out: "transition ease-in duration-75 transform opacity-100 scale-100"
+                )
+              }
             >
               Export
-              <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              <svg
+                class="-mr-1 h-5 w-5 text-gray-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </button>
           </div>
@@ -403,9 +462,8 @@ defmodule LiveTable.TableComponent do
         """
       end
 
-
-
-      defp render_cell(value, field, _record) when is_nil(value) and not is_nil(field.empty_text) do
+      defp render_cell(value, field, _record)
+           when is_nil(value) and not is_nil(field.empty_text) do
         field.empty_text
       end
 

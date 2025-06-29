@@ -38,33 +38,53 @@ defmodule LiveTable.ExportHelpers do
       def handle_event("export-pdf", _params, socket) do
         {export_topic, updated_socket} = maybe_subscribe(socket)
 
-        options = socket.assigns.options
+        options = socket.assigns.options |> put_in(["pagination", "paginate?"], false)
 
-        header_data =
-          fields()
-          |> Enum.reduce([[], []], fn {k, %{label: label}}, [key_names, headers] ->
-            [[k | key_names], [label | headers]]
-          end)
-          |> Enum.map(&Enum.reverse/1)
-
-        query_string =
+        count_query =
           list_resources(
             fields(),
             options,
             unquote(opts[:schema]),
             Map.get(socket.assigns, :data_provider)
-          ) |> inspect()
+          )
 
-        {:ok, _job} =
-          %{
-            query: query_string,
-            header_data: header_data,
-            topic: export_topic
-          }
-          |> LiveTable.Workers.PdfExportWorker.new()
-          |> Oban.insert()
+        case Application.get_env(:live_table, :repo).aggregate(count_query, :count) do
+          count when count > 10_000 ->
+            {:noreply,
+             put_flash(
+               updated_socket,
+               :error,
+               "Cannot export more than 10,000 records. Please apply filters to reduce the dataset."
+             )}
 
-        {:noreply, updated_socket}
+          _ ->
+            header_data =
+              fields()
+              |> Enum.reduce([[], []], fn {k, %{label: label}}, [key_names, headers] ->
+                [[k | key_names], [label | headers]]
+              end)
+              |> Enum.map(&Enum.reverse/1)
+
+            query_string =
+              list_resources(
+                fields(),
+                options,
+                unquote(opts[:schema]),
+                Map.get(socket.assigns, :data_provider)
+              )
+              |> inspect()
+
+            {:ok, _job} =
+              %{
+                query: query_string,
+                header_data: header_data,
+                topic: export_topic
+              }
+              |> LiveTable.Workers.PdfExportWorker.new()
+              |> Oban.insert()
+
+            {:noreply, updated_socket}
+        end
       end
 
       defp maybe_subscribe(socket) do

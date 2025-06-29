@@ -60,7 +60,11 @@ defmodule LiveTable.Components do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div>
-      <label :if={@label} for={@id || @name} class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+      <label
+        :if={@label}
+        for={@id || @name}
+        class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+      >
         {@label}
       </label>
       <select
@@ -81,7 +85,11 @@ defmodule LiveTable.Components do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div>
-      <label :if={@label} for={@id || @name} class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+      <label
+        :if={@label}
+        for={@id || @name}
+        class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+      >
         {@label}
       </label>
       <div class="mt-2">
@@ -105,7 +113,11 @@ defmodule LiveTable.Components do
   def input(assigns) do
     ~H"""
     <div>
-      <label :if={@label} for={@id || @name} class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+      <label
+        :if={@label}
+        for={@id || @name}
+        class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+      >
         {@label}
       </label>
       <div class="mt-2">

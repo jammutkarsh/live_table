@@ -13,7 +13,7 @@ A powerful Phoenix LiveView component library for building dynamic, interactive 
 - **🔗 Custom Queries** - Support for complex joins and computed fields
 - **🚀 Performance Optimized** - Streams-based rendering for large datasets
 
-![LiveTable Demo](demo.gif)
+![LiveTable Demo](https://github.com/gurujada/live_table/blob/master/demo.gif?raw=true)
 
 **[Live Demo with 1M+ records →](https://livetable.gurujada.com)**
 
@@ -31,7 +31,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:live_table, "~> 0.2.0"},
+    {:live_table, "~> 0.3.0"},
     {:oban, "~> 2.19"}  # Required for exports
   ]
 end
@@ -57,7 +57,7 @@ config :your_app, Oban,
 Add to `assets/js/app.js`:
 
 ```javascript
-import hooks_default from "../../deps/live_table/priv/static/live-table.js"; 
+import hooks_default from "../../deps/live_table/priv/static/live-table.js";
 
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
@@ -98,7 +98,7 @@ defmodule YourAppWeb.ProductLive.Index do
         label: "In Stock Only",
         condition: dynamic([p], p.stock_quantity > 0)
       }),
-      
+
       price_range: Range.new(:price, "price_range", %{
         type: :number,
         label: "Price Range",
@@ -167,8 +167,8 @@ defmodule YourAppWeb.OrderReportLive.Index do
       total_amount: %{label: "Total", sortable: true},      # Must match select key
       # For sorting by joined fields, specify the alias used in your query
       product_name: %{
-        label: "Product", 
-        sortable: true, 
+        label: "Product",
+        sortable: true,
         assoc: {:order_items, :name}    # Must match query alias and field
       }
     ]
@@ -197,7 +197,7 @@ defmodule YourApp.Orders do
       join: oi in OrderItem, on: oi.order_id == o.id, as: :order_items,
       select: %{
         order_id: o.id,               # Field key must match this
-        customer_name: c.name,        # Field key must match this  
+        customer_name: c.name,        # Field key must match this
         total_amount: o.total_amount, # Field key must match this
         product_name: oi.product_name # Field key must match this
       }

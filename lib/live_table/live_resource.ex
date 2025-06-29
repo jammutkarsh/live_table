@@ -64,7 +64,6 @@ defmodule LiveTable.LiveResource do
         |> apply_filters(regular_filters, fields)
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> apply_transformers(transformers)
-        
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
       end
 

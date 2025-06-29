@@ -10,10 +10,10 @@ defmodule LiveTable.JoinTest do
         "name" => %{field: :name},
         "price" => %{field: :price}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       # Should have no joins
       refute inspect(result) =~ "join:"
     end
@@ -22,10 +22,10 @@ defmodule LiveTable.JoinTest do
       filters = %{
         "category_name" => %{field: {:category, :name}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       assert inspect(result) =~ "left_join:"
       assert inspect(result) =~ "assoc(p0, :category)"
       assert inspect(result) =~ "as: :category"
@@ -36,10 +36,10 @@ defmodule LiveTable.JoinTest do
         "category_name" => %{field: {:category, :name}},
         "supplier_name" => %{field: {:suppliers, :name}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       assert inspect(result) =~ "assoc(p0, :category)"
       assert inspect(result) =~ "as: :category"
       assert inspect(result) =~ "assoc(p0, :suppliers)"
@@ -51,18 +51,19 @@ defmodule LiveTable.JoinTest do
         "supplier_name" => %{field: {:suppliers, :name}},
         "supplier_contact" => %{field: {:suppliers, :contact_info}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       # Count occurrences of supplier join
       query_string = inspect(result)
-      supplier_join_count = 
+
+      supplier_join_count =
         query_string
         |> String.split("assoc(p0, :suppliers)")
         |> length()
         |> Kernel.-(1)
-      
+
       # Should only have one join for suppliers
       assert supplier_join_count == 1
     end
@@ -74,10 +75,10 @@ defmodule LiveTable.JoinTest do
         "price" => %{field: :price},
         "supplier_name" => %{field: {:suppliers, :name}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       assert inspect(result) =~ "assoc(p0, :category)"
       assert inspect(result) =~ "assoc(p0, :suppliers)"
     end
@@ -89,10 +90,10 @@ defmodule LiveTable.JoinTest do
         "nil_field" => nil,
         "category_name" => %{field: {:category, :name}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       # Should only add join for category
       assert inspect(result) =~ "assoc(p0, :category)"
       refute inspect(result) =~ "assoc(p0, :invalid)"
@@ -102,10 +103,10 @@ defmodule LiveTable.JoinTest do
       filters = %{
         "category_name" => %{field: {:category, :name}}
       }
-      
+
       query = from(p in Product, as: :resource, where: p.price > 100)
       result = Join.join_associations(query, filters)
-      
+
       # Should preserve the where clause
       assert inspect(result) =~ "where:"
       assert inspect(result) =~ "price > 100"
@@ -117,10 +118,10 @@ defmodule LiveTable.JoinTest do
       filters = %{
         "category_name" => %{field: {:category, :name}}
       }
-      
+
       query = from(p in "products", as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       assert inspect(result) =~ "left_join:"
       assert inspect(result) =~ "assoc(p0, :category)"
     end
@@ -132,10 +133,10 @@ defmodule LiveTable.JoinTest do
         name: %{},
         price: %{}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.select_columns(query, fields)
-      
+
       assert inspect(result) =~ "select:"
       assert inspect(result) =~ "%{"
       assert inspect(result) =~ "name: "
@@ -149,10 +150,10 @@ defmodule LiveTable.JoinTest do
           computed: dynamic([resource: r], r.price * r.stock_quantity)
         }
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.select_columns(query, fields)
-      
+
       assert inspect(result) =~ "select:"
       assert inspect(result) =~ "name: "
       assert inspect(result) =~ "total_value: "
@@ -160,10 +161,10 @@ defmodule LiveTable.JoinTest do
 
     test "handles empty fields map" do
       fields = %{}
-      
+
       query = from(p in Product, as: :resource)
       result = Join.select_columns(query, fields)
-      
+
       assert inspect(result) =~ "select: %{}"
     end
 
@@ -173,10 +174,10 @@ defmodule LiveTable.JoinTest do
         alpha: %{},
         beta: %{}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.select_columns(query, fields)
-      
+
       # The fields should be in the select
       assert inspect(result) =~ "zebra:"
       assert inspect(result) =~ "alpha:"
@@ -194,10 +195,10 @@ defmodule LiveTable.JoinTest do
           computed: dynamic([resource: r], r.stock_quantity > 0)
         }
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.select_columns(query, fields)
-      
+
       assert inspect(result) =~ "name:"
       assert inspect(result) =~ "price:"
       assert inspect(result) =~ "discounted_price:"
@@ -209,10 +210,10 @@ defmodule LiveTable.JoinTest do
         name: %{},
         price: %{}
       }
-      
+
       query = from(p in Product, as: :resource, where: p.price > 50)
       result = Join.select_columns(query, fields)
-      
+
       # Should preserve the where clause
       assert inspect(result) =~ "where:"
       # And add the select
@@ -226,11 +227,11 @@ defmodule LiveTable.JoinTest do
         empty_field: %{},
         computed_field: %{computed: dynamic([resource: r], r.price * 2)}
       }
-      
+
       query = from(p in Product, as: :resource)
       # Should not raise an error
       result = Join.select_columns(query, fields)
-      
+
       assert inspect(result) =~ "name:"
       assert inspect(result) =~ "computed_field:"
     end
@@ -243,7 +244,7 @@ defmodule LiveTable.JoinTest do
         "category_filter" => %{field: {:category, :name}},
         "supplier_filter" => %{field: {:suppliers, :name}}
       }
-      
+
       fields = %{
         name: %{},
         price: %{},
@@ -251,18 +252,18 @@ defmodule LiveTable.JoinTest do
           computed: dynamic([resource: r], r.price * r.stock_quantity)
         }
       }
-      
+
       query = from(p in Product, as: :resource)
-      
-      result = 
+
+      result =
         query
         |> Join.join_associations(filters)
         |> Join.select_columns(fields)
-      
+
       # Should have both joins
       assert inspect(result) =~ "assoc(p0, :category)"
       assert inspect(result) =~ "assoc(p0, :suppliers)"
-      
+
       # Should have all fields in select
       assert inspect(result) =~ "name:"
       assert inspect(result) =~ "price:"
@@ -274,29 +275,29 @@ defmodule LiveTable.JoinTest do
         "name" => %{field: :name},
         "price" => %{field: :price}
       }
-      
+
       fields = %{
         id: %{},
         name: %{},
         price: %{}
       }
-      
+
       query = from(p in Product, as: :resource, where: p.active == true)
-      
-      result = 
+
+      result =
         query
         |> Join.join_associations(filters)
         |> Join.select_columns(fields)
-      
+
       # Should have no joins
       refute inspect(result) =~ "join:"
-      
+
       # Should have select
       assert inspect(result) =~ "select:"
       assert inspect(result) =~ "id:"
       assert inspect(result) =~ "name:"
       assert inspect(result) =~ "price:"
-      
+
       # Should preserve where clause
       assert inspect(result) =~ "where:"
       assert inspect(result) =~ "active == true"
@@ -306,23 +307,24 @@ defmodule LiveTable.JoinTest do
       filters = %{
         "category_name" => %{field: {:category, :name}}
       }
-      
+
       fields = %{
         name: %{},
         price: %{}
       }
-      
-      query = from(p in Product, 
-        as: :resource, 
-        order_by: [desc: p.created_at],
-        limit: 10
-      )
-      
-      result = 
+
+      query =
+        from(p in Product,
+          as: :resource,
+          order_by: [desc: p.created_at],
+          limit: 10
+        )
+
+      result =
         query
         |> Join.join_associations(filters)
         |> Join.select_columns(fields)
-      
+
       # Should preserve all query parts
       assert inspect(result) =~ "order_by:"
       assert inspect(result) =~ "limit:"
@@ -336,10 +338,10 @@ defmodule LiveTable.JoinTest do
       filters = %{
         "very_long_association_field_name" => %{field: {:category, :very_long_field_name}}
       }
-      
+
       query = from(p in Product, as: :resource)
       result = Join.join_associations(query, filters)
-      
+
       assert inspect(result) =~ "assoc(p0, :category)"
     end
 
@@ -348,21 +350,21 @@ defmodule LiveTable.JoinTest do
         field_with_underscore: %{},
         field_with_number_123: %{}
       }
-      
+
       query = from(p in Product, as: :resource)
       # Should not raise an error
       result = Join.select_columns(query, fields)
-      
+
       assert result
     end
 
     test "empty filters and fields" do
       query = from(p in Product, as: :resource)
-      
+
       # Should not modify query with empty filters
       result1 = Join.join_associations(query, %{})
       refute inspect(result1) =~ "join:"
-      
+
       # Should add empty select with empty fields
       result2 = Join.select_columns(query, %{})
       assert inspect(result2) =~ "select: %{}"
