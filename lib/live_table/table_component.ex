@@ -208,7 +208,7 @@ defmodule LiveTable.TableComponent do
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-                    <tr class="only:table-row hidden">
+                    <tr id="empty-placeholder" class="only:table-row hidden">
                       <td colspan={length(@fields)} class="py-10 text-center">
                         <svg
                           class="mx-auto h-12 w-12 text-gray-400"
