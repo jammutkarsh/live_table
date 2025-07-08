@@ -20,7 +20,8 @@ defmodule LiveTable.TableConfig do
       placeholder: "Search..."
     },
     mode: :table,
-    use_streams: true
+    use_streams: true,
+    debug: :off
   }
 
   def deep_merge(left, right) do

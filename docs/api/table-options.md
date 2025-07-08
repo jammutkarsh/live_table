@@ -18,7 +18,7 @@ Override settings for specific tables by implementing `table_options/0`:
 defmodule YourAppWeb.ProductLive.Index do
   use YourAppWeb, :live_view
   use LiveTable.LiveResource, schema: YourApp.Product
-  
+
   def table_options do
     %{
       pagination: %{
@@ -156,6 +156,32 @@ exports: %{
 
 # Disable exports for sensitive data
 exports: %{enabled: false}
+```
+
+### Debug Options
+
+Preview the query to debug. Works only in `Mix.env == :dev`
+
+```elixir
+debug: :off # Set to off by default
+```
+
+**Options:**
+- `:off` - Disable debugging mode. Set to :off by default.
+- `:query` - Preview the fully built query before fetching from database
+- `:trace` - Trace the query as it gets built, useful for debugging
+
+**Examples:**
+
+```elixir
+# Turn off debug
+debug: :off
+
+# Show the full compiled query
+debug: :query
+
+# Trace the query building
+debug: :trace
 ```
 
 ### Search Options
@@ -334,15 +360,26 @@ def table_options do
 end
 ```
 
-### Minimal Configuration Table
+### Development and Debugging Configuration
 
 ```elixir
 def table_options do
   %{
-    pagination: %{enabled: false},
-    sorting: %{enabled: false},
-    exports: %{enabled: false},
-    search: %{enabled: false}
+    pagination: %{
+      enabled: true,
+      sizes: [5, 10, 15],     # Smaller pages for easier debugging
+      default_size: 5
+    },
+    sorting: %{
+      enabled: true,
+      default_sort: [id: :asc]
+    },
+    exports: %{enabled: false}, # Disable exports during development
+    search: %{
+      enabled: true,
+      debounce: 100           # Faster response for development
+    },
+    debug: :query             # Show final queries in terminal
   }
 end
 ```
@@ -359,7 +396,8 @@ config :live_table,
       sizes: [5, 10, 15],    # Smaller pages for development
       default_size: 5
     },
-    exports: %{enabled: false}  # Disable exports in development
+    exports: %{enabled: false},  # Disable exports in development
+    debug: :query                # Show queries in development
   }
 
 # config/test.exs
@@ -368,6 +406,7 @@ config :live_table,
     pagination: %{enabled: false},  # Show all records in tests
     exports: %{enabled: false},
     search: %{debounce: 0}         # No debounce in tests
+    # debug set to :off by default
   }
 
 # config/prod.exs
@@ -382,6 +421,7 @@ config :live_table,
       formats: [:csv, :pdf]
     },
     search: %{debounce: 500}       # Longer debounce for production
+    # debug set to :off by default
   }
 ```
 
@@ -427,7 +467,7 @@ defp product_card(assigns) do
     <div class="aspect-w-16 aspect-h-9">
       <img src={@record.image_url} alt={@record.name} class="object-cover rounded-t-lg" />
     </div>
-    
+
     <div class="p-4">
       <div class="flex justify-between items-start mb-2">
         <h3 class="font-semibold text-lg truncate"><%= @record.name %></h3>
@@ -438,23 +478,23 @@ defp product_card(assigns) do
           <%= if @record.active, do: "Active", else: "Inactive" %>
         </span>
       </div>
-      
+
       <p class="text-gray-600 text-sm mb-4 line-clamp-2"><%= @record.description %></p>
-      
+
       <div class="flex justify-between items-center mb-4">
         <span class="text-xl font-bold text-green-600">$<%= @record.price %></span>
         <span class="text-sm text-gray-500"><%= @record.stock_quantity %> left</span>
       </div>
-      
+
       <div class="flex gap-2">
-        <.link 
-          navigate={~p"/products/#{@record.id}"} 
+        <.link
+          navigate={~p"/products/#{@record.id}"}
           class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded text-sm hover:bg-blue-700"
         >
           Edit
         </.link>
-        <button 
-          phx-click="toggle_featured" 
+        <button
+          phx-click="toggle_featured"
           phx-value-id={@record.id}
           class="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50"
         >
@@ -494,10 +534,10 @@ defp custom_header(assigns) do
         </button>
       </div>
     </div>
-    
+
     <div class="mt-2 text-blue-100 text-sm">
-      Total Products: <%= @total_count %> | 
-      Active: <%= @active_count %> | 
+      Total Products: <%= @total_count %> |
+      Active: <%= @active_count %> |
       Low Stock: <%= @low_stock_count %>
     </div>
   </div>
@@ -563,6 +603,12 @@ end
 - Verify Oban configuration for background processing
 - Ensure export formats are properly specified
 
+**Debug not showing output:**
+- Ensure you're running in `:dev` environment
+- Check that `debug` is set to `:query` or `:trace` (not `:off`)
+- Verify configuration hierarchy (table options override app config)
+- Look for output in your terminal/console, not browser
+
 ### Debugging Configuration
 
 ```elixir
@@ -579,7 +625,7 @@ def table_options do
     pagination: %{enabled: true, sizes: [10, 25]},
     sorting: %{default_sort: [name: :asc]}
   }
-  
+
   IO.inspect(config, label: "Table Options")
   config
 end

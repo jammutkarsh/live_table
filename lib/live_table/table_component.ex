@@ -46,7 +46,7 @@ defmodule LiveTable.TableComponent do
               <.exports formats={get_in(@table_options, [:exports, :formats])} />
             </div>
           </div>
-
+          
         <!-- Controls section -->
           <div class="mt-4">
             <.common_controls
@@ -127,7 +127,7 @@ defmodule LiveTable.TableComponent do
                     />
                   </div>
                 </div>
-
+                
         <!-- Per page -->
                 <select
                   :if={@options["pagination"]["paginate?"]}
@@ -141,7 +141,7 @@ defmodule LiveTable.TableComponent do
                   )}
                 </select>
               </div>
-
+              
         <!-- Filter toggle -->
               <button
                 :if={length(@filters) > 3}
@@ -159,7 +159,7 @@ defmodule LiveTable.TableComponent do
                 <span phx-update="ignore" id="filter-toggle-text">Filters</span>
               </button>
             </div>
-
+            
         <!-- Filters section -->
             <div
               id="filters-container"

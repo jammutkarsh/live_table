@@ -19,6 +19,7 @@ defmodule LiveTable.LiveResource do
       import Join
       import Filter
       import Transformer
+      import Debug, only: [debug_pipeline: 2]
 
       use Helpers,
         schema: unquote(opts[:schema]),
@@ -40,6 +41,8 @@ defmodule LiveTable.LiveResource do
 
       def list_resources(fields, options, _, {module, function, args} = data_provider)
           when is_atom(function) do
+        debug_mode = Map.get(TableConfig.get_table_options(table_options()), :debug, :off)
+
         {regular_filters, transformers} =
           Map.get(options, "filters", nil)
           |> separate_filters_and_transformers()
@@ -50,9 +53,12 @@ defmodule LiveTable.LiveResource do
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> apply_transformers(transformers)
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
+        |> debug_pipeline(debug_mode)
       end
 
       def list_resources(fields, options, schema, nil) do
+        debug_mode = Map.get(TableConfig.get_table_options(table_options()), :debug, :off)
+
         {regular_filters, transformers} =
           Map.get(options, "filters", nil)
           |> separate_filters_and_transformers()
@@ -65,6 +71,7 @@ defmodule LiveTable.LiveResource do
         |> maybe_sort(fields, options["sort"]["sort_params"], options["sort"]["sortable?"])
         |> apply_transformers(transformers)
         |> maybe_paginate(options["pagination"], options["pagination"]["paginate?"])
+        |> debug_pipeline(debug_mode)
       end
 
       def stream_resources(fields, %{"pagination" => %{"paginate?" => true}} = options, nil) do
