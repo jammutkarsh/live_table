@@ -39,13 +39,9 @@ defmodule LiveTable.LiveResource do
 
       defoverridable fields: 0, filters: 0, table_options: 0
 
-      def list_resources(fields, options, _, {module, function, args} = data_provider)
+      def list_resources(fields, options, {module, function, args} = _data_provider)
           when is_atom(function) do
-        debug_mode = Map.get(TableConfig.get_table_options(table_options()), :debug, :off)
-
-        {regular_filters, transformers} =
-          Map.get(options, "filters", nil)
-          |> separate_filters_and_transformers()
+        {regular_filters, transformers, debug_mode} = prepare_query_context(options)
 
         apply(module, function, args)
         |> join_associations(regular_filters)
@@ -56,12 +52,8 @@ defmodule LiveTable.LiveResource do
         |> debug_pipeline(debug_mode)
       end
 
-      def list_resources(fields, options, schema, nil) do
-        debug_mode = Map.get(TableConfig.get_table_options(table_options()), :debug, :off)
-
-        {regular_filters, transformers} =
-          Map.get(options, "filters", nil)
-          |> separate_filters_and_transformers()
+      def list_resources(fields, options, schema) do
+        {regular_filters, transformers, debug_mode} = prepare_query_context(options)
 
         schema
         |> from(as: :resource)
@@ -74,32 +66,16 @@ defmodule LiveTable.LiveResource do
         |> debug_pipeline(debug_mode)
       end
 
-      def stream_resources(fields, %{"pagination" => %{"paginate?" => true}} = options, nil) do
-        per_page = options["pagination"]["per_page"] |> String.to_integer()
-
-        schema = @resource_opts[:schema]
-
-        list_resources(fields, options, schema, nil)
-        |> @repo.all()
-        |> Enum.split(per_page)
-      end
-
-      def stream_resources(fields, %{"pagination" => %{"paginate?" => false}} = options, nil) do
-        schema = @resource_opts[:schema]
-        list_resources(fields, options, schema, nil) |> @repo.all()
-      end
-
       def stream_resources(
             fields,
             %{"pagination" => %{"paginate?" => true}} = options,
-            data_provider
-          )
-          when not is_nil(data_provider) do
+            data_source
+          ) do
         per_page = options["pagination"]["per_page"] |> String.to_integer()
 
-        schema = @resource_opts[:schema]
+        data_source = data_source || @resource_opts[:schema]
 
-        list_resources(fields, options, schema, data_provider)
+        list_resources(fields, options, data_source)
         |> @repo.all()
         |> Enum.split(per_page)
       end
@@ -107,15 +83,25 @@ defmodule LiveTable.LiveResource do
       def stream_resources(
             fields,
             %{"pagination" => %{"paginate?" => false}} = options,
-            data_provider
-          )
-          when not is_nil(data_provider) do
-        schema = @resource_opts[:schema]
-        list_resources(fields, options, schema, data_provider) |> @repo.all()
+            data_source
+          ) do
+        data_source = data_source || @resource_opts[:schema]
+
+        list_resources(fields, options, data_source) |> @repo.all()
       end
 
       def get_merged_table_options do
         TableConfig.get_table_options(table_options())
+      end
+
+      defp prepare_query_context(options) do
+        debug_mode = Map.get(TableConfig.get_table_options(table_options()), :debug, :off)
+
+        {regular_filters, transformers} =
+          Map.get(options, "filters", nil)
+          |> separate_filters_and_transformers()
+
+        {regular_filters, transformers, debug_mode}
       end
 
       defp separate_filters_and_transformers(filters) when is_map(filters) do

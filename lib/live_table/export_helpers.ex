@@ -18,8 +18,7 @@ defmodule LiveTable.ExportHelpers do
           list_resources(
             fields(),
             options,
-            unquote(opts[:schema]),
-            Map.get(socket.assigns, :data_provider)
+            Map.get(socket.assigns, :data_provider) || unquote(opts[:schema])
           )
           |> inspect()
 
@@ -44,8 +43,7 @@ defmodule LiveTable.ExportHelpers do
           list_resources(
             fields(),
             options,
-            unquote(opts[:schema]),
-            Map.get(socket.assigns, :data_provider)
+            Map.get(socket.assigns, :data_provider) || unquote(opts[:schema])
           )
 
         case Application.get_env(:live_table, :repo).aggregate(count_query, :count) do
@@ -69,8 +67,7 @@ defmodule LiveTable.ExportHelpers do
               list_resources(
                 fields(),
                 options,
-                unquote(opts[:schema]),
-                Map.get(socket.assigns, :data_provider)
+                Map.get(socket.assigns, :data_provider) || unquote(opts[:schema])
               )
               |> inspect()
 
