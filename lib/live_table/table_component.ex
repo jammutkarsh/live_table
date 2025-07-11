@@ -368,7 +368,7 @@ defmodule LiveTable.TableComponent do
             </p>
           </div>
           <div class="flex flex-1 justify-between sm:justify-end">
-            <.link
+            <button
               phx-click="sort"
               phx-value-page={String.to_integer(@current_page) - 1}
               class={[
@@ -379,11 +379,11 @@ defmodule LiveTable.TableComponent do
                   "bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
                 end
               ]}
-              aria-disabled={String.to_integer(@current_page) == 1}
+              disabled={String.to_integer(@current_page) == 1}
             >
               Previous
-            </.link>
-            <.link
+            </button>
+            <button
               phx-click="sort"
               phx-value-page={String.to_integer(@current_page) + 1}
               class={[
@@ -394,10 +394,10 @@ defmodule LiveTable.TableComponent do
                   "bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
                 end
               ]}
-              aria-disabled={!@has_next_page}
+              disabled={!@has_next_page}
             >
               Next
-            </.link>
+            </button>
           </div>
         </nav>
         """
