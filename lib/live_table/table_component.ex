@@ -85,7 +85,7 @@ defmodule LiveTable.TableComponent do
 
       defp common_controls(var!(assigns)) do
         ~H"""
-        <.form for={%{}} phx-debounce={get_in(@table_options, [:search, :debounce])} phx-change="sort">
+        <.form for={%{}} phx-change="sort">
           <div class="space-y-4">
             <!-- Search and controls bar -->
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -124,6 +124,7 @@ defmodule LiveTable.TableComponent do
                       class="w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 dark:focus:ring-indigo-500"
                       placeholder={@table_options[:search][:placeholder]}
                       value={@options["filters"]["search"]}
+                      phx-debounce={@table_options[:search][:debounce]}
                     />
                   </div>
                 </div>
