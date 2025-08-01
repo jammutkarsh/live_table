@@ -39,7 +39,8 @@ defmodule LiveTable.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
       {:ecto_sql, "~> 3.10"},
-      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev}
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:tzdata, "~> 1.1.3"}
     ]
   end
 

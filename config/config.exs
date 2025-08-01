@@ -26,4 +26,6 @@ config :esbuild,
     cd: Path.expand("../assets", __DIR__)
   ]
 
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
 import_config "#{config_env()}.exs"
